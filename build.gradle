@@ -12,14 +12,22 @@ buildscript {
 	}
 }
 
-apply plugin: 'kotlin-platform-jvm'
+apply plugin: 'kotlin'
+apply plugin: 'idea'
 apply plugin: 'org.jetbrains.intellij'
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
+
 	kotlinOptions {
+		freeCompilerArgs = ["-XXLanguage:+InlineClasses"]
+		apiVersion = "1.3"
+		languageVersion = "1.3"
 		jvmTarget = "1.8"
 	}
 }
+
 
 repositories {
 	mavenLocal()
@@ -30,7 +38,7 @@ repositories {
 }
 
 dependencies {
-	compile "com.soywiz.korlibs.korge.plugins:korge-build:1.4.0b"
+	compile "com.soywiz.korlibs.korge.plugins:korge-build:1.4.0c"
 	//compile project(":korge-build")
 }
 
@@ -38,8 +46,11 @@ dependencies {
 def globalProps = properties
 
 intellij {
-	version "IC-2019.3"
-	plugins = ['Kotlin', 'java']
+	version "IC-2019.3"; plugins = ['gradle', 'java', 'Kotlin']
+	//version "IC-2018.3.5"
+	//version "IC-2018.3.4"; plugins = ['gradle', 'maven']
+	updateSinceUntilBuild false
+
 	pluginName 'KorgePlugin'
 	downloadSources true
 }

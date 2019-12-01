@@ -7,6 +7,7 @@ import com.intellij.openapi.module.*
 import com.intellij.openapi.roots.*
 import javax.swing.*
 
+/*
 class KorgeFramework : FrameworkTypeEx("Korge") {
 	override fun createProvider(): FrameworkSupportInModuleProvider {
 		return object : FrameworkSupportInModuleProvider() {
@@ -43,3 +44,4 @@ class KorgeFramework : FrameworkTypeEx("Korge") {
 		return KorgeIcons.KORGE
 	}
 }
+*/
