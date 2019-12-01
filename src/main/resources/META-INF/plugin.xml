@@ -86,7 +86,10 @@
 
 			<separator/>
 
-			<action class="com.soywiz.korge.intellij.KorgeDocumentationAction" text="_Documentation"
+			<action class="com.soywiz.korge.intellij.actions.KorgeSponsorAction" text="_Sponsor"
+					icon="/com/soywiz/korge/intellij/icon/sponsor.png" id="KorgeSponsorAction">
+			</action>
+			<action class="com.soywiz.korge.intellij.actions.KorgeDocumentationAction" text="_Documentation"
 					icon="/com/soywiz/korge/intellij/icon/help.png" id="KorgeDocumentationAction">
 			</action>
 		</group>
