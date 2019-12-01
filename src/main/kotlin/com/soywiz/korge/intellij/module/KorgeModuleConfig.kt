@@ -157,7 +157,7 @@ enum class ProjectType(val id: String) {
 }
 
 object Versions {
-	val V140c = KorgeVersion(version = "1.4.0c", kotlinVersion = "1.3.60")
+	val V140c = KorgeVersion(version = "1.4.0d", kotlinVersion = "1.3.60")
 
 	val ALL = arrayOf(V140c)
 	val LAST = V140c

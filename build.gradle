@@ -38,7 +38,7 @@ repositories {
 }
 
 dependencies {
-	compile "com.soywiz.korlibs.korge.plugins:korge-build:1.4.0c"
+	compile "com.soywiz.korlibs.korge.plugins:korge-build:1.4.0d"
 	//compile project(":korge-build")
 }
 
