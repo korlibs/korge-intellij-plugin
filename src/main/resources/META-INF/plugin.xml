@@ -9,7 +9,7 @@
 	<vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
 
 	<description><![CDATA[
-  	Intelli-J Plugin for Korge game engine, that builds resources, and provides jtransc integration.
+	Supports the Korge Game Engine, providing a project wizard, and tools.
 	]]></description>
 
 	<change-notes><!-- language: HTML --><![CDATA[
