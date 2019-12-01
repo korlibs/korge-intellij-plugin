@@ -2,8 +2,6 @@
 
 ![](screenshot.png)
 
-For testing, please run `runIde` task:
-
 Download from JetBrains plugin repository:
 
 * <https://plugins.jetbrains.com/plugin/9676-korge>
@@ -12,7 +10,7 @@ Download from releases:
 
 * <https://github.com/korlibs/korge-intellij-plugin/releases>
 
-### Testing
+### Building
 
 ```
 ./gradlew buildPlugin
@@ -20,8 +18,12 @@ Download from releases:
 
 Output: `build/distributions/KorgePlugin.zip`
 
-### building
+### Testing
 
 ```
 ./gradlew runIde
 ```
+
+This should launch a new intelliJ Community Edition with the KorGE plugin.
+You can open this project with IDEA and launch the `runIde` task via debugger
+to be able to debug the plugin. 
