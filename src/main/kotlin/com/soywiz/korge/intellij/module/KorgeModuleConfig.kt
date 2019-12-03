@@ -157,11 +157,11 @@ enum class ProjectType(val id: String) {
 }
 
 object Versions {
-	val V140c = KorgeVersion(version = "1.4.0d", kotlinVersion = "1.3.60")
+	val V142 = KorgeVersion(version = "1.4.2", kotlinVersion = "1.3.61")
 
-	val ALL = arrayOf(V140c)
-	val LAST = V140c
-	val LAST_EAP = V140c
+	val ALL = arrayOf(V142)
+	val LAST = V142
+	val LAST_EAP = V142
 
 	private val VMAP = ALL.associate { it.version to it }
 	fun fromString(version: String): KorgeVersion? = VMAP[version]

@@ -38,7 +38,7 @@ repositories {
 }
 
 dependencies {
-	compile "com.soywiz.korlibs.korge.plugins:korge-build:1.4.0d"
+	compile "com.soywiz.korlibs.korge.plugins:korge-build:1.4.2"
 	//compile project(":korge-build")
 }
 
@@ -46,7 +46,8 @@ dependencies {
 def globalProps = properties
 
 intellij {
-	version "IC-2019.3"; plugins = ['gradle', 'java', 'Kotlin']
+	version "IC-2019.3"; plugins = ['gradle']
+	//version "IC-2019.3"; plugins = ['gradle', 'java', 'Kotlin']
 	//version "IC-2018.3.5"
 	//version "IC-2018.3.4"; plugins = ['gradle', 'maven']
 	updateSinceUntilBuild false
