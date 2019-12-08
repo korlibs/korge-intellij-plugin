@@ -5,7 +5,7 @@
 	<id>com.soywiz.korge.korge-intellij-plugin</id>
 
 	<name>Korge</name>
-	<version>1.4.2</version>
+	<version>1.4.3</version>
 	<vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
 
 	<description><![CDATA[
@@ -13,6 +13,11 @@
 	]]></description>
 
 	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>1.4.3</h3>
+		<ul>
+			<li>Fixed compatibility with the IntelliJ platform due to dependency on Java plugin.</li>
+			<li>Bump versions.</li>
+		</ul>
 		<h3>1.4.2</h3>
 		<ul>
 			<li>Fixed compatibility with the IntelliJ platform due to dependency on Java plugin.</li>
@@ -54,9 +59,9 @@
 	<depends>org.jetbrains.kotlin</depends>
 	<depends>com.intellij.gradle</depends>
 	<depends>org.jetbrains.idea.maven</depends>
-	<depends>com.intellij.modules.java</depends>
 	-->
 	<depends>org.jetbrains.plugins.gradle</depends>
+	<depends>com.intellij.modules.java</depends>
 
 	<extensions defaultExtensionNs="com.intellij">
 		<!-- Add your extensions here -->
