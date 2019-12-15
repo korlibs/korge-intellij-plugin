@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij
 
 import com.intellij.facet.FacetManager
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.PerformInBackgroundOption
@@ -8,8 +9,9 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.util.Computable
+import com.intellij.openapi.roots.*
+import com.intellij.openapi.roots.libraries.*
+import com.intellij.openapi.util.*
 import java.util.concurrent.Semaphore
 
 fun <T> runReadAction(callback: () -> T): T {
@@ -18,11 +20,23 @@ fun <T> runReadAction(callback: () -> T): T {
 	})
 }
 
+inline fun <T> UserDataHolder.getOrPutUserData(key: Key<T>, gen: (key: Key<T>) -> T): T = getUserData(key) ?: gen(key).also { putUserData(key, it) }
+
+val DataContext.project: Project? get() = getData(CommonDataKeys.PROJECT)
 val Project.rootManager get() = ProjectRootManager.getInstance(this)
 val Project.moduleManager get() = com.intellij.openapi.module.ModuleManager.getInstance(this)
 
 val Module.rootManager get() = com.intellij.openapi.roots.ModuleRootManager.getInstance(this)
 val Module.facetManager get() = FacetManager.getInstance(this)
+
+fun OrderEnumerator.toLibrarySequence(): Sequence<Library> = sequence {
+	val items = arrayListOf<Library>()
+	this@toLibrarySequence.forEachLibrary {
+		items.add(it)
+		true
+	}
+	yieldAll(items)
+}
 
 fun Project.runBackgroundTaskWithProgress(callback: (ProgressIndicator) -> Unit) {
 	var error: Throwable? = null

@@ -1,11 +1,10 @@
 package com.soywiz.korge.intellij.createnew
 
-import com.intellij.ide.actions.CreateFileFromTemplateAction
-import com.intellij.ide.actions.CreateFileFromTemplateDialog
-import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiDirectory
-import com.soywiz.korge.intellij.KorgeIcons
+import com.intellij.ide.actions.*
+import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.project.*
+import com.intellij.psi.*
+import com.soywiz.korge.intellij.*
 
 class NewKorgeScene : CreateFileFromTemplateAction(
 	"Korge Scene",
@@ -13,6 +12,8 @@ class NewKorgeScene : CreateFileFromTemplateAction(
 	KorgeIcons.KORGE
 ), DumbAware {
 	override fun getActionName(directory: PsiDirectory?, newName: String, templateName: String?): String = "Korge Scene"
+
+	override fun isAvailable(dataContext: DataContext): Boolean = dataContext.project?.korge?.containsKorge ?: false
 
 	override fun buildDialog(
 		project: Project?,
