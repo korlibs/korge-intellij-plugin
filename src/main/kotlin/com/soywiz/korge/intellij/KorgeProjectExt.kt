@@ -2,7 +2,6 @@ package com.soywiz.korge.intellij
 
 import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
-import com.soywiz.korge.intellij.*
 
 class KorgeProjectExt(val project: Project) {
 	companion object {
@@ -12,14 +11,16 @@ class KorgeProjectExt(val project: Project) {
 	private var checkRootManagerVersion: Long? = null
 	private var containsKorgeCached: Boolean = false
 
-	val containsKorge: Boolean get() {
-		if (checkRootManagerVersion == null || checkRootManagerVersion != project.rootManager.modificationCount) {
-			checkRootManagerVersion = project.rootManager.modificationCount
-			containsKorgeCached = project.rootManager.orderEntries().librariesOnly().toLibrarySequence().any { it.name?.contains("com.soywiz.korlibs.korge") == true }
-			//println("Computed $containsKorgeCached")
+	val containsKorge: Boolean
+		get() {
+			if (checkRootManagerVersion == null || checkRootManagerVersion != project.rootManager.modificationCount) {
+				checkRootManagerVersion = project.rootManager.modificationCount
+				containsKorgeCached =
+					project.rootManager.orderEntries().librariesOnly().toLibrarySequence().any { it.name?.contains("com.soywiz.korlibs.korge") == true }
+				//println("Computed $containsKorgeCached")
+			}
+			return containsKorgeCached
 		}
-		return containsKorgeCached
-	}
 }
 
 val Project.korge: KorgeProjectExt get() = this.getOrPutUserData(KorgeProjectExt.KEY) { KorgeProjectExt(this) }

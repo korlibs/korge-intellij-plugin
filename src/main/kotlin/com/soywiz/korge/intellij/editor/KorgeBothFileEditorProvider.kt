@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
-import com.intellij.openapi.fileEditor.FileEditorPolicy
+import com.intellij.openapi.fileEditor.*
 
 class KorgeBothFileEditorProvider : KorgeBaseFileEditorProvider() {
 	override fun accept(

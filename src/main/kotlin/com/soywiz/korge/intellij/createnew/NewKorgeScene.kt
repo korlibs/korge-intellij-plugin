@@ -16,12 +16,13 @@ class NewKorgeScene : CreateFileFromTemplateAction(
 	override fun isAvailable(dataContext: DataContext): Boolean = dataContext.project?.korge?.containsKorge ?: false
 
 	override fun buildDialog(
-		project: Project?,
-		directory: PsiDirectory?,
-		builder: CreateFileFromTemplateDialog.Builder?
+		project: Project,
+		directory: PsiDirectory,
+		builder: CreateFileFromTemplateDialog.Builder
 	) {
-		builder?.setTitle("New Korge Scene")
-			?.addKind("Scene", KorgeIcons.KORGE, "KorgeScene")
+		builder
+			.setTitle("New Korge Scene")
+			.addKind("Scene", KorgeIcons.KORGE, "KorgeScene")
 	}
 
 	//override fun createFileFromTemplate(name: String?, template: FileTemplate?, dir: PsiDirectory?): PsiFile? {

@@ -74,8 +74,18 @@
 		<fileTypeDetector implementation="com.soywiz.korge.intellij.KorgeFileTypeDetector"></fileTypeDetector>
 		<fileTypeRegistrator implementation="com.soywiz.korge.intellij.KorgeFileTypeRegistrator"></fileTypeRegistrator>
 		-->
-		<fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"></fileTypeFactory>
+		<fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"/>
+		<!--
+		<fileType name="KORGE_ANI" extensions="swf;ani" implementationClass="com.soywiz.korge.intellij.filetype.KorgeAniFileType"/>
+		<fileType name="KORGE_AUDIO" extensions="wav;mp3;ogg" implementationClass="com.soywiz.korge.intellij.filetype.KorgeAudioFileType"/>
+		<fileType name="XML" extensions="tmx" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="XML" extensions="pex" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="XML" extensions="scml" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="XML" extensions="scon" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="XML" extensions="fnt" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		-->
 
+		<!-- Completions -->
 		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
 
 		<!--
@@ -84,6 +94,8 @@
 		<moduleType id="KORGE" implementationClass="com.soywiz.korge.intellij.module.KorgeModuleType" />
 
 		<internalFileTemplate name="KorgeScene"/>
+
+		<applicationService serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalSettings" />
 
 	</extensions>
 

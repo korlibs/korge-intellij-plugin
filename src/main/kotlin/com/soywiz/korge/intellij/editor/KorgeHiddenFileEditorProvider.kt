@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
-import com.intellij.openapi.fileEditor.FileEditorPolicy
+import com.intellij.openapi.fileEditor.*
 
 class KorgeHiddenFileEditorProvider : KorgeBaseFileEditorProvider() {
 	override fun accept(

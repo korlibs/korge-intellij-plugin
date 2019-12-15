@@ -6,11 +6,12 @@ import com.intellij.json.JsonFileType
 import com.intellij.openapi.fileTypes.FileTypeConsumer
 import com.intellij.openapi.fileTypes.FileTypeFactory
 import com.intellij.openapi.fileTypes.UserBinaryFileType
+import com.soywiz.korge.intellij.filetype.*
 
 class KorgeFileTypeFactory : FileTypeFactory() {
 	companion object {
-		val KORGE_ANI = UserBinaryFileType()
-		val KORGE_AUDIO = UserBinaryFileType()
+		val KORGE_ANI = KorgeAniFileType()
+		val KORGE_AUDIO = KorgeAudioFileType()
 		val KORGE_TMX = XmlFileType.INSTANCE
 		val KORGE_PEX = XmlFileType.INSTANCE
 		val KORGE_SCML = XmlFileType.INSTANCE

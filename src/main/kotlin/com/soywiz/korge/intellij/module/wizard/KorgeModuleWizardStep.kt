@@ -174,6 +174,7 @@ abstract class FeatureCheckboxList(val features: List<Feature>) : CheckboxTree(
 
 	val featuresToCheckbox = LinkedHashMap<Feature, ThreeStateCheckedTreeNode>()
 	val root = (this.model as DefaultTreeModel).root as ThreeStateCheckedTreeNode
+
 	init {
 		this.model = object : DefaultTreeModel(root) {
 			override fun valueForPathChanged(path: TreePath, newValue: Any) {

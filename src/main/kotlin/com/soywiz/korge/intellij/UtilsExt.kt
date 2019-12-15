@@ -24,6 +24,12 @@ fun <T> runReadAction(callback: () -> T): T {
 	})
 }
 
+val propertiesComponent: PropertiesComponent get() = PropertiesComponent.getInstance()
+val Project.propertiesComponent: PropertiesComponent get() = PropertiesComponent.getInstance()
+
+inline fun <reified T> Project.getService(): T = ServiceManager.getService(this, T::class.java)
+inline fun <reified T> getService(): T = ServiceManager.getService(T::class.java)
+
 inline fun <T> UserDataHolder.getOrPutUserData(key: Key<T>, gen: (key: Key<T>) -> T): T = getUserData(key) ?: gen(key).also { putUserData(key, it) }
 
 val DataContext.project: Project? get() = getData(CommonDataKeys.PROJECT)

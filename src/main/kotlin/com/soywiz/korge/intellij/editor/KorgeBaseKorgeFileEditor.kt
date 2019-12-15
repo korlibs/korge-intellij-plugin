@@ -34,6 +34,11 @@ open class KorgeBaseKorgeFileEditor(
 		val panel = JPanel()
 		panel.layout = GridLayout(1, 1)
 		/*
+		Korge(config = Korge.Config()) {
+
+		}
+		 */
+		/*
 		println("KorgeParticleFileEditor[1]")
 		val ag = AGAwt()
 		this.ag = ag
