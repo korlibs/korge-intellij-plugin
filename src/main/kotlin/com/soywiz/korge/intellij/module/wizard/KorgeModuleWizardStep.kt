@@ -4,6 +4,7 @@ import com.intellij.ide.util.projectWizard.*
 import com.intellij.openapi.ui.*
 import com.intellij.ui.*
 import com.intellij.util.ui.*
+import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.util.*
 import java.awt.*
@@ -11,7 +12,7 @@ import java.net.*
 import javax.swing.*
 import javax.swing.tree.*
 
-class KorgeModuleWizardStep(val config: KorgeModuleConfig) : ModuleWizardStep() {
+class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTemplate.Provider, val config: KorgeModuleConfig) : ModuleWizardStep() {
 	override fun updateDataModel() {
 		config.projectType = projectTypeCB.selectedItem as ProjectType
 		config.featuresToInstall = featuresToCheckbox.keys.filter { it.selected }
@@ -20,7 +21,7 @@ class KorgeModuleWizardStep(val config: KorgeModuleConfig) : ModuleWizardStep() 
 
 	lateinit var projectTypeCB: JComboBox<ProjectType>
 
-	lateinit var versionCB: JComboBox<KorgeVersion>
+	lateinit var versionCB: JComboBox<KorgeProjectTemplate.Versions.Version>
 
 	lateinit var wrapperCheckBox: JCheckBox
 
@@ -28,7 +29,12 @@ class KorgeModuleWizardStep(val config: KorgeModuleConfig) : ModuleWizardStep() 
 
 	val featuresToCheckbox = LinkedHashMap<Feature, ThreeStateCheckedTreeNode>()
 
+	init {
+		println("Created KorgeModuleWizardStep")
+	}
+
 	val panel by lazy {
+		println("Created KorgeModuleWizardStep.panel")
 		JPanel().apply {
 			val description = JPanel().apply {
 				layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -70,9 +76,10 @@ class KorgeModuleWizardStep(val config: KorgeModuleConfig) : ModuleWizardStep() 
 					td(JComboBox(ProjectType.values()).apply { projectTypeCB = this })
 					td(JCheckBox("Wrapper", true).apply { wrapperCheckBox = this })
 					td(JLabel("Korge Version:"))
-					td(JComboBox(Versions.ALL).apply {
+					td(JComboBox<KorgeProjectTemplate.Versions.Version>(arrayOf()).apply {
 						versionCB = this
-						selectedItem = Versions.LAST
+						isEnabled = false
+						//selectedIndex = 0
 					})
 				}
 			}, BorderLayout.NORTH)
@@ -94,6 +101,16 @@ class KorgeModuleWizardStep(val config: KorgeModuleConfig) : ModuleWizardStep() 
 				}
 				this.secondComponent = description
 			}, BorderLayout.CENTER)
+		}.also {
+			runBackgroundTaskGlobal {
+				// Required since this is blocking
+				val korgeProjectTemplate = korgeProjectTemplateProvider.template
+
+				runInUiThread {
+					versionCB.model = DefaultComboBoxModel(korgeProjectTemplate.versions.versions.toTypedArray())
+					versionCB.isEnabled = true
+				}
+			}
 		}
 	}
 

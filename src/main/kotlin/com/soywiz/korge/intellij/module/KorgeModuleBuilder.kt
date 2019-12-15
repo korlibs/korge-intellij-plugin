@@ -25,6 +25,7 @@ class KorgeModuleBuilder() : JavaModuleBuilder() {
 	override fun getBuilderId() = "KORGE_MODULE"
 	override fun isSuitableSdkType(sdk: SdkTypeId?) = sdk === JavaSdk.getInstance()
 
+	val korgeProjectTemplateProvider = KorgeProjectTemplate.provider()
 	var config = KorgeModuleConfig()
 
 	override fun getModuleType(): ModuleType<*> = KorgeModuleType.INSTANCE
@@ -78,12 +79,14 @@ class KorgeModuleBuilder() : JavaModuleBuilder() {
 
 	override fun getParentGroup() = KorgeModuleType.NAME
 
-	override fun createWizardSteps(wizardContext: WizardContext, modulesProvider: ModulesProvider) = arrayOf(
-		KorgeArtifactWizardStep(config)
-	)
-
+	// 1st screen
 	override fun getCustomOptionsStep(context: WizardContext, parentDisposable: Disposable?) =
-		KorgeModuleWizardStep(config)
+		KorgeModuleWizardStep(korgeProjectTemplateProvider, config)
+
+	// 2nd+ screen(s)
+	override fun createWizardSteps(wizardContext: WizardContext, modulesProvider: ModulesProvider) = arrayOf(
+		KorgeArtifactWizardStep(korgeProjectTemplateProvider, config)
+	)
 
 	override fun getSourcePaths(): MutableList<Pair<String, String>> {
 		return super.getSourcePaths()

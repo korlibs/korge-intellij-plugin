@@ -9,7 +9,7 @@ class KorgeModuleConfig {
 	var artifactVersion = "0.0.1"
 	var projectType = ProjectType.Gradle
 	var featuresToInstall = listOf(Features.core)
-	var korgeVersion = Versions.LAST
+	var korgeVersion = KorgeProjectTemplate.Versions.Version("1.5.0d")
 
 	fun generate(): Map<String, ByteArray> = LinkedHashMap<String, ByteArray>().apply {
 		fun putTextFile(name: String, file: Indenter.() -> Unit) {
@@ -154,18 +154,6 @@ enum class ProjectType(val id: String) {
 
 		operator fun invoke(name: String): ProjectType = BY[name] ?: error("Unknown project type $name")
 	}
-}
-
-object Versions {
-	val V150 = KorgeVersion(version = "1.5.0c", kotlinVersion = "1.3.61")
-	val V143 = KorgeVersion(version = "1.4.3", kotlinVersion = "1.3.61")
-
-	val ALL = arrayOf(V143, V150)
-	val LAST = V150
-	val LAST_EAP = V150
-
-	private val VMAP = ALL.associateBy { it.version }
-	fun fromString(version: String): KorgeVersion? = VMAP[version]
 }
 
 data class KorgeVersion(

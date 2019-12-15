@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.module
 
+import com.soywiz.korge.intellij.config.*
 import org.intellij.lang.annotations.*
 import javax.xml.bind.*
 import javax.xml.bind.annotation.*
@@ -20,9 +21,11 @@ open class KorgeProjectTemplate {
 		@set:XmlElement(name = "version")
 		var versions = arrayListOf<Version>()
 
-		class Version {
+		data class Version @JvmOverloads constructor(
 			@set:XmlValue
 			var text: String = ""
+		) {
+			override fun toString(): String = text
 		}
 	}
 
@@ -61,9 +64,24 @@ open class KorgeProjectTemplate {
 		}
 	}
 
+	interface Provider {
+		val template: KorgeProjectTemplate
+	}
+
 	companion object {
-		fun fromXml(@Language("XML") xml: String): KorgeProjectTemplate = JAXBContext.newInstance(KorgeProjectTemplate::class.java).createUnmarshaller().unmarshal(xml.reader()) as KorgeProjectTemplate
+		fun fromXml(@Language("XML") xml: String): KorgeProjectTemplate =
+			JAXBContext.newInstance(KorgeProjectTemplate::class.java).createUnmarshaller().unmarshal(xml.reader()) as KorgeProjectTemplate
+
 		fun fromEmbeddedResource(): KorgeProjectTemplate =
-			fromXml(KorgeProjectTemplate::class.java.getResource("/com/soywiz/korge/intellij/korge-templates.xml")?.readText() ?: error("Can't find ¡korge-templates.xml' from esources"))
+			fromXml(
+				KorgeProjectTemplate::class.java.getResource("/com/soywiz/korge/intellij/korge-templates.xml")?.readText()
+					?: error("Can't find ¡korge-templates.xml' from esources")
+			)
+
+		fun fromUpToDateTemplate(): KorgeProjectTemplate = fromXml(korgeGlobalSettings.getCachedTemplate())
+
+		fun provider() = object : Provider {
+			override val template by lazy { fromUpToDateTemplate() }
+		}
 	}
 }

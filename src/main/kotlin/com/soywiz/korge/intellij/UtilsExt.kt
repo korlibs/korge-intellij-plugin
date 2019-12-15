@@ -1,22 +1,20 @@
 package com.soywiz.korge.intellij
 
 import com.intellij.codeInsight.completion.*
-import com.intellij.facet.FacetManager
+import com.intellij.facet.*
 import com.intellij.ide.util.*
 import com.intellij.openapi.actionSystem.*
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.*
 import com.intellij.openapi.components.*
-import com.intellij.openapi.module.Module
-import com.intellij.openapi.progress.PerformInBackgroundOption
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.module.*
+import com.intellij.openapi.progress.*
+import com.intellij.openapi.project.*
 import com.intellij.openapi.roots.*
 import com.intellij.openapi.roots.libraries.*
 import com.intellij.openapi.util.*
 import com.intellij.util.*
-import java.util.concurrent.Semaphore
+import java.awt.*
+import java.util.concurrent.*
 
 fun <T> runReadAction(callback: () -> T): T {
 	return ApplicationManager.getApplication().runReadAction(Computable {
@@ -46,6 +44,18 @@ fun OrderEnumerator.toLibrarySequence(): Sequence<Library> = sequence {
 		true
 	}
 	yieldAll(items)
+}
+
+fun runInUiThread(callback: () -> Unit) {
+	EventQueue.invokeLater(Runnable {
+		callback()
+	})
+}
+
+fun runBackgroundTaskGlobal(callback: () -> Unit) {
+	Thread {
+		callback()
+	}.start()
 }
 
 fun Project.runBackgroundTaskWithProgress(callback: (ProgressIndicator) -> Unit) {
