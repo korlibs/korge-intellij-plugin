@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij
+package com.soywiz.korge.intellij.completion
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.*
@@ -11,7 +11,7 @@ import com.intellij.patterns.PlatformPatterns.*
 import com.intellij.psi.*
 import com.intellij.psi.util.*
 import com.intellij.psi.xml.*
-import com.intellij.util.*
+import com.soywiz.korge.intellij.*
 import com.soywiz.korio.file.*
 import kotlin.math.*
 
@@ -73,116 +73,88 @@ class PexCompletionContributor : CompletionContributor() {
 		fun emptyObj() = object {
 			override fun toString(): String = ""
 		}
-
-		//val filePathContributor = FilePathCompletionContributor()
-
-		extend(CompletionType.BASIC, PlatformPatterns.psiElement()
+		
+		val PEX_PATTERN = PlatformPatterns.psiElement()
 			.inVirtualFile(virtualFile().withExtension("pex"))
 			.withLanguage(XMLLanguage.INSTANCE)
+
+		extend(CompletionType.BASIC, PEX_PATTERN
 			.inside(
 				XmlPatterns.xmlAttributeValue().inside(
 					XmlPatterns.xmlTag().withName("texture")
 				)
 			)
 			,
-			object : CompletionProvider<CompletionParameters>() {
-				override fun addCompletions(
-					parameters: CompletionParameters,
-					context: ProcessingContext,
-					result: CompletionResultSet
-				) {
-					val pos = parameters.position
-					val posTextRange = pos.textRange
-					val posTextRangeStartOffset = posTextRange.startOffset
-					val root = pos.getTextToCaret(parameters.editor)
-					val file = pos.containingFile.originalFile.containingDirectory
-					val directory = file.getSpecial(root, nearest = true) as? PsiDirectory?
-					//println("directory: $directory")
-					if (directory != null) {
-						val replaceRange = TextRange(posTextRangeStartOffset, posTextRangeStartOffset + root.length)
-						val directoryIcon = directory.getIcon(0)
-						for (file in directory.files) {
-							val fullFileName = (root.trim('/') + "/${file.name}").trim('/')
-							result.addElement(
-								LookupElementBuilder.create(emptyObj()).withTailText(fullFileName).withIcon(
-									file.getIcon(0)
-								).withInsertHandler(ReplaceInsertHandler(replaceRange, fullFileName))
-							)
-						}
-						for (file in listOf(".", "..")) {
-							val fullFileName = (root.trim('/') + "/${file}").trim('/')
-							result.addElement(
-								LookupElementBuilder.create(emptyObj()).withTailText(fullFileName).withIcon(
-									directoryIcon
-								).withInsertHandler(ReplaceInsertHandler(replaceRange, fullFileName))
-							)
-						}
+			CompletionProvider { parameters, context, result ->
+				val pos = parameters.position
+				val posTextRange = pos.textRange
+				val posTextRangeStartOffset = posTextRange.startOffset
+				val root = pos.getTextToCaret(parameters.editor)
+				val file = pos.containingFile.originalFile.containingDirectory
+				val directory = file.getSpecial(root, nearest = true) as? PsiDirectory?
+				//println("directory: $directory")
+				if (directory != null) {
+					val replaceRange = TextRange(posTextRangeStartOffset, posTextRangeStartOffset + root.length)
+					val directoryIcon = directory.getIcon(0)
+					for (file in directory.files) {
+						val fullFileName = (root.trim('/') + "/${file.name}").trim('/')
+						result.addElement(
+							LookupElementBuilder.create(emptyObj()).withTailText(fullFileName).withIcon(
+								file.getIcon(0)
+							).withInsertHandler(ReplaceInsertHandler(replaceRange, fullFileName))
+						)
 					}
-					result.stopHere()
+					for (file in listOf(".", "..")) {
+						val fullFileName = (root.trim('/') + "/${file}").trim('/')
+						result.addElement(
+							LookupElementBuilder.create(emptyObj()).withTailText(fullFileName).withIcon(
+								directoryIcon
+							).withInsertHandler(ReplaceInsertHandler(replaceRange, fullFileName))
+						)
+					}
 				}
+				result.stopHere()
 			}
+
 		)
 
-		extend(CompletionType.BASIC, PlatformPatterns.psiElement()
-			.inVirtualFile(virtualFile().withExtension("pex"))
-			.withLanguage(XMLLanguage.INSTANCE)
+		extend(CompletionType.BASIC, PEX_PATTERN
 			.withParent(XmlPatterns.xmlAttributeValue())
 			,
-			object : CompletionProvider<CompletionParameters>() {
-				override fun addCompletions(
-					parameters: CompletionParameters,
-					context: ProcessingContext,
-					result: CompletionResultSet
-				) {
-					result.stopHere()
-				}
+			CompletionProvider { parameters, context, result ->
+				result.stopHere()
 			}
 		)
 
-		extend(CompletionType.BASIC, PlatformPatterns.psiElement()
-			.inVirtualFile(virtualFile().withExtension("pex"))
-			.withLanguage(XMLLanguage.INSTANCE)
+		extend(CompletionType.BASIC, PEX_PATTERN
 			.withParent(
 				XmlPatterns.xmlAttribute()
 			),
-			object : CompletionProvider<CompletionParameters>() {
-				override fun addCompletions(
-					parameters: CompletionParameters,
-					context: ProcessingContext,
-					result: CompletionResultSet
-				) {
-					val tag = PsiTreeUtil.getParentOfType(parameters.position, XmlTag::class.java)
-					if (tag != null) {
-						val tagName = tag.name.toLowerCase()
-						val tagInfo = PexTags.BY_NAME_LC[tagName]
-						if (tagInfo != null) {
-							for (attribute in tagInfo.type.attributes) {
-								result.addElement(LookupElementBuilder.create(attribute))
-							}
-							result.stopHere()
+			CompletionProvider { parameters, context, result ->
+				val tag = PsiTreeUtil.getParentOfType(parameters.position, XmlTag::class.java)
+				if (tag != null) {
+					val tagName = tag.name.toLowerCase()
+					val tagInfo = PexTags.BY_NAME_LC[tagName]
+					if (tagInfo != null) {
+						for (attribute in tagInfo.type.attributes) {
+							result.addElement(LookupElementBuilder.create(attribute))
 						}
+						result.stopHere()
 					}
 				}
 			}
 		)
 
-		extend(CompletionType.BASIC, PlatformPatterns.psiElement()
-			.inVirtualFile(virtualFile().withExtension("pex"))
+		extend(CompletionType.BASIC, PEX_PATTERN
 			.withLanguage(XMLLanguage.INSTANCE)
-			.withParent(
-				XmlPatterns.xmlTag().withName("particleEmitterConfig")
-			),
-			object : CompletionProvider<CompletionParameters>() {
-				override fun addCompletions(
-					parameters: CompletionParameters,
-					context: ProcessingContext,
-					result: CompletionResultSet
-				) {
-					for (tag in PexTags.values()) {
-						result.addElement(LookupElementBuilder.create(tag.name).withTailText("${tag.type}"))
-					}
-					result.stopHere()
+			.withSuperParent(2, XmlPatterns.xmlTag().withName("particleEmitterConfig"))
+			,CompletionProvider { parameters, context, result ->
+				//println("particleEmitterConfig")
+				for (tag in PexTags.values()) {
+					result.addElement(LookupElementBuilder.create(tag.name).withTypeText("${tag.type}"))
+					//result.addElement(LookupElementBuilder.create(tag.name))
 				}
+				result.stopHere()
 			}
 		)
 	}

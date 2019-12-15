@@ -1,8 +1,11 @@
 package com.soywiz.korge.intellij
 
+import com.intellij.codeInsight.completion.*
 import com.intellij.facet.FacetManager
+import com.intellij.ide.util.*
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.*
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
@@ -12,6 +15,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.*
 import com.intellij.openapi.roots.libraries.*
 import com.intellij.openapi.util.*
+import com.intellij.util.*
 import java.util.concurrent.Semaphore
 
 fun <T> runReadAction(callback: () -> T): T {
@@ -66,4 +70,18 @@ fun Project.runBackgroundTaskWithProgress(callback: (ProgressIndicator) -> Unit)
 	sema.acquire()
 
 	if (error != null) throw error!!
+}
+
+fun CompletionProvider(callback: (
+	parameters: CompletionParameters,
+	context: ProcessingContext,
+	result: CompletionResultSet
+) -> Unit): CompletionProvider<CompletionParameters> = object : CompletionProvider<CompletionParameters>() {
+	override fun addCompletions(
+		parameters: CompletionParameters,
+		context: ProcessingContext,
+		result: CompletionResultSet
+	) {
+		callback(parameters, context, result)
+	}
 }
