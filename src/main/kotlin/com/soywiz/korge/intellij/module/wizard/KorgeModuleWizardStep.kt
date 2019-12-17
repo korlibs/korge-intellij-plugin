@@ -20,6 +20,7 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 		config.projectType = projectTypeCB.selectedItem as ProjectType
 		config.featuresToInstall = featuresToCheckbox.keys.filter { it.selected }
 		config.korgeVersion = versionCB.selected
+		println("KorgeModuleWizardStep.updateDataModel: projectType:${config.projectType}, korgeVersion:${config.korgeVersion}, featuresToInstall:${config.featuresToInstall.size}")
 	}
 
 	lateinit var projectTypeCB: JComboBox<ProjectType>
@@ -29,8 +30,6 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 	lateinit var wrapperCheckBox: JCheckBox
 
 	lateinit var featureList: FeatureCheckboxList
-
-	val featuresToCheckbox = LinkedHashMap<Feature, ThreeStateCheckedTreeNode>()
 
 	init {
 		println("Created KorgeModuleWizardStep")
@@ -62,8 +61,6 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 			}.also {
 				it.isEnabled = false
 			}
-
-			featuresToCheckbox += featureList.featuresToCheckbox
 
 			this.layout = BorderLayout(0, 0)
 
@@ -117,7 +114,10 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 		}
 	}
 
-	var Feature.selected: Boolean
+	val featuresToCheckbox get() = featureList.featuresToCheckbox
+
+
+		var Feature.selected: Boolean
 		get() = featuresToCheckbox[this]?.isChecked ?: false
 		set(value) = run { featuresToCheckbox[this]?.isChecked = value }
 
@@ -216,6 +216,7 @@ abstract class FeatureCheckboxList(private val initialFeatures: List<Feature>) :
 		set(value) {
 			_features = value
 			root.removeAllChildren()
+			featuresToCheckbox.clear()
 			for ((group, gfeatures) in _features.groupBy { it.group }) {
 				root.add(ThreeStateCheckedTreeNode(group).apply { isChecked = false })
 				for (feature in gfeatures) {
