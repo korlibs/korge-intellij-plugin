@@ -5,7 +5,7 @@
 	<id>com.soywiz.korge.korge-intellij-plugin</id>
 
 	<name>Korge</name>
-	<version>1.4.3</version>
+	<version>1.5.0d</version>
 	<vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
 
 	<description><![CDATA[
@@ -13,6 +13,12 @@
 	]]></description>
 
 	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>1.5.0d</h3>
+		<ul>
+			<li>New project wizard using an updatable template.</li>
+			<li>Do not how Create New Korge Scene on non-Korge projects.</li>
+			<li>Bump korge to 1.5.0d.</li>
+		</ul>
 		<h3>1.4.3</h3>
 		<ul>
 			<li>Fixed compatibility with the IntelliJ platform due to dependency on Java plugin.</li>
