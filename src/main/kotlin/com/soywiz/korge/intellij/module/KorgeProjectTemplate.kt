@@ -33,12 +33,14 @@ open class KorgeProjectTemplate {
 		@set:XmlElement(name = "feature")
 		var features = arrayListOf<Feature>()
 
+		val allFeatures by lazy { AllFeatures(features) }
+
 		class Feature {
 			@set:XmlAttribute(name = "id")
 			var id: String = ""
 
 			@set:XmlAttribute(name = "dependencies")
-			var dependencies: String = ""
+			var dependenciesString: String = ""
 
 			@set:XmlAttribute(name = "name")
 			var name: String = ""
@@ -48,6 +50,26 @@ open class KorgeProjectTemplate {
 
 			@set:XmlAttribute(name = "documentation")
 			var documentation: String = ""
+
+			@set:XmlAttribute(name = "group")
+			var group: String = "Features"
+
+			val dependenciesList: List<String> get() = dependenciesString.split(" ").filter { it.isNotBlank() }
+		}
+
+		interface FeatureResolver {
+			fun resolve(id: String): Feature?
+		}
+
+		class FeatureSet(features: Iterable<Feature>, val resolver: FeatureResolver) {
+			val direct: Set<Feature> = features.toSet()
+			val all: Set<Feature> = direct.flatMap { it.dependenciesList.map { resolver.resolve(it) } }.filterNotNull().toSet()
+			val transitive: Set<Feature> = (all - direct)
+		}
+
+		class AllFeatures(val features: Iterable<Feature>) : FeatureResolver {
+			val byId = features.associateBy { it.id }
+			override fun resolve(id: String): Feature? = byId[id] ?: features.firstOrNull { it.id == id }
 		}
 	}
 
@@ -58,6 +80,9 @@ open class KorgeProjectTemplate {
 		class TFile {
 			@set:XmlAttribute(name = "path")
 			var path: String = ""
+
+			@set:XmlAttribute(name = "encoding")
+			var encoding: String = "text"
 
 			@set:XmlValue
 			var content: String = ""

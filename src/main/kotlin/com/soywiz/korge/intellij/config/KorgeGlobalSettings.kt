@@ -19,16 +19,46 @@ open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings> {
 		println("KorgeGlobalSettings.init")
 	}
 
-	fun getCachedTemplate(): String {
-		val now = System.currentTimeMillis()
-		if (cachedTemplateString == null || (now - cachedTemplateLastRefreshTime).milliseconds >= 1.days) {
-			cachedTemplateLastRefreshTime = now
-			cachedTemplateString =
-				runCatching { URL("https://raw.githubusercontent.com/korlibs/korge-intellij-plugin/master/src/main/resources/com/soywiz/korge/intellij/korge-templates.xml").readText() }.getOrNull()
-					?: runCatching { KorgeProjectTemplate::class.java.getResource("/com/soywiz/korge/intellij/korge-templates.xml")?.readText() }.getOrNull()
-						?: error("Can't get a valid 'korge-templates.xml' file from any source")
+	companion object {
+		fun compareKorgeTemplateVersion(xml1: String, xml2: String): Int {
+			val versionRegex = Regex("<korge-templates version=\"(\\d+)\">")
+			val result1 = versionRegex.find(xml1)
+			val result2 = versionRegex.find(xml2)
+			val v1 = result1?.groupValues?.get(1)?.toIntOrNull() ?: 0
+			val v2 = result2?.groupValues?.get(1)?.toIntOrNull() ?: 0
+			return v2.compareTo(v1)
 		}
-		return cachedTemplateString!!
+	}
+
+	fun getCachedTemplate(): String {
+		//cachedTemplateLastRefreshTime = 0L // Force cache invalidation
+		val now = System.currentTimeMillis()
+		val elapsedTimeSinceLastCheck = (now - cachedTemplateLastRefreshTime).milliseconds
+
+		val resource = runCatching { KorgeProjectTemplate::class.java.getResource("/com/soywiz/korge/intellij/korge-templates.xml")?.readText() }.getOrNull()
+
+		if (cachedTemplateString == null || elapsedTimeSinceLastCheck >= 1.days) {
+			cachedTemplateLastRefreshTime = now
+
+			println("Refreshing cached korge-templates.xml :: elapsedTimeSinceLastCheck=${elapsedTimeSinceLastCheck.hours}h")
+
+			val online = runCatching { URL("https://raw.githubusercontent.com/korlibs/korge-intellij-plugin/master/src/main/resources/com/soywiz/korge/intellij/korge-templates.xml").readText() }.getOrNull()
+
+			cachedTemplateString = when {
+				online != null && resource != null -> if (compareKorgeTemplateVersion(online, resource) <= 0) {
+					println(" - korge-templates.xml: Using online version")
+					online
+				} else {
+					println(" - korge-templates.xml: Using resources version")
+					""
+				}
+				else -> online ?: resource ?: error("Can't get a valid 'korge-templates.xml' file from any source")
+			}
+		} else {
+			println("Using cached korge-templates.xml :: elapsedTimeSinceLastCheck=${elapsedTimeSinceLastCheck.hours}h :: cachedTemplateString.isNullOrEmpty()=${cachedTemplateString.isNullOrEmpty()}")
+		}
+
+		return if (cachedTemplateString.isNullOrEmpty()) resource ?: "" else cachedTemplateString!!
 	}
 
 	override fun getState() = this

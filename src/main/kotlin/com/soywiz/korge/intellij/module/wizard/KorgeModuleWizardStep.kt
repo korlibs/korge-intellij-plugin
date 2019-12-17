@@ -12,6 +12,9 @@ import java.net.*
 import javax.swing.*
 import javax.swing.tree.*
 
+typealias Feature = KorgeProjectTemplate.Features.Feature
+typealias FeatureSet = KorgeProjectTemplate.Features.FeatureSet
+
 class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTemplate.Provider, val config: KorgeModuleConfig) : ModuleWizardStep() {
 	override fun updateDataModel() {
 		config.projectType = projectTypeCB.selectedItem as ProjectType
@@ -45,21 +48,19 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 				description.removeAll()
 				if (feature != null) {
 					description.add(JLabel(feature.description, SwingConstants.LEFT))
-					for (artifact in feature.artifacts) {
-						description.add(JLabel(artifact))
-					}
+					//for (artifact in feature.artifacts) description.add(JLabel(artifact))
 					val doc = feature.documentation
-					if (doc != null) {
-						description.add(Link(doc, URL(doc)))
-					}
+					description.add(Link(doc, URL(doc)))
 				}
 				description.doLayout()
 				description.repaint()
 			}
 
-			featureList = object : FeatureCheckboxList(Features.ALL) {
+			featureList = object : FeatureCheckboxList(listOf()) {
 				override fun onSelected(feature: Feature?, node: ThreeStateCheckedTreeNode) = showFeatureDocumentation(feature)
 				override fun onChanged(feature: Feature, node: ThreeStateCheckedTreeNode) = updateTransitive()
+			}.also {
+				it.isEnabled = false
 			}
 
 			featuresToCheckbox += featureList.featuresToCheckbox
@@ -109,6 +110,8 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 				runInUiThread {
 					versionCB.model = DefaultComboBoxModel(korgeProjectTemplate.versions.versions.toTypedArray())
 					versionCB.isEnabled = true
+					featureList.features = korgeProjectTemplateProvider.template.features.features.toList()
+					featureList.isEnabled = true
 				}
 			}
 		}
@@ -129,9 +132,11 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 	//    }
 
 	fun updateTransitive() {
-		val featureSet = FeatureSet(Features.ALL.filter { it.selected })
+		val features = korgeProjectTemplateProvider.template.features
+		val allFeatures = features.features.toList()
+		val featureSet = FeatureSet(allFeatures.filter { it.selected }, features.allFeatures)
 
-		for (feature in Features.ALL) {
+		for (feature in allFeatures) {
 			feature.indeterminate = (feature in featureSet.transitive)
 		}
 
@@ -148,7 +153,7 @@ open class ThreeStateCheckedTreeNode : CheckedTreeNode {
 	var indeterminate = false
 }
 
-abstract class FeatureCheckboxList(val features: List<Feature>) : CheckboxTree(
+abstract class FeatureCheckboxList(private val initialFeatures: List<Feature>) : CheckboxTree(
 	object : CheckboxTree.CheckboxTreeCellRenderer() {
 		override fun customizeRenderer(
 			tree: JTree?,
@@ -167,7 +172,7 @@ abstract class FeatureCheckboxList(val features: List<Feature>) : CheckboxTree(
 						value.indeterminate -> SimpleTextAttributes.REGULAR_ITALIC_ATTRIBUTES
 						else -> SimpleTextAttributes.REGULAR_ATTRIBUTES
 					}
-					textRenderer.append(feature.title, style)
+					textRenderer.append(feature.name, style)
 					textRenderer.isEnabled = true
 					tscheckbox.isVisible = true
 					tscheckbox.state = when {
@@ -205,14 +210,25 @@ abstract class FeatureCheckboxList(val features: List<Feature>) : CheckboxTree(
 		}
 	}
 
-	init {
-		for ((group, gfeatures) in features.groupBy { it.group }) {
-			root.add(ThreeStateCheckedTreeNode(group).apply { isChecked = false })
-			for (feature in gfeatures) {
-				root.add(ThreeStateCheckedTreeNode(feature).apply { isChecked = false; featuresToCheckbox[feature] = this })
+	private  var _features: List<Feature> = initialFeatures
+	var features: List<Feature>
+		get() = _features
+		set(value) {
+			_features = value
+			root.removeAllChildren()
+			for ((group, gfeatures) in _features.groupBy { it.group }) {
+				root.add(ThreeStateCheckedTreeNode(group).apply { isChecked = false })
+				for (feature in gfeatures) {
+					root.add(ThreeStateCheckedTreeNode(feature).apply { isChecked = false; featuresToCheckbox[feature] = this })
+				}
 			}
+			(this.model as DefaultTreeModel).reload(root)
 		}
-		(this.model as DefaultTreeModel).reload(root)
+
+
+
+	init {
+		features = initialFeatures
 
 		addTreeSelectionListener { e ->
 			val node = (e.newLeadSelectionPath.lastPathComponent as? ThreeStateCheckedTreeNode)

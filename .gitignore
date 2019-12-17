@@ -2,6 +2,7 @@
 /.gradle
 /.idea
 /out
+/velocity.log
 *.iml
 .DS_Store
 

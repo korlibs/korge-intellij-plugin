@@ -1,64 +1,37 @@
 package com.soywiz.korge.intellij.module
 
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.util.*
+import com.soywiz.korio.util.encoding.*
 
 class KorgeModuleConfig {
 	var artifactGroup = "com.example"
 	var artifactId = "example"
 	var artifactVersion = "0.0.1"
 	var projectType = ProjectType.Gradle
-	var featuresToInstall = listOf(Features.core)
+	var featuresToInstall: List<KorgeProjectTemplate.Features.Feature> = listOf()
 	var korgeVersion = KorgeProjectTemplate.Versions.Version("1.5.0d")
 
-	fun generate(): Map<String, ByteArray> = LinkedHashMap<String, ByteArray>().apply {
+	fun generate(template: KorgeProjectTemplate): Map<String, ByteArray> = LinkedHashMap<String, ByteArray>().apply {
+		fun putTextFile(name: String, text: String) {
+			put(name, text.toByteArray(Charsets.UTF_8))
+		}
+
 		fun putTextFile(name: String, file: Indenter.() -> Unit) {
-			put(name, Indenter().also { file(it) }.toString().toByteArray(Charsets.UTF_8))
+			putTextFile(name, Indenter().also { file(it) }.toString())
 		}
 
-		val features = featuresToInstall.toSet()
-		putTextFile("build.gradle") {
-			line("buildscript") {
-				line("repositories") {
-					+"mavenLocal()"
-					+"""maven { url = uri("https://dl.bintray.com/korlibs/korlibs") }"""
-					+"""maven { url = uri("https://plugins.gradle.org/m2/") }"""
-					+"""mavenCentral()"""
-				}
-				line("dependencies") {
-					+"""classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:$korgeVersion")"""
-				}
-			}
+		val templateContext = mapOf(
+			"korgeVersion" to korgeVersion,
+			"artifactGroup" to artifactGroup,
+			"artifactId" to artifactId,
+			"features" to featuresToInstall.toSet()
+		) + featuresToInstall.associate { "feature_${it.id}" to true }
 
-			+"""apply plugin: "korge""""
+		fun getFileFromGenerator(path: String): ByteArray = KorgeResources.getBytes("/com/soywiz/korge/intellij/generator/$path")
 
-			line("korge") {
-				+"""id = "$artifactGroup.$artifactId""""
-				if (features.contains(Features.f3d)) {
-					+"supportExperimental3d()"
-				}
-				if (features.contains(Features.box2d)) {
-					+"supportExperimental3d()"
-				}
-				if (features.contains(Features.dragonbones)) {
-					+"supportDragonbones()"
-				}
-				if (features.contains(Features.swf)) {
-					+"supportSwf()"
-				}
-			}
-
-		}
-
-		putTextFile("settings.gradle") {
-			+"""enableFeaturePreview("GRADLE_METADATA")"""
-		}
-
-		putTextFile("gradle.properties") {
-			+"org.gradle.jvmargs=-Xmx1536m"
-		}
-
-		fun getFileFromGenerator(path: String) = KorgeResources.getBytes("/com/soywiz/korge/intellij/generator/$path")
+		println(templateContext)
 
 		put("gradlew", getFileFromGenerator("gradlew"))
 		put("gradlew_linux", getFileFromGenerator("gradlew_linux"))
@@ -68,75 +41,13 @@ class KorgeModuleConfig {
 		put("gradle/wrapper/gradle-wrapper.jar", getFileFromGenerator("gradle/wrapper/gradle-wrapper.jar"))
 		put("gradle/wrapper/gradle-wrapper.properties", getFileFromGenerator("gradle/wrapper/gradle-wrapper.properties"))
 
-		putTextFile("src/commonMain/kotlin/main.kt") {
-			+"import com.soywiz.klock.seconds"
-			+"import com.soywiz.korge.*"
-			+"import com.soywiz.korge.tween.*"
-			+"import com.soywiz.korge.view.*"
-			+"import com.soywiz.korim.color.Colors"
-			+"import com.soywiz.korim.format.*"
-			+"import com.soywiz.korio.async.launchImmediately"
-			+"import com.soywiz.korio.file.std.*"
-			+"import com.soywiz.korma.geom.degrees"
-			+"import com.soywiz.korma.interpolation.Easing"
-
-			SEPARATOR {
-				line("""suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"])""") {
-					SEPARATOR {
-						+"val minDegrees = (-16).degrees"
-						+"val maxDegrees = (+16).degrees"
-					}
-					SEPARATOR {
-						line("""val image = image(resourcesVfs["korge.png"].readBitmap())""") {
-							+"rotation = maxDegrees"
-							+"anchor(.5, .5)"
-							+"scale(.8)"
-							+"position(256, 256)"
-						}
-					}
-					SEPARATOR {
-						line("launchImmediately") {
-							line("while (true)") {
-								+"image.tween(image::rotation[minDegrees], time = 1.seconds, easing = Easing.EASE_IN_OUT)"
-								+"image.tween(image::rotation[maxDegrees], time = 1.seconds, easing = Easing.EASE_IN_OUT)"
-							}
-						}
-					}
+		for (file in template.files.files) {
+			when (file.encoding) {
+				"base64" -> {
+					put(file.path, file.content.fromBase64IgnoreSpaces())
 				}
-			}
-		}
-
-
-		put("src/commonMain/resources/korge.png", KorgeResources.KORGE_IMAGE)
-
-		putTextFile("src/commonTest/kotlin/test.kt") {
-			SEPARATOR {
-				+"import com.soywiz.klock.*"
-				+"import com.soywiz.korge.input.*"
-				+"import com.soywiz.korge.tests.*"
-				+"import com.soywiz.korge.tween.*"
-				+"import com.soywiz.korge.view.*"
-				+"import com.soywiz.korim.color.*"
-				+"import com.soywiz.korma.geom.*"
-				+"import kotlin.test.*"
-			}
-			SEPARATOR {
-				line("class MyTest : ViewsForTesting()") {
-					+"@Test"
-					line("fun test() = viewsTest") {
-						+"val log = arrayListOf<String>()"
-						+"val rect = solidRect(100, 100, Colors.RED)"
-						line("rect.onClick") {
-							+"""log += "clicked""""
-						}
-						+"assertEquals(1, views.stage.children.size)"
-						+"rect.simulateClick()"
-						+"assertEquals(true, rect.isVisibleToUser())"
-						+"tween(rect::x[-102], time = 10.seconds)"
-						+"assertEquals(Rectangle(x=-102, y=0, width=100, height=100), rect.globalBounds)"
-						+"assertEquals(false, rect.isVisibleToUser())"
-						+"""assertEquals(listOf("clicked"), log)"""
-					}
+				"", "text" -> {
+					putTextFile(file.path, renderTemplate(file.content.trimIndent().trim(), templateContext))
 				}
 			}
 		}
@@ -144,8 +55,9 @@ class KorgeModuleConfig {
 }
 
 enum class ProjectType(val id: String) {
-	Gradle("gradle"),
-	GradleKotlinDsl("gradle-kotlin-dsl");
+	Gradle("gradle")
+	//, GradleKotlinDsl("gradle-kotlin-dsl")
+	;
 
 	companion object {
 		val BY_ID = values().associateBy { it.id }
@@ -156,6 +68,7 @@ enum class ProjectType(val id: String) {
 	}
 }
 
+/*
 data class KorgeVersion(
 	val version: String,
 	val kotlinVersion: String,
@@ -187,4 +100,4 @@ class SemVer(val version: String) : Comparable<SemVer> {
 
 	override fun toString(): String = version
 }
-
+*/
