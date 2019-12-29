@@ -23,7 +23,8 @@ fun Type?.instanceOf(name: String): Boolean {
 	if (type is ClassType) {
 		//println("TYPE: ${type.signature()} ${type.name()} :: ${Bitmap::class.java.name}")
 		if (type.name() == name) return true
-		return type.superclass().instanceOf(name)
+		if (type.superclass().instanceOf(name)) return true
+		if (type.allInterfaces().any { it.name() == name }) return true
 	}
 	return false
 }
@@ -48,10 +49,12 @@ fun ObjectReference.debugSerialize(thread: ThreadReference? = null): ByteArray {
 
 fun ByteArray.debugDeserialize(): Any? = ObjectInputStream(this.inputStream()).readObject()
 
-fun VirtualMachine.getRemoteClass(clazz: Class<*>, thread: ThreadReference? = null): ClassType? {
+fun VirtualMachine.getRemoteClass(clazz: Class<*>, thread: ThreadReference? = null): ClassType? = getRemoteClass(clazz.name, thread)
+
+fun VirtualMachine.getRemoteClass(clazz: String, thread: ThreadReference? = null): ClassType? {
 	val clazzType = classesByName("java.lang.Class").firstOrNull() ?: error("Can't find java.lang.Class")
 	val clazzClassType = (clazzType as? ClassType?) ?: error("Invalid java.lang.Class")
-	val realClazz = clazzClassType.invoke("forName", listOf(mirrorOf(clazz.name)), thread = thread) as ClassObjectReference
+	val realClazz = clazzClassType.invoke("forName", listOf(mirrorOf(clazz)), thread = thread) as ClassObjectReference
 	return realClazz.reflectedType() as ClassType?
 }
 
