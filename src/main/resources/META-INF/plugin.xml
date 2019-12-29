@@ -103,6 +103,8 @@
 
 		<applicationService serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalSettings" />
 
+		<debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.BitmapDebugNodeRenderer" />
+
 	</extensions>
 
 	<actions>
