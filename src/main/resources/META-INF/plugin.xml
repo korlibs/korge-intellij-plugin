@@ -134,9 +134,13 @@
 			<separator/>
 		</group>
 
-		<group id="JavaDebuggerActions">
-			<action id="Debugger.ShowKorimBitmap" class="com.soywiz.korge.intellij.debug.actions.ShowKorimBitmapAction" text="Show _Bitmap" icon="/com/soywiz/korge/intellij/icon/korge.png" use-shortcut-of="XDebugger.ShowBitmap">
+		<group id="Korge.JavaDebuggerActions">
+			<action id="Debugger.ShowKorimBitmap" class="com.soywiz.korge.intellij.debug.actions.ShowKorimBitmapAction" text="Show _Bitmap" icon="/com/soywiz/korge/intellij/icon/korge.png">
+				<keyboard-shortcut first-keystroke="control shift v" keymap="$default"/>
+				<mouse-shortcut keymap="$default" keystroke="alt button1" />
+				<mouse-shortcut keymap="$default" keystroke="doubleClick button1"  />
 				<add-to-group group-id="XDebugger.ValueGroup" anchor="last"/>
+				<add-to-group group-id="JavaDebuggerActions" anchor="last"/>
 			</action>
 		</group>
 
