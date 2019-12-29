@@ -13,30 +13,20 @@ import java.awt.*
 import javax.swing.*
 import kotlin.jvm.internal.*
 
-class BitmapDebugNodeRenderer : com.intellij.debugger.ui.tree.render.NodeRendererImpl("BitmapDebugNodeRenderer") {
-	override fun isApplicable(type: Type?): Boolean {
-		if (type == null) return false
-		if (type is ClassType) {
-			//println("TYPE: ${type.signature()} ${type.name()} :: ${Bitmap::class.java.name}")
-			if (type.name() == Bitmap::class.java.name) return true
-			return isApplicable(type.superclass())
-		}
-		return false
+class KorimBitmapDebugNodeRenderer : com.intellij.debugger.ui.tree.render.NodeRendererImpl(NAME) {
+	companion object {
+		const val NAME = "KorimBitmapDebugNodeRenderer"
 	}
-
-	override fun isEnabled(): Boolean {
-		return true
-	}
-
-	override fun getUniqueId(): String {
-		return "BitmapDebugNodeRenderer"
-	}
+	override fun isApplicable(type: Type?): Boolean = type.instanceOf<Bitmap>()
+	override fun isEnabled(): Boolean = true
+	override fun getUniqueId(): String = NAME
 
 	override fun calcLabel(descriptor: ValueDescriptor, evaluationContext: EvaluationContext, listener: DescriptorLabelListener): String {
 		val value = descriptor.value
+		val thread = evaluationContext.suspendContext.thread?.threadReference
 		if (value is ObjectReference) {
-			val width = value.invoke("getWidth", listOf()).int()
-			val height = value.invoke("getHeight", listOf()).int()
+			val width = value.invoke("getWidth", listOf(), thread = thread).int()
+			val height = value.invoke("getHeight", listOf(), thread = thread).int()
 			return "${width}x${height}"
 		}
 		return value.toString()
@@ -47,14 +37,10 @@ class BitmapDebugNodeRenderer : com.intellij.debugger.ui.tree.render.NodeRendere
 	override fun calcValueIcon(descriptor: ValueDescriptor, evaluationContext: EvaluationContext, listener: DescriptorLabelListener): Icon? {
 		try {
 			val value = descriptor.value
+			val thread = evaluationContext.suspendContext.thread?.threadReference
 			val vm = value.virtualMachine()
 			if (value is ObjectReference) {
-				val width = value.invoke("getWidth", listOf()).int(0)
-				val height = value.invoke("getHeight", listOf()).int(0)
-				val premultiplied = value.invoke("getPremultiplied", listOf()).bool(false)
-				val bmp32Mirror = value.invoke("toBMP32", listOf()) as ObjectReference
-				val dataInstance = (bmp32Mirror.invoke("getData", listOf()) as ObjectReference).debugToLocalInstanceViaSerialization() as IntArray
-				val bmp32 = Bitmap32(width, height, RgbaArray(dataInstance), premultiplied)
+				val bmp32 = value.readKorimBitmap32(thread)
 				return ImageIcon(bmp32.toAwt().getScaledInstance(16, 16, Image.SCALE_SMOOTH))
 			}
 		} catch (e: Throwable) {

@@ -103,7 +103,7 @@
 
 		<applicationService serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalSettings" />
 
-		<debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.BitmapDebugNodeRenderer" />
+		<debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimBitmapDebugNodeRenderer" />
 
 	</extensions>
 
@@ -133,6 +133,13 @@
 
 			<separator/>
 		</group>
+
+		<group id="JavaDebuggerActions">
+			<action id="Debugger.ShowKorimBitmap" class="com.soywiz.korge.intellij.debug.actions.ShowKorimBitmapAction" text="Show _Bitmap" icon="/com/soywiz/korge/intellij/icon/korge.png" use-shortcut-of="XDebugger.ShowBitmap">
+				<add-to-group group-id="XDebugger.ValueGroup" anchor="last"/>
+			</action>
+		</group>
+
 	</actions>
 
 
