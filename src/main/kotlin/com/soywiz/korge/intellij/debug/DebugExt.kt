@@ -4,6 +4,7 @@ import com.sun.jdi.*
 import java.io.*
 import java.util.*
 
+// @TODO: com.intellij.debugger.impl.DebuggerUtilsImpl.readBytesArray could be much faster with less allocations by using this method. Make a PR?
 fun ArrayReference.convertToLocalBytes(thread: ThreadReference? = null): kotlin.ByteArray {
 	val base64Class = this.virtualMachine().getRemoteClass(Base64::class.java, thread) ?: error("Can't find Base64 class")
 	val encoder = base64Class.invoke("getEncoder", listOf(), thread = thread) as ObjectReference
@@ -69,7 +70,7 @@ fun ClassType.invoke(methodName: String, args: List<Value>, signature: String? =
 	}
 }
 
-fun ObjectReference.invoke(methodName: String, args: List<Value>, signature: String? = null, thread: ThreadReference? = null): Value {
+fun ObjectReference.invoke(methodName: String, args: List<Value> = listOf(), signature: String? = null, thread: ThreadReference? = null): Value {
 	try {
 		val method =
 			if (signature != null) this.referenceType().methodsByName(methodName, signature).first() else this.referenceType().methodsByName(methodName).first()

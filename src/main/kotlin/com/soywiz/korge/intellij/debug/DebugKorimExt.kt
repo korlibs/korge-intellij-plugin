@@ -5,19 +5,33 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.sun.jdi.*
 
-fun Type.isKorimBitmapOrDrawable() = this.instanceOf<Bitmap>() || this.instanceOf<Context2d.Drawable>()
+
+fun Type.isKorimBitmapOrDrawable() = this.instanceOf<Bitmap>() || this.instanceOf<BmpSlice>() || this.instanceOf<Context2d.Drawable>()
 
 fun ObjectReference.readKorimBitmap32(hintWidth: Int, hintHeight: Int, thread: ThreadReference? = null): Bitmap32 {
 	val value = this
 	val type = value.type()
-	if (type.instanceOf<Bitmap>()) return readKorimBitmap32Internal(thread)
-	if (type.instanceOf<Context2d.Drawable>()) {
-		val isSizedDrawable = type.instanceOf<Context2d.SizedDrawable>()
-		val width = if (isSizedDrawable) value.invoke("getWidth", listOf(), thread = thread).int(hintWidth) else hintWidth
-		val height = if (isSizedDrawable) value.invoke("getHeight", listOf(), thread = thread).int(hintHeight) else hintHeight
-		return readKorimDrawableInternal(width, height, thread)
+	return when {
+		type.instanceOf<Bitmap>() -> readKorimBitmap32Internal(thread)
+		type.instanceOf<BmpSlice>() -> readKorimBmpSliceInternal(thread)
+		type.instanceOf<Context2d.Drawable>() -> {
+			val isSizedDrawable = type.instanceOf<Context2d.SizedDrawable>()
+			val width = if (isSizedDrawable) value.invoke("getWidth", listOf(), thread = thread).int(hintWidth) else hintWidth
+			val height = if (isSizedDrawable) value.invoke("getHeight", listOf(), thread = thread).int(hintHeight) else hintHeight
+			readKorimDrawableInternal(width, height, thread)
+		}
+		else -> error("Can't interpret $this object as Bitmap or Context2d.Drawable")
 	}
-	error("Can't interpret $this object as Bitmap or Context2d.Drawable")
+}
+
+fun ObjectReference.readKorimBmpSliceInternal(thread: ThreadReference? = null): Bitmap32 {
+	val value = this
+	if (!value.type().instanceOf<BmpSlice>()) error("Not a korim BmpSlice")
+	val left = value.invoke("getLeft", thread = thread).int(0)
+	val top = value.invoke("getTop", thread = thread).int(0)
+	val width = value.invoke("getWidth", thread = thread).int(0)
+	val height = value.invoke("getHeight", thread = thread).int(0)
+	return (value.invoke("getBmp", listOf(), thread = thread) as ObjectReference).readKorimBitmap32Internal(thread).sliceWithSize(left, top, width, height).extract()
 }
 
 fun ObjectReference.readKorimBitmap32Internal(thread: ThreadReference? = null): Bitmap32 {

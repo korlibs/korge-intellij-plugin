@@ -134,6 +134,8 @@
 			<separator/>
 		</group>
 
+		<!-- Not necessary, since we have ...Show bitmap -->
+		<!--
 		<group id="Korge.JavaDebuggerActions">
 			<action id="Debugger.ShowKorimBitmap" class="com.soywiz.korge.intellij.debug.actions.ShowKorimBitmapAction" text="Show _Bitmap" icon="/com/soywiz/korge/intellij/icon/korge.png">
 				<keyboard-shortcut first-keystroke="control shift v" keymap="$default"/>
@@ -143,6 +145,7 @@
 				<add-to-group group-id="JavaDebuggerActions" anchor="last"/>
 			</action>
 		</group>
+		-->
 
 	</actions>
 
