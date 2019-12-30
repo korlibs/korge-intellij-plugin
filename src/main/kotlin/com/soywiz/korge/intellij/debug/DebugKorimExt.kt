@@ -6,14 +6,15 @@ import com.soywiz.korim.vector.*
 import com.sun.jdi.*
 
 
-fun Type.isKorimBitmapOrDrawable() = this.instanceOf<Bitmap>() || this.instanceOf<BmpSlice>() || this.instanceOf<Context2d.Drawable>()
+fun Type.isKorimBitmapOrDrawable() = this.instanceOf<Bitmap>() || this.instanceOf<BmpSlice>() || this.instanceOf<Context2d.Drawable>() || this.instanceOf<com.soywiz.korge.view.Image>()
 
-fun ObjectReference.readKorimBitmap32(hintWidth: Int, hintHeight: Int, thread: ThreadReference? = null): Bitmap32 {
+fun ObjectReference.readKorimBitmap32(hintWidth: Int, hintHeight: Int, thread: ThreadReference?): Bitmap32 {
 	val value = this
 	val type = value.type()
 	return when {
 		type.instanceOf<Bitmap>() -> readKorimBitmap32Internal(thread)
 		type.instanceOf<BmpSlice>() -> readKorimBmpSliceInternal(thread)
+		type.instanceOf<com.soywiz.korge.view.Image>() -> readKorgeImageInternal(thread)
 		type.instanceOf<Context2d.Drawable>() -> {
 			val isSizedDrawable = type.instanceOf<Context2d.SizedDrawable>()
 			val width = if (isSizedDrawable) value.invoke("getWidth", listOf(), thread = thread).int(hintWidth) else hintWidth
@@ -24,7 +25,13 @@ fun ObjectReference.readKorimBitmap32(hintWidth: Int, hintHeight: Int, thread: T
 	}
 }
 
-fun ObjectReference.readKorimBmpSliceInternal(thread: ThreadReference? = null): Bitmap32 {
+fun ObjectReference.readKorgeImageInternal(thread: ThreadReference?): Bitmap32 {
+	val value = this
+	if (!value.type().instanceOf<com.soywiz.korge.view.Image>()) error("Not a com.soywiz.korge.view.Image")
+	return (value.invoke("getBitmap", thread = thread) as ObjectReference).readKorimBmpSliceInternal(thread)
+}
+
+fun ObjectReference.readKorimBmpSliceInternal(thread: ThreadReference?): Bitmap32 {
 	val value = this
 	if (!value.type().instanceOf<BmpSlice>()) error("Not a korim BmpSlice")
 	val left = value.invoke("getLeft", thread = thread).int(0)
@@ -34,7 +41,7 @@ fun ObjectReference.readKorimBmpSliceInternal(thread: ThreadReference? = null): 
 	return (value.invoke("getBmp", listOf(), thread = thread) as ObjectReference).readKorimBitmap32Internal(thread).sliceWithSize(left, top, width, height).extract()
 }
 
-fun ObjectReference.readKorimBitmap32Internal(thread: ThreadReference? = null): Bitmap32 {
+fun ObjectReference.readKorimBitmap32Internal(thread: ThreadReference?): Bitmap32 {
 	val value = this
 	if (!value.type().instanceOf<Bitmap>()) error("Not a korim Bitmap")
 	val width = value.invoke("getWidth", listOf(), thread = thread).int(0)
@@ -45,7 +52,7 @@ fun ObjectReference.readKorimBitmap32Internal(thread: ThreadReference? = null): 
 	return Bitmap32(width, height, RgbaArray(dataInstance.copyOf()), premultiplied)
 }
 
-fun ObjectReference.readKorimDrawableInternal(width: Int, height: Int, thread: ThreadReference? = null): Bitmap32 {
+fun ObjectReference.readKorimDrawableInternal(width: Int, height: Int, thread: ThreadReference?): Bitmap32 {
 	val value = this
 	val vm = virtualMachine()
 	if (!value.type().instanceOf<Context2d.Drawable>()) error("Not a korim Context2d.Drawable")
