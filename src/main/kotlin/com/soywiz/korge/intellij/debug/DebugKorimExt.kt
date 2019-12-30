@@ -5,7 +5,6 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.sun.jdi.*
 
-
 fun Type.isKorimBitmapOrDrawable() = this.instanceOf<Bitmap>() || this.instanceOf<BmpSlice>() || this.instanceOf<Context2d.Drawable>() || this.instanceOf<com.soywiz.korge.view.Image>()
 
 fun ObjectReference.readKorimBitmap32(hintWidth: Int, hintHeight: Int, thread: ThreadReference?): Bitmap32 {
@@ -52,14 +51,32 @@ fun ObjectReference.readKorimBitmap32Internal(thread: ThreadReference?): Bitmap3
 	return Bitmap32(width, height, RgbaArray(dataInstance.copyOf()), premultiplied)
 }
 
-fun ObjectReference.readKorimDrawableInternal(width: Int, height: Int, thread: ThreadReference?): Bitmap32 {
+fun ObjectReference.readKorimDrawableInternal(requestedWidth: Int, requestedHeight: Int, thread: ThreadReference?): Bitmap32 {
 	val value = this
+	val type = value.type()
 	val vm = virtualMachine()
-	if (!value.type().instanceOf<Context2d.Drawable>()) error("Not a korim Context2d.Drawable")
+	if (!type.instanceOf<Context2d.Drawable>()) error("Not a korim Context2d.Drawable")
+	val isSizedDrawable = type.instanceOf<Context2d.SizedDrawable>()
+	val isBoundsDrawable = type.instanceOf<Context2d.BoundsDrawable>()
+
+	val width = if (isSizedDrawable) value.invoke("getWidth", thread = thread).int(requestedWidth) else requestedWidth
+	val height = if (isSizedDrawable) value.invoke("getHeight", thread = thread).int(requestedHeight) else requestedHeight
+	val (top, left) = when {
+		isBoundsDrawable -> {
+			val rectangle = value.invoke("getBounds", thread = thread) as ObjectReference
+			listOf(rectangle.invoke("getTop", thread = thread).int(0), rectangle.invoke("getLeft", thread = thread).int(0))
+		}
+		else -> {
+			listOf(0, 0)
+		}
+	}
+
 	val clazz = virtualMachine().getRemoteClass("com.soywiz.korim.format.NativeImageFormatProviderJvmKt", thread = thread) ?: error("Can't find NativeImageFormatProviderJvmKt")
 	val nativeImageFormatProvider = clazz.invoke("getNativeImageFormatProvider", listOf(), thread = thread) as? ObjectReference? ?: error("Error calling getNativeImageFormatProvider")
 	val image = nativeImageFormatProvider.invoke("create", listOf(vm.mirrorOf(width), vm.mirrorOf(height)), thread = thread) as? ObjectReference? ?: error("Error calling create")
 	val ctx2d = image.invoke("getContext2d", listOf(vm.mirrorOf(false)), thread = thread) as? ObjectReference? ?: error("Error calling getContext2d")
+	ctx2d.invoke("translate", listOf(vm.mirrorOf(-left.toDouble()), vm.mirrorOf(-top.toDouble())), thread = thread, signature = "(DD)Lcom/soywiz/korma/geom/Matrix;")
 	ctx2d.invoke("draw", listOf(value), thread = thread)
+	//NativeImage(100, 100).getContext2d().translate()
 	return image.readKorimBitmap32Internal(thread)
 }
