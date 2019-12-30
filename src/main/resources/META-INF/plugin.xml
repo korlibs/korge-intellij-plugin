@@ -5,7 +5,7 @@
 	<id>com.soywiz.korge.korge-intellij-plugin</id>
 
 	<name>Korge</name>
-	<version>1.5.0d</version>
+	<version>1.5.0e</version>
 	<vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
 
 	<description><![CDATA[
@@ -13,6 +13,10 @@
 	]]></description>
 
 	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>1.5.0e</h3>
+		<ul>
+			<li>Supports previewing Bitmap, BmpSlice, Image and Context2d.Drawable when debugging with the JVM.</li>
+		</ul>
 		<h3>1.5.0d</h3>
 		<ul>
 			<li>New project wizard using an updatable template.</li>
