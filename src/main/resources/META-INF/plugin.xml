@@ -134,7 +134,8 @@
 
 			<separator/>
 
-			<action id="Korge.NewFile.Atlas" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
+			<action id="Korge.NewFile.KorgeScene" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
+			<action id="Korge.NewFile.TiledMap" class="com.soywiz.korge.intellij.createnew.NewTiledMap"/>
 
 			<separator/>
 		</group>

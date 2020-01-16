@@ -2,7 +2,6 @@ package com.soywiz.korge.intellij.editor.tile
 
 import com.intellij.ui.components.*
 import com.intellij.uiDesigner.core.*
-import com.soywiz.korge.tiled.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*

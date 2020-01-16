@@ -17,7 +17,7 @@ import java.awt.*
 import java.beans.*
 import javax.swing.*
 
-class TileMapEditorProvider : FileEditorProvider {
+class TileMapEditorProvider : FileEditorProvider, DumbAware {
 	override fun getEditorTypeId(): String = this::class.java.name
 	override fun getPolicy(): FileEditorPolicy = FileEditorPolicy.PLACE_BEFORE_DEFAULT_EDITOR
 
@@ -36,7 +36,7 @@ class TileMapEditorProvider : FileEditorProvider {
 		val tmxFile = file.toVfs()
 		val tmx = runBlocking { tmxFile.readTiledMap() }
 
-		return object : FileEditor {
+		return object : FileEditor, DumbAware {
 			val panel by lazy { MyTileMapEditorPanel(tmx).realPanel }
 
 			override fun isModified(): Boolean {
