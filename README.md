@@ -18,7 +18,7 @@ Download from releases:
 
 Output: `build/distributions/KorgePlugin.zip`
 
-### Testing
+### Executing from Source
 
 ```
 ./gradlew runIde
@@ -27,3 +27,9 @@ Output: `build/distributions/KorgePlugin.zip`
 This should launch a new intelliJ Community Edition with the KorGE plugin.
 You can open this project with IDEA and launch the `runIde` task via debugger
 to be able to debug the plugin. 
+
+### Trying the Tiled Editor
+
+```
+./gradlew runDebugTilemap
+```

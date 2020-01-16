@@ -18,4 +18,8 @@ public class TileMapEditor {
 	public JPanel mapPanel;
 	public JTabbedPane tabbedPane4;
 	public JTabbedPane tabbedPane5;
+	public JButton zoomInButton;
+	public JButton zoomOutButton;
+	public JSplitPane rightSplitPane;
+	public JSplitPane leftSplitPane;
 }
