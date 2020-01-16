@@ -12,6 +12,7 @@ class KorgeFileIconProvider : FileIconProvider {
 			file.name.endsWith(".fnt", ignoreCase = true) -> KorgeIcons.BITMAP_FONT
 			file.name.endsWith(".swf", ignoreCase = true) -> KorgeIcons.SWF
 			file.name.endsWith(".tmx", ignoreCase = true) -> KorgeIcons.TILED
+			file.name.endsWith(".tsx", ignoreCase = true) -> KorgeIcons.TILED
 			file.name.endsWith(".scml", ignoreCase = true) -> KorgeIcons.SPRITER
 			file.name.endsWith(".ani", ignoreCase = true) -> KorgeIcons.KORGE
 			file.name.endsWith(".voice.lipsync", ignoreCase = true) -> KorgeIcons.VOICE

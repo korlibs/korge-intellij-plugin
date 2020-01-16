@@ -12,6 +12,7 @@ class KorgeFileTypeFactory : FileTypeFactory() {
 	companion object {
 		val KORGE_ANI = KorgeAniFileType()
 		val KORGE_AUDIO = KorgeAudioFileType()
+		val KORGE_TSX = XmlFileType.INSTANCE
 		val KORGE_TMX = XmlFileType.INSTANCE
 		val KORGE_PEX = XmlFileType.INSTANCE
 		val KORGE_SCML = XmlFileType.INSTANCE
@@ -23,6 +24,7 @@ class KorgeFileTypeFactory : FileTypeFactory() {
 		fileTypeConsumer.consume(KORGE_ANI, "swf;ani")
 		fileTypeConsumer.consume(KORGE_AUDIO, "wav;mp3;ogg")
 		fileTypeConsumer.consume(KORGE_TMX, "tmx")
+		fileTypeConsumer.consume(KORGE_TSX, "tsx")
 		fileTypeConsumer.consume(KORGE_PEX, "pex")
 		fileTypeConsumer.consume(KORGE_SCML, "scml")
 		fileTypeConsumer.consume(KORGE_SCON, "scon")

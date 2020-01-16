@@ -80,6 +80,7 @@
 		<fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
 		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeBothFileEditorProvider"/>
 		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeHiddenFileEditorProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.tile.TileMapEditorProvider"/>
 		<!--
 		<fileTypeDetector implementation="com.soywiz.korge.intellij.KorgeFileTypeDetector"></fileTypeDetector>
 		<fileTypeRegistrator implementation="com.soywiz.korge.intellij.KorgeFileTypeRegistrator"></fileTypeRegistrator>

@@ -1,7 +1,9 @@
 package com.soywiz.korge.intellij.debug;
 
+import com.intellij.debugger.engine.DebugProcess;
 import com.sun.jdi.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class DebuggerUtilsImplExt {
@@ -17,7 +19,7 @@ public class DebuggerUtilsImplExt {
 			if (type == null || !type.signature().equals("[B")) return null;
 			ClassType StringClass = (ClassType) that.virtualMachine().classesByName("java.lang.String").get(0);
 			Method constructor = StringClass.methodsByName("<init>", "([BI)V").get(0);
-			ObjectReference string = StringClass.newInstance(thread, constructor, List.of(that, vm.mirrorOf(0)), 0);
+			ObjectReference string = StringClass.newInstance(thread, constructor, Arrays.asList(that, vm.mirrorOf(0)), 0);
 			String str = ((StringReference)(string)).value();
 			byte[] out = new byte[str.length()];
 			//noinspection deprecation

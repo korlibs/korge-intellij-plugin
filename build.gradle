@@ -17,6 +17,9 @@ apply plugin: 'kotlin'
 apply plugin: 'idea'
 apply plugin: 'org.jetbrains.intellij'
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8
@@ -26,6 +29,14 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 		apiVersion = "1.3"
 		languageVersion = "1.3"
 		jvmTarget = "1.8"
+	}
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs 'src/main/kotlin'
+		}
 	}
 }
 
@@ -40,6 +51,10 @@ repositories {
 
 dependencies {
 	compile "com.soywiz.korlibs.korge.plugins:korge-build:1.5.0c"
+	//compile 'net.sourceforge.mydoggy:mydoggy:1.4.2'
+	//compile 'net.sourceforge.mydoggy:mydoggy-plaf:1.4.2'
+	//compile 'net.sourceforge.mydoggy:mydoggy-api:1.4.2'
+	//compile 'net.sourceforge.mydoggy:mydoggy-res:1.4.2'
 	//compile project(":korge-build")
 }
 
@@ -68,3 +83,12 @@ publishPlugin {
 runIde {
 	maxHeapSize = "2g"
 }
+
+task runDebugTilemap(type: JavaExec) {
+	//classpath = sourceSets.main.runtimeClasspath
+	classpath = sourceSets.main.runtimeClasspath + configurations.idea
+
+	main = 'com.soywiz.korge.intellij.editor.tile.MyTileMapEditorFrame'
+}
+
+//println(configurations.names)

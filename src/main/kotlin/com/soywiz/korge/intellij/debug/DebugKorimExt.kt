@@ -71,6 +71,7 @@ fun ObjectReference.readKorimDrawableInternal(requestedWidth: Int, requestedHeig
 		}
 	}
 
+	virtualMachine().process()
 	val clazz = virtualMachine().getRemoteClass("com.soywiz.korim.format.NativeImageFormatProviderJvmKt", thread = thread) ?: error("Can't find NativeImageFormatProviderJvmKt")
 	val nativeImageFormatProvider = clazz.invoke("getNativeImageFormatProvider", listOf(), thread = thread) as? ObjectReference? ?: error("Error calling getNativeImageFormatProvider")
 	val image = nativeImageFormatProvider.invoke("create", listOf(vm.mirrorOf(width), vm.mirrorOf(height)), thread = thread) as? ObjectReference? ?: error("Error calling create")
