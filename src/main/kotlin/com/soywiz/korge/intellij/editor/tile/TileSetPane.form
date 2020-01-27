@@ -34,7 +34,9 @@
             <preferred-size width="-1" height="20"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <floatable value="false"/>
+        </properties>
         <border type="none"/>
         <children>
           <component id="d7ccb" class="javax.swing.JButton" binding="newButton">

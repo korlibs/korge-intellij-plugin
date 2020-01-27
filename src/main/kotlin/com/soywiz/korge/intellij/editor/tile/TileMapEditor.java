@@ -24,4 +24,11 @@ public class TileMapEditor {
 	public JSplitPane leftSplitPane;
 	public LayersPane layersPane;
 	public PropertiesPane propertiesPane;
+	public JButton rectButton;
+	public JButton polyButton;
+	public JButton pointButton;
+	public JButton ovalButton;
+	public JLabel status2Text;
+	public JLabel status1Text;
+	public JSlider zoomSlider;
 }
