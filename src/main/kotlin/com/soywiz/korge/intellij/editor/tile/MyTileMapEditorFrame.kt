@@ -148,6 +148,8 @@ class MyTileMapEditorPanel(val tmx: TiledMap) : JPanel(BorderLayout()) {
 		tileMapEditor.rightSplitPane.dividerLocation = tileMapEditor.rightSplitPane.width - 200
 	}
 
+	val layersController = LayersController(tileMapEditor.layersPane)
+
 	init {
 
 		add(realPanel, BorderLayout.CENTER)
@@ -157,12 +159,26 @@ class MyTileMapEditorPanel(val tmx: TiledMap) : JPanel(BorderLayout()) {
 		tileMapEditor.zoomInButton.addActionListener { scale *= 1.5 }
 		tileMapEditor.zoomOutButton.addActionListener { scale /= 1.5 }
 
+
 		updatedSize()
 		addComponentListener(object : ComponentAdapter() {
 			override fun componentResized(e: ComponentEvent) {
 				updatedSize()
 			}
 		})
+	}
+}
+
+class LayersController(val panel: LayersPane) {
+	init {
+		val menu = JPopupMenu("Menu")
+		menu.add("Tile Layer")
+		menu.add("Object Layer")
+		menu.add("Image Layer")
+
+		panel.newButton.addActionListener {
+			menu.show(panel.newButton, 0, panel.newButton.height)
+		}
 	}
 }
 

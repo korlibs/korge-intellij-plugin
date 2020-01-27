@@ -22,4 +22,5 @@ public class TileMapEditor {
 	public JButton zoomOutButton;
 	public JSplitPane rightSplitPane;
 	public JSplitPane leftSplitPane;
+	public LayersPane layersPane;
 }

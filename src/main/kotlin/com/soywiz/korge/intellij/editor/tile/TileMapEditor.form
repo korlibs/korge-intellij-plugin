@@ -17,54 +17,63 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="2455f" class="javax.swing.JButton" binding="stampButton" default-binding="true">
+          <toolbar id="270ed">
             <constraints/>
             <properties>
-              <text value="Stamp"/>
+              <floatable value="false"/>
             </properties>
-          </component>
-          <component id="b3cf4" class="javax.swing.JButton" binding="eraserButton" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="Eraser"/>
-            </properties>
-          </component>
-          <component id="46f9d" class="javax.swing.JButton" binding="fillButton" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="Fill"/>
-            </properties>
-          </component>
-          <component id="22cea" class="javax.swing.JButton" binding="flipXButton" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="FlipX"/>
-            </properties>
-          </component>
-          <component id="9cb40" class="javax.swing.JButton" binding="flipYButton" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="FlipY"/>
-            </properties>
-          </component>
-          <component id="2ad83" class="javax.swing.JButton" binding="settingsButton" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="Settings"/>
-            </properties>
-          </component>
-          <component id="81436" class="javax.swing.JButton" binding="zoomInButton">
-            <constraints/>
-            <properties>
-              <text value="Zoom +"/>
-            </properties>
-          </component>
-          <component id="9b93c" class="javax.swing.JButton" binding="zoomOutButton">
-            <constraints/>
-            <properties>
-              <text value="Zoom -"/>
-            </properties>
-          </component>
+            <border type="none"/>
+            <children>
+              <component id="2455f" class="javax.swing.JButton" binding="stampButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Stamp"/>
+                </properties>
+              </component>
+              <component id="b3cf4" class="javax.swing.JButton" binding="eraserButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Eraser"/>
+                </properties>
+              </component>
+              <component id="46f9d" class="javax.swing.JButton" binding="fillButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Fill"/>
+                </properties>
+              </component>
+              <component id="22cea" class="javax.swing.JButton" binding="flipXButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="FlipX"/>
+                </properties>
+              </component>
+              <component id="9cb40" class="javax.swing.JButton" binding="flipYButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="FlipY"/>
+                </properties>
+              </component>
+              <component id="2ad83" class="javax.swing.JButton" binding="settingsButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <text value="Settings"/>
+                </properties>
+              </component>
+              <component id="81436" class="javax.swing.JButton" binding="zoomInButton">
+                <constraints/>
+                <properties>
+                  <text value="Zoom +"/>
+                </properties>
+              </component>
+              <component id="9b93c" class="javax.swing.JButton" binding="zoomOutButton">
+                <constraints/>
+                <properties>
+                  <text value="Zoom -"/>
+                </properties>
+              </component>
+            </children>
+          </toolbar>
         </children>
       </grid>
       <vspacer id="ce228">
@@ -185,7 +194,13 @@
                         </constraints>
                         <properties/>
                         <border type="none"/>
-                        <children/>
+                        <children>
+                          <nested-form id="c1e89" form-file="com/soywiz/korge/intellij/editor/tile/LayersPane.form" binding="layersPane">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                          </nested-form>
+                        </children>
                       </grid>
                     </children>
                   </tabbedpane>
