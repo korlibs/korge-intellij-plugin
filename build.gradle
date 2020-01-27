@@ -7,8 +7,8 @@ buildscript {
 	}
 	dependencies {
 		classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
-		classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:1.3.60")
-		classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.14")
+		classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
+		classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.15")
 	}
 }
 
@@ -50,7 +50,7 @@ repositories {
 }
 
 dependencies {
-	compile "com.soywiz.korlibs.korge.plugins:korge-build:1.5.0c"
+	compile "com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion"
 	//compile 'net.sourceforge.mydoggy:mydoggy:1.4.2'
 	//compile 'net.sourceforge.mydoggy:mydoggy-plaf:1.4.2'
 	//compile 'net.sourceforge.mydoggy:mydoggy-api:1.4.2'

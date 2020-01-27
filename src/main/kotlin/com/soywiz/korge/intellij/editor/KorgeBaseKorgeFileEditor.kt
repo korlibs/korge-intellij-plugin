@@ -26,7 +26,7 @@ open class KorgeBaseKorgeFileEditor(
 	}
 
 	var disposed = false
-	var ag: AGAwt? = null
+	var ag: AG? = null
 	var views: Views? = null
 
 	val component by lazy {

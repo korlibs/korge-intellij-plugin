@@ -47,8 +47,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 		}
 
 		class EditorScene(
-			val fileToEdit: KorgeFileToEdit,
-			val ui: UIFactory
+			val fileToEdit: KorgeFileToEdit
 		) : Scene() {
 			private suspend fun getLipTexture(char: Char) =
 				runCatching { pluginResurcesVfs["/com/soywiz/korge/intellij/lips/lisa-$char.png"].readBitmapSlice() }.getOrNull()
@@ -156,7 +155,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 							//	mouth.tex = lips[e.lip] ?: views.transparentTexture
 							//}
 
-							sceneView += ui.button("Replay").apply {
+							sceneView.uiTextButton(text = "Replay").apply {
 								width = 80.0
 								height = 24.0
 								x = 0.0
@@ -166,7 +165,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 								}
 							}
 
-							sceneView += ui.button("Stop").apply {
+							sceneView.uiTextButton(text = "Stop").apply {
 								width = 80.0
 								height = 24.0
 								x = 80.0
@@ -198,7 +197,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 								sceneView += animationLibrary.createMainTimeLine()
 							}
 
-							sceneView += ui.button("Masks").apply {
+							sceneView.uiTextButton(text = "Masks").apply {
 								width = 80.0
 								height = 24.0
 								x = 0.0
@@ -217,7 +216,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 					}
 					sceneView -= loading
 
-					sceneView += ui.button("Open").apply {
+					sceneView.uiTextButton(text = "Open").apply {
 						width = 80.0
 						height = 24.0
 						x = views.virtualWidth - width
