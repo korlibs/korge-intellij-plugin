@@ -23,7 +23,7 @@
             <constraints/>
             <properties>
               <autoscrolls value="false"/>
-              <icon value="nodes/folder.png"/>
+              <icon value="general/add.png"/>
               <label value=""/>
               <maximumSize width="30" height="30"/>
               <minimumSize width="30" height="30"/>

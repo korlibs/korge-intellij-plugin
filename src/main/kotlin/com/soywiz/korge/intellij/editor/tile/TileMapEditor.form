@@ -118,7 +118,13 @@
                     </constraints>
                     <properties/>
                     <border type="none"/>
-                    <children/>
+                    <children>
+                      <nested-form id="dafaf" form-file="com/soywiz/korge/intellij/editor/tile/TileSetPane.form">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                      </nested-form>
+                    </children>
                   </grid>
                 </children>
               </tabbedpane>
@@ -129,14 +135,20 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <grid id="df328" binding="propertiesPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                  <grid id="df328" binding="propertiesPanelContainer" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                     <margin top="0" left="0" bottom="0" right="0"/>
                     <constraints>
                       <tabbedpane title="Properties"/>
                     </constraints>
                     <properties/>
                     <border type="none"/>
-                    <children/>
+                    <children>
+                      <nested-form id="5a1f0" form-file="com/soywiz/korge/intellij/editor/tile/PropertiesPane.form" binding="propertiesPane">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                      </nested-form>
+                    </children>
                   </grid>
                 </children>
               </tabbedpane>

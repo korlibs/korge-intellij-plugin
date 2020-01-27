@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.editor.tile
 
 import com.intellij.ui.components.*
 import com.intellij.uiDesigner.core.*
+import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -149,6 +150,7 @@ class MyTileMapEditorPanel(val tmx: TiledMap) : JPanel(BorderLayout()) {
 	}
 
 	val layersController = LayersController(tileMapEditor.layersPane)
+	val propertiesController = PropertiesController(tileMapEditor.propertiesPane)
 
 	init {
 
@@ -169,12 +171,21 @@ class MyTileMapEditorPanel(val tmx: TiledMap) : JPanel(BorderLayout()) {
 	}
 }
 
+class PropertiesController(val panel: PropertiesPane) {
+	var width = 100
+	var height = 100
+	val propertyTable = KorgePropertyTable(KorgePropertyTable.Properties().register(::width,::height)).also {
+		panel.tablePane.add(JScrollPane(it), BorderLayout.CENTER)
+	}
+}
+
 class LayersController(val panel: LayersPane) {
 	init {
-		val menu = JPopupMenu("Menu")
-		menu.add("Tile Layer")
-		menu.add("Object Layer")
-		menu.add("Image Layer")
+		val menu = JPopupMenu("Menu").apply {
+			add("Tile Layer")
+			add("Object Layer")
+			add("Image Layer")
+		}
 
 		panel.newButton.addActionListener {
 			menu.show(panel.newButton, 0, panel.newButton.height)

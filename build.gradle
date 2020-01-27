@@ -51,6 +51,7 @@ repositories {
 
 dependencies {
 	compile "com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion"
+	//compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
 	//compile 'net.sourceforge.mydoggy:mydoggy:1.4.2'
 	//compile 'net.sourceforge.mydoggy:mydoggy-plaf:1.4.2'
 	//compile 'net.sourceforge.mydoggy:mydoggy-api:1.4.2'

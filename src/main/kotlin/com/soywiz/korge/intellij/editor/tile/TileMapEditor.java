@@ -13,7 +13,7 @@ public class TileMapEditor {
 	public JButton flipYButton;
 	public JButton settingsButton;
 	public JPanel contentPanel;
-	public JPanel propertiesPanel;
+	public JPanel propertiesPanelContainer;
 	public JPanel tilesetPanel;
 	public JPanel mapPanel;
 	public JTabbedPane tabbedPane4;
@@ -23,4 +23,5 @@ public class TileMapEditor {
 	public JSplitPane rightSplitPane;
 	public JSplitPane leftSplitPane;
 	public LayersPane layersPane;
+	public PropertiesPane propertiesPane;
 }
