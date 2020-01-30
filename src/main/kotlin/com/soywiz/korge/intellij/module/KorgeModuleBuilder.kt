@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.*
 import com.soywiz.korge.intellij.module.wizard.*
 import com.soywiz.korge.intellij.util.*
 import kotlinx.coroutines.*
+import org.jetbrains.plugins.gradle.service.project.*
 import org.jetbrains.plugins.gradle.service.project.open.*
 import java.io.*
 
@@ -52,6 +53,7 @@ class KorgeModuleBuilder() : JavaModuleBuilder() {
 				ProjectType.Gradle -> {
 					val buildGradle = root["build.gradle.kts"] ?: root["build.gradle"]
 					if (buildGradle != null) {
+						GradleAutoImportAware()
 						invokeLater {
 							try {
 								println("GradleProjectOpenProcessor().doOpenProject")

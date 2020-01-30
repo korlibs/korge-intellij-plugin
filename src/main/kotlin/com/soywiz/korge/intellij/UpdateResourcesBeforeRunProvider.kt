@@ -38,10 +38,6 @@ open class KorgeUpdateResourceBeforeRunProvider : BeforeRunTaskProvider<UpdateRe
 	override fun canExecuteTask(configuration: RunConfiguration, task: UpdateResourceBeforeRunTask): Boolean {
 		return true
 	}
-
-	override fun configureTask(runConfiguration: RunConfiguration, task: UpdateResourceBeforeRunTask): Boolean {
-		return true
-	}
 }
 
 data class UpdateResourceBeforeRunTask(val runConfiguration: CommonProgramRunConfigurationParameters) :

@@ -20,7 +20,7 @@ open class KorgeBaseKorgeFileEditor(
 	val virtualFile: VirtualFile,
 	val module: Module,
 	val _name: String
-) : FileEditor {
+) : com.intellij.diff.util.FileEditorBase() {
 	companion object {
 		var componentsCreated = 0
 	}

@@ -1,7 +1,7 @@
 <idea-plugin>
 	<!-- https://plugins.jetbrains.com/plugin/9676-korge-intellij-plugin -->
 	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-	<idea-version since-build="180" />
+	<idea-version since-build="193.825" />
 	<id>com.soywiz.korge.korge-intellij-plugin</id>
 
 	<name>Korge</name>
@@ -89,17 +89,16 @@
 		<!--
 		<fileTypeDetector implementation="com.soywiz.korge.intellij.KorgeFileTypeDetector"></fileTypeDetector>
 		<fileTypeRegistrator implementation="com.soywiz.korge.intellij.KorgeFileTypeRegistrator"></fileTypeRegistrator>
-		-->
 		<fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"/>
-		<!--
+		-->
 		<fileType name="KORGE_ANI" extensions="swf;ani" implementationClass="com.soywiz.korge.intellij.filetype.KorgeAniFileType"/>
 		<fileType name="KORGE_AUDIO" extensions="wav;mp3;ogg" implementationClass="com.soywiz.korge.intellij.filetype.KorgeAudioFileType"/>
-		<fileType name="XML" extensions="tmx" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="XML" extensions="pex" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="XML" extensions="scml" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="XML" extensions="scon" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="XML" extensions="fnt" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		-->
+		<fileType name="KORGE_TMX" extensions="tmx" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="KORGE_TSX" extensions="tsx" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="KORGE_PEX" extensions="pex" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="KORGE_SCML" extensions="scml" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="KORGE_SCON" extensions="scon" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="KORGE_FNT" extensions="fnt" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
 
 		<!-- Completions -->
 		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
@@ -161,10 +160,13 @@
 	</actions>
 
 
+	<!-- Do not use so plugin can be loaded without IDE restart -->
+	<!--
 	<application-components>
 		<component>
 			<implementation-class>com.soywiz.korge.intellij.KorgeInitializerComponent</implementation-class>
 		</component>
 	</application-components>
+	-->
 
 </idea-plugin>

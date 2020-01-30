@@ -20,6 +20,7 @@ package com.soywiz.korge.intellij.util
 import com.intellij.openapi.application.*
 import com.intellij.openapi.progress.*
 import com.intellij.openapi.project.*
+import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.intellij.ui.*
 import com.intellij.ui.components.*
@@ -108,13 +109,9 @@ fun Project.backgroundTask(
 
 inline fun <T> runWriteAction(crossinline runnable: () -> T): T {
 	//return ApplicationManager.getApplication().runWriteAction(Computable { runnable() })
-	return object : WriteAction<T>() {
-		@Throws(Throwable::class)
-		override fun run(result: Result<T>) {
-			val res = runnable()
-			result.setResult(res)
-		}
-	}.execute().throwException().resultObject
+	return WriteAction.computeAndWait<T, Throwable> {
+		runnable()
+	}
 }
 
 val <T> JComboBox<T>.selected get() = selectedItem as T

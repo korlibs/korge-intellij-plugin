@@ -3,6 +3,7 @@ package com.soywiz.korge.intellij.editor.tile
 import com.intellij.debugger.impl.*
 import com.intellij.designer.model.*
 import com.intellij.designer.propertyTable.*
+import com.intellij.diff.util.*
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.options.newEditor.*
 import com.intellij.openapi.project.*
@@ -36,7 +37,7 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 		val tmxFile = file.toVfs()
 		val tmx = runBlocking { tmxFile.readTiledMap() }
 
-		return object : FileEditor, DumbAware {
+		return object : FileEditorBase(), DumbAware {
 			val panel by lazy { MyTileMapEditorPanel(tmx).realPanel }
 
 			override fun isModified(): Boolean {

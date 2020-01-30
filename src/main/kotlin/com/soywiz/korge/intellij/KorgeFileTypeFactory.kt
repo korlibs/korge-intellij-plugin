@@ -8,6 +8,7 @@ import com.intellij.openapi.fileTypes.FileTypeFactory
 import com.intellij.openapi.fileTypes.UserBinaryFileType
 import com.soywiz.korge.intellij.filetype.*
 
+/*
 class KorgeFileTypeFactory : FileTypeFactory() {
 	companion object {
 		val KORGE_ANI = KorgeAniFileType()
@@ -31,3 +32,4 @@ class KorgeFileTypeFactory : FileTypeFactory() {
 		fileTypeConsumer.consume(KORGE_FNT, "fnt")
 	}
 }
+ */

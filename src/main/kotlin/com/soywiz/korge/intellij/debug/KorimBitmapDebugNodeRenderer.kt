@@ -13,7 +13,8 @@ import org.intellij.images.editor.impl.*
 import java.awt.*
 import javax.swing.*
 
-class KorimBitmapDebugNodeRenderer : CompoundReferenceRenderer("Bitmap", null, null), FullValueEvaluatorProvider {
+class KorimBitmapDebugNodeRenderer
+	: CompoundReferenceRenderer("Bitmap", null, null), FullValueEvaluatorProvider {
 	companion object {
 		const val NAME = "KorimBitmapDebugNodeRenderer"
 	}

@@ -250,7 +250,7 @@ operator fun PsiFileSystemItem.get(path: String): PsiFileSystemItem? {
 }
 
 val PsiElement.document get() = PsiDocumentManager.getInstance(this.project).getDocument(this.containingFile)
-val currentEditor get() = DataManager.getInstance().dataContextFromFocus.result.getData(com.intellij.openapi.actionSystem.PlatformDataKeys.EDITOR)
+val currentEditor get() = DataManager.getInstance().dataContextFromFocusAsync.blockingGet(10_000)!!.getData(com.intellij.openapi.actionSystem.PlatformDataKeys.EDITOR)
 val currentCaret get() = currentEditor?.caretModel
 val currentCursor get() = currentCaret?.offset
 
