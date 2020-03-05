@@ -93,12 +93,12 @@
 		-->
 		<fileType name="KORGE_ANI" extensions="swf;ani" implementationClass="com.soywiz.korge.intellij.filetype.KorgeAniFileType"/>
 		<fileType name="KORGE_AUDIO" extensions="wav;mp3;ogg" implementationClass="com.soywiz.korge.intellij.filetype.KorgeAudioFileType"/>
-		<fileType name="KORGE_TMX" extensions="tmx" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="KORGE_TSX" extensions="tsx" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="KORGE_PEX" extensions="pex" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="KORGE_SCML" extensions="scml" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="KORGE_SCON" extensions="scon" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
-		<fileType name="KORGE_FNT" extensions="fnt" implementationClass="com.intellij.ide.highlighter.XmlFileType"/>
+		<fileType name="KORGE_TMX" extensions="tmx" implementationClass="com.soywiz.korge.intellij.filetype.TmxFileType"/>
+		<fileType name="KORGE_TSX" extensions="tsx" implementationClass="com.soywiz.korge.intellij.filetype.TsxFileType"/>
+		<fileType name="KORGE_PEX" extensions="pex" implementationClass="com.soywiz.korge.intellij.filetype.PexFileType"/>
+		<fileType name="KORGE_SCML" extensions="scml" implementationClass="com.soywiz.korge.intellij.filetype.ScmlFileType"/>
+		<fileType name="KORGE_SCON" extensions="scon" implementationClass="com.soywiz.korge.intellij.filetype.SconFileType"/>
+		<fileType name="KORGE_FNT" extensions="fnt" implementationClass="com.soywiz.korge.intellij.filetype.FntFileType"/>
 
 		<!-- Completions -->
 		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
