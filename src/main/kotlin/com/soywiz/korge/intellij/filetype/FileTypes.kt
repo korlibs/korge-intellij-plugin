@@ -14,44 +14,21 @@ open class KorgeAudioFileType : UserBinaryFileType() {
 	override fun getName(): String = "KORGE_AUDIO"
 }
 
-open class TmxFileType : XmlLikeFileType(XMLLanguage.INSTANCE) {
-	override fun getIcon(): Icon? = KorgeIcons.TILED
-	override fun getName(): String = "TMX"
-	override fun getDefaultExtension(): String = "tmx"
-	override fun getDescription(): String = "Tiled Map Files"
+open class XmlBaseType(
+	val _icon: Icon,
+	val _name: String,
+	val _extension: String,
+	val _description: String
+) : XmlLikeFileType(XMLLanguage.INSTANCE) {
+	override fun getIcon(): Icon? = _icon
+	override fun getName(): String = _name
+	override fun getDefaultExtension(): String = _extension
+	override fun getDescription(): String = _description
 }
 
-open class TsxFileType : XmlLikeFileType(XMLLanguage.INSTANCE) {
-	override fun getIcon(): Icon? = KorgeIcons.TILED
-	override fun getName(): String = "TSX"
-	override fun getDefaultExtension(): String = "tsx"
-	override fun getDescription(): String = "Tiled Tileset Files"
-}
-
-open class PexFileType : XmlLikeFileType(XMLLanguage.INSTANCE) {
-	override fun getIcon(): Icon? = KorgeIcons.PARTICLE
-	override fun getName(): String = "PEX"
-	override fun getDefaultExtension(): String = "pex"
-	override fun getDescription(): String = "Particle Definitions"
-}
-
-open class ScmlFileType : XmlLikeFileType(XMLLanguage.INSTANCE) {
-	override fun getIcon(): Icon? = KorgeIcons.SPRITER
-	override fun getName(): String = "SCML"
-	override fun getDefaultExtension(): String = "scml"
-	override fun getDescription(): String = "Spriter Text File"
-}
-
-open class SconFileType : XmlLikeFileType(XMLLanguage.INSTANCE) {
-	override fun getIcon(): Icon? = KorgeIcons.SPRITER
-	override fun getName(): String = "SCON"
-	override fun getDefaultExtension(): String = "scon"
-	override fun getDescription(): String = "Spriter Binary File"
-}
-
-open class FntFileType : XmlLikeFileType(XMLLanguage.INSTANCE) {
-	override fun getIcon(): Icon? = KorgeIcons.BITMAP_FONT
-	override fun getName(): String = "FNT"
-	override fun getDefaultExtension(): String = "fnt"
-	override fun getDescription(): String = "Font Definition File"
-}
+open class TmxFileType : XmlBaseType(KorgeIcons.TILED, "TMX", "tmx", "Tiled Map Files")
+open class TsxFileType : XmlBaseType(KorgeIcons.TILED, "TSX", "tsx", "Tiled Tileset Files")
+open class PexFileType : XmlBaseType(KorgeIcons.PARTICLE, "PEX", "pex", "Particle Definitions")
+open class ScmlFileType : XmlBaseType(KorgeIcons.SPRITER, "SCML", "scml", "Spriter Text File")
+open class SconFileType : XmlBaseType(KorgeIcons.SPRITER, "SCON", "scon", "Spriter Binary File")
+open class FntFileType : XmlBaseType(KorgeIcons.BITMAP_FONT, "FNT", "fnt", "Font Definition File")
