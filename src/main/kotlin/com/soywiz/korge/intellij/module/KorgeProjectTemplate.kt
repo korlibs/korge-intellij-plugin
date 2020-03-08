@@ -60,6 +60,7 @@ open class KorgeProjectTemplate {
 	}
 
 	interface Provider {
+		fun invalidate()
 		val template: KorgeProjectTemplate
 	}
 
@@ -75,7 +76,7 @@ open class KorgeProjectTemplate {
 					name = feature.str("name"),
 					description = feature.str("description"),
 					documentation = feature.str("documentation"),
-					group = feature.str("group")
+					group = feature.str("group", "Features")
 				))
 			}
 			for (file in root["files"]["file"]) out.files.files.add(Files.TFile(
@@ -95,7 +96,17 @@ open class KorgeProjectTemplate {
 		fun fromUpToDateTemplate(): KorgeProjectTemplate = fromXml(korgeGlobalSettings.getCachedTemplate())
 
 		fun provider() = object : Provider {
-			override val template by lazy { fromUpToDateTemplate() }
+			override fun invalidate() {
+				korgeGlobalSettings.invalidateCache()
+				_template = null
+			}
+			private var _template: KorgeProjectTemplate? = null
+			override val template: KorgeProjectTemplate get() {
+				if (_template == null) {
+					_template = fromUpToDateTemplate()
+				}
+				return _template!!
+			}
 		}
 	}
 }

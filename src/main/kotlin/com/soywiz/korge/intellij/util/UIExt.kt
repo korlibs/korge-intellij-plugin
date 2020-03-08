@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.util
 
 import com.intellij.uiDesigner.core.*
 import java.awt.*
+import java.awt.event.*
 import javax.swing.*
 
 data class TdPos(val col: Int, val row: Int)
@@ -68,8 +69,8 @@ fun TableBuilder.tr(
 //    GridConstraints()
 //}
 
-fun TableBuilder.td(
-	component: Component, colspan: Int = 1, rowspan: Int = 1,
+fun <T : Component> TableBuilder.td(
+	component: T, colspan: Int = 1, rowspan: Int = 1,
 	fill: TdFill? = null,
 	anchor: TdAlign? = null,
 	hpolicy: TdSize? = null,
@@ -78,7 +79,7 @@ fun TableBuilder.td(
 	maxWidth: Int? = null,
 	minHeight: Int? = null,
 	maxHeight: Int? = null
-) {
+): T {
 	items[TdPos(col, row)] = Pair(
 		component, GridConstraints(
 			row, col,
@@ -95,6 +96,7 @@ fun TableBuilder.td(
 		)
 	)
 	col++
+	return component
 }
 
 enum class TdFill(val value: Int) {
@@ -127,3 +129,11 @@ enum class TdSize(val value: Int) {
 }
 
 val <T> JComboBox<T>.items get() = (0 until this.itemCount).map { getItemAt(it) }
+
+fun <T : JButton> T.onClick(callback: () -> Unit): T = this.apply {
+	addMouseListener(object : MouseAdapter() {
+		override fun mouseClicked(e: MouseEvent) {
+			callback()
+		}
+	})
+}

@@ -29,6 +29,11 @@ open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings> {
 			return v2.compareTo(v1)
 		}
 	}
+	
+	fun invalidateCache() {
+		cachedTemplateString = null
+		cachedTemplateLastRefreshTime = 0L
+	}
 
 	fun getCachedTemplate(): String {
 		//cachedTemplateLastRefreshTime = 0L // Force cache invalidation

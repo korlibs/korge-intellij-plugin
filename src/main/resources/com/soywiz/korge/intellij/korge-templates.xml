@@ -1,4 +1,4 @@
-<korge-templates version="2">
+<korge-templates version="3">
 <versions>
 	<version>1.10.0.0</version>
 </versions>
@@ -45,6 +45,7 @@ korge {
 	supportSwf()
 #end
 }
+
 ]]></file>
 
 <file path="settings.gradle"><![CDATA[

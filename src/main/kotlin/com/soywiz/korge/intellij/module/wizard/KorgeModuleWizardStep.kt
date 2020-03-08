@@ -27,6 +27,8 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 
 	lateinit var versionCB: JComboBox<KorgeProjectTemplate.Versions.Version>
 
+	lateinit var refreshButton: JButton
+
 	lateinit var wrapperCheckBox: JCheckBox
 
 	lateinit var featureList: FeatureCheckboxList
@@ -71,13 +73,12 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 					align = TdAlign.CENTER_LEFT
 				) {
 					td(JLabel("Project:"))
-					td(JComboBox(ProjectType.values()).apply { projectTypeCB = this })
-					td(JCheckBox("Wrapper", true).apply { wrapperCheckBox = this })
+					projectTypeCB = td(JComboBox(ProjectType.values()))
+					wrapperCheckBox = td(JCheckBox("Wrapper", true))
 					td(JLabel("Korge Version:"))
-					td(JComboBox<KorgeProjectTemplate.Versions.Version>(arrayOf()).apply {
-						versionCB = this
-						isEnabled = false
-						//selectedIndex = 0
+					versionCB = td(JComboBox<KorgeProjectTemplate.Versions.Version>(arrayOf()))
+					refreshButton = td(JButton("Refresh").onClick {
+						refresh(invalidate = true)
 					})
 				}
 			}, BorderLayout.NORTH)
@@ -100,16 +101,35 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 				this.secondComponent = description
 			}, BorderLayout.CENTER)
 		}.also {
-			runBackgroundTaskGlobal {
-				// Required since this is blocking
-				val korgeProjectTemplate = korgeProjectTemplateProvider.template
+			refresh()
+		}
+	}
 
-				runInUiThread {
-					versionCB.model = DefaultComboBoxModel(korgeProjectTemplate.versions.versions.toTypedArray())
-					versionCB.isEnabled = true
-					featureList.features = korgeProjectTemplateProvider.template.features.features.toList()
-					featureList.isEnabled = true
-				}
+	fun refresh(invalidate: Boolean = false) {
+		fun toggleEnabled(enabled: Boolean) {
+			projectTypeCB.isEnabled = enabled
+			wrapperCheckBox.isEnabled = enabled
+			versionCB.isEnabled = enabled
+			featureList.isEnabled = enabled
+			refreshButton.isEnabled = enabled
+			for (checkbox in featureList.featuresToCheckbox.values) {
+				checkbox.isEnabled = enabled
+			}
+		}
+
+		toggleEnabled(false)
+
+		runBackgroundTaskGlobal {
+			// Required since this is blocking
+			if (invalidate) {
+				korgeProjectTemplateProvider.invalidate()
+			}
+			val korgeProjectTemplate = korgeProjectTemplateProvider.template
+
+			runInUiThread {
+				versionCB.model = DefaultComboBoxModel(korgeProjectTemplate.versions.versions.toTypedArray())
+				featureList.features = korgeProjectTemplateProvider.template.features.features.toList()
+				toggleEnabled(true)
 			}
 		}
 	}
