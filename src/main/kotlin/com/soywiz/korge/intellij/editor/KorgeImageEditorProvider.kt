@@ -4,6 +4,7 @@ import com.intellij.diff.util.*
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.vfs.*
+import com.soywiz.korge.intellij.imageformat.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
@@ -13,7 +14,7 @@ import javax.swing.*
 
 class KorgeImageEditorProvider : FileEditorProvider, DumbAware {
 	companion object {
-		val FORMATS = ImageFormats(PSD, DDS, DXT1, DXT2, DXT3, DXT4, DXT5)
+		val FORMATS = ImageFormats(PSD, KRA, DDS, DXT1, DXT2, DXT3, DXT4, DXT5)
 	}
 
 	override fun accept(
@@ -22,6 +23,7 @@ class KorgeImageEditorProvider : FileEditorProvider, DumbAware {
 	): Boolean {
 		val name = virtualFile.name
 		return when {
+			name.endsWith(".kra", ignoreCase = true) -> true
 			name.endsWith(".psd", ignoreCase = true) -> true
 			name.endsWith(".dds", ignoreCase = true) -> true
 			name.endsWith(".dxt1", ignoreCase = true) -> true

@@ -94,3 +94,11 @@ open class FntFileType : XmlBaseType(KorgeIcons.BITMAP_FONT, "KORGE_FNT", "fnt",
 		@JvmField val INSTANCE = FntFileType()
 	}
 }
+
+open class KraFileType : UserBinaryFileType() {
+	companion object {
+		@JvmField val INSTANCE = KraFileType()
+	}
+
+	override fun getIcon(): Icon? = KorgeIcons.KRITA
+}

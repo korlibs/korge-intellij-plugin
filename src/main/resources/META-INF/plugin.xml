@@ -108,6 +108,8 @@
 		<fileType name="KORGE_SCON"  implementationClass="com.soywiz.korge.intellij.filetype.SconFileType"       fieldName="INSTANCE" language="KORGE_SCON"  extensions="scon"       />
 		<fileType name="KORGE_FNT"   implementationClass="com.soywiz.korge.intellij.filetype.FntFileType"        fieldName="INSTANCE" language="KORGE_FNT"   extensions="fnt"        />
 
+		<fileType name="KRA"   implementationClass="com.soywiz.korge.intellij.filetype.KraFileType"        fieldName="INSTANCE" language="KRA"   extensions="kra"        />
+
 		<!-- Completions -->
 		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
 
