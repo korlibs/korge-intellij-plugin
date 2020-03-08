@@ -155,7 +155,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 							//	mouth.tex = lips[e.lip] ?: views.transparentTexture
 							//}
 
-							sceneView.uiTextButton(text = "Replay").apply {
+							sceneView.textButton(text = "Replay").apply {
 								width = 80.0
 								height = 24.0
 								x = 0.0
@@ -165,7 +165,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 								}
 							}
 
-							sceneView.uiTextButton(text = "Stop").apply {
+							sceneView.textButton(text = "Stop").apply {
 								width = 80.0
 								height = 24.0
 								x = 80.0
@@ -197,7 +197,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 								sceneView += animationLibrary.createMainTimeLine()
 							}
 
-							sceneView.uiTextButton(text = "Masks").apply {
+							sceneView.textButton(text = "Masks").apply {
 								width = 80.0
 								height = 24.0
 								x = 0.0
@@ -216,7 +216,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 					}
 					sceneView -= loading
 
-					sceneView.uiTextButton(text = "Open").apply {
+					sceneView.textButton(text = "Open").apply {
 						width = 80.0
 						height = 24.0
 						x = views.virtualWidth - width
