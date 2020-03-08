@@ -100,5 +100,8 @@ open class KraFileType : UserBinaryFileType() {
 		@JvmField val INSTANCE = KraFileType()
 	}
 
+	override fun getName(): String = "KRA"
+	override fun getDescription(): String = "Krita Image Format"
+
 	override fun getIcon(): Icon? = KorgeIcons.KRITA
 }
