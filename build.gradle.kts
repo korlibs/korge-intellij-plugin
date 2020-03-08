@@ -61,6 +61,9 @@ val kotlinVersion: String by project
 dependencies {
 	implementation("com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion")
 	implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+	//implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
+	//implementation("javax.xml.bind:jaxb-api:2.3.1")
+	//implementation("com.sun.xml.bind:jaxb-impl:2.3.1")
 	//implementation("net.sourceforge.mydoggy:mydoggy:1.4.2")
 	//implementation("net.sourceforge.mydoggy:mydoggy-plaf:1.4.2")
 	//implementation("net.sourceforge.mydoggy:mydoggy-api:1.4.2")

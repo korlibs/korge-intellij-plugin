@@ -1,59 +1,35 @@
 package com.soywiz.korge.intellij.module
 
 import com.soywiz.korge.intellij.config.*
+import com.soywiz.korio.serialization.xml.*
 import org.intellij.lang.annotations.*
-import javax.xml.bind.*
-import javax.xml.bind.annotation.*
 
 @Suppress("unused")
-@XmlRootElement(name = "korge-templates")
 open class KorgeProjectTemplate {
-	@XmlElement(name = "versions")
 	val versions = Versions()
-
-	@XmlElement(name = "features")
 	val features = Features()
-
-	@XmlElement(name = "files")
 	val files = Files()
 
 	class Versions {
-		@set:XmlElement(name = "version")
 		var versions = arrayListOf<Version>()
 
-		data class Version @JvmOverloads constructor(
-			@set:XmlValue
-			var text: String = ""
-		) {
+		data class Version(var text: String = "") {
 			override fun toString(): String = text
 		}
 	}
 
 	class Features {
-		@set:XmlElement(name = "feature")
 		var features = arrayListOf<Feature>()
-
 		val allFeatures by lazy { AllFeatures(features) }
 
-		class Feature {
-			@set:XmlAttribute(name = "id")
-			var id: String = ""
-
-			@set:XmlAttribute(name = "dependencies")
-			var dependenciesString: String = ""
-
-			@set:XmlAttribute(name = "name")
-			var name: String = ""
-
-			@set:XmlAttribute(name = "description")
-			var description: String = ""
-
-			@set:XmlAttribute(name = "documentation")
-			var documentation: String = ""
-
-			@set:XmlAttribute(name = "group")
-			var group: String = "Features"
-
+		data class Feature(
+			val id: String = "",
+			val dependenciesString: String = "",
+			val name: String = "",
+			val description: String = "",
+			val documentation: String = "",
+			val group: String = "Features"
+		) {
 			val dependenciesList: List<String> get() = dependenciesString.split(" ").filter { it.isNotBlank() }
 		}
 
@@ -74,19 +50,13 @@ open class KorgeProjectTemplate {
 	}
 
 	class Files {
-		@set:XmlElement(name = "file")
 		var files = arrayListOf<TFile>()
 
-		class TFile {
-			@set:XmlAttribute(name = "path")
-			var path: String = ""
-
-			@set:XmlAttribute(name = "encoding")
-			var encoding: String = "text"
-
-			@set:XmlValue
-			var content: String = ""
-		}
+		data class TFile(
+			val path: String = "",
+			val encoding: String = "text",
+			val content: String = ""
+		)
 	}
 
 	interface Provider {
@@ -94,8 +64,27 @@ open class KorgeProjectTemplate {
 	}
 
 	companion object {
-		fun fromXml(@Language("XML") xml: String): KorgeProjectTemplate =
-			JAXBContext.newInstance(KorgeProjectTemplate::class.java).createUnmarshaller().unmarshal(xml.reader()) as KorgeProjectTemplate
+		fun fromXml(@Language("XML") xml: String): KorgeProjectTemplate {
+			val out = KorgeProjectTemplate()
+			val root = Xml(xml)
+			for (version in root["versions"]["version"]) out.versions.versions.add(Versions.Version(version.text))
+			for (feature in root["features"]["feature"]) {
+				out.features.features.add(Features.Feature(
+					id = feature.str("id"),
+					dependenciesString = feature.str("dependencies"),
+					name = feature.str("name"),
+					description = feature.str("description"),
+					documentation = feature.str("documentation"),
+					group = feature.str("group")
+				))
+			}
+			for (file in root["files"]["file"]) out.files.files.add(Files.TFile(
+				path = file.str("path"),
+				encoding = file.str("encoding", "text"),
+				content = file.text
+			))
+			return out
+		}
 
 		fun fromEmbeddedResource(): KorgeProjectTemplate =
 			fromXml(
