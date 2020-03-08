@@ -1,6 +1,6 @@
 <korge-templates version="2">
 <versions>
-	<version>1.5.6.1</version>
+	<version>1.10.0.0</version>
 </versions>
 <features>
 	<feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
@@ -11,8 +11,12 @@
 </features>
 <files>
 
-<file path="build.gradle"><![CDATA[
+<file path="build.gradle.kts"><![CDATA[
+import com.soywiz.korge.gradle.*
+
 buildscript {
+	val korgeVersion: String by project
+
 	repositories {
 		mavenLocal()
 		maven { url = uri("https://dl.bintray.com/korlibs/korlibs") }
@@ -24,7 +28,7 @@ buildscript {
 	}
 }
 
-apply plugin: "korge"
+apply<KorgeGradlePlugin>()
 
 korge {
 	id = "${artifactGroup}.${artifactId}"
