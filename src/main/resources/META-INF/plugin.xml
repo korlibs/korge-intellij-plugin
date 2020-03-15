@@ -124,6 +124,8 @@
 
 		<debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimBitmapDebugNodeRenderer" />
 
+		<referenceInjector implementation="com.soywiz.korge.intellij.references.ResourceReferenceInjector" />
+
 	</extensions>
 
 	<actions>
