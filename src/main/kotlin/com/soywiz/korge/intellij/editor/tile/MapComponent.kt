@@ -14,8 +14,10 @@ import javax.swing.JComponent
 
 class MapComponent(val tmx: TiledMap) : JComponent() {
 	val downRightTileSignal = Signal<PointInt>()
+	val upTileSignal = Signal<PointInt>()
 	val downTileSignal = Signal<PointInt>()
 	val overTileSignal = Signal<PointInt>()
+	val outTileSignal = Signal<PointInt>()
 
 	fun mapDoRefreshing() {
 		updateSize()
@@ -60,10 +62,20 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 
 			override fun mouseMoved(e: MouseEvent) {
 				//println("mouseMoved: $e")
-				onOverMouse(e.point)
+				overTileSignal(getTileIndex(e.point))
 			}
 		})
 		addMouseListener(object : MouseAdapter() {
+			override fun mouseExited(e: MouseEvent) {
+				outTileSignal(getTileIndex(e.point))
+			}
+
+			override fun mouseReleased(e: MouseEvent) {
+				if (e.button == MouseEvent.BUTTON1) {
+					upTileSignal(getTileIndex(e.point))
+				}
+			}
+
 			override fun mousePressed(e: MouseEvent) {
 				//println("mousePressed: $e")
 				if (e.button == MouseEvent.BUTTON1) {
@@ -77,10 +89,6 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 
 	var currentTileSelected = 1
 
-	fun onOverMouse(point: Point) {
-		val tileIndex = getTileIndex(point)
-		overTileSignal(tileIndex)
-	}
 
 	fun onPressMouse(point: Point) {
 		val tileIndex = getTileIndex(point)
