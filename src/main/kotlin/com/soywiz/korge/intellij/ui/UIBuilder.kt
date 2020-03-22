@@ -7,6 +7,7 @@ import javax.imageio.ImageIO
 import javax.swing.*
 import kotlin.collections.ArrayList
 
+
 fun Component.showPopupMenu(menu: JPopupMenu) {
 	menu.show(this, 0, this.height)
 }
@@ -52,7 +53,12 @@ fun Styled<out Container>.slider(min: Int = 0, max: Int = 100, value: Int = (max
 }
 
 fun <E : Any> Styled<out Container>.list(items: List<E> = listOf(), block: @UIDslMarker Styled<JList<E>>.() -> Unit = {}) {
-	component.add(JList<E>(Vector(items.toMutableList())).also { block(it.styled) })
+	val list = JList<E>(Vector(items.toMutableList())).also { block(it.styled) }
+	val listScroller = JScrollPane()
+	listScroller.setViewportView(list);
+	listScroller.styled.delegate = list.styled
+	//listScroller.add(list)
+	component.add(listScroller)
 }
 
 fun Styled<out Container>.iconButton(icon: Icon, tooltip: String? = null, block: @UIDslMarker Styled<JButton>.() -> Unit = {}) {
@@ -162,6 +168,9 @@ class Styled<T : Component> constructor(val component: T) {
 	var min: MUnit2 = MUnit2(0.pt, 0.pt)
 	var max: MUnit2 = MUnit2(0.pt, 0.pt)
 
+	var delegate: Styled<out Component>? = null
+	val delegateRoot: Styled<out Component> get() = delegate?.delegateRoot ?: this
+
 	var width: MUnit
 		get() = preferred.width
 		set(value) = run { preferred = preferred.copy( width = value) }
@@ -200,12 +209,12 @@ class LinearLayout(
 		val shrinkToFill: Boolean = false
 	)
 
-	fun Styled<Component>.dimension(direction: Direction) = if (direction == Direction.HORIZONTAL) width else height
-	fun Styled<Component>.minDimension(direction: Direction) = if (direction == Direction.HORIZONTAL) minWidth else minHeight
-	fun Styled<Component>.maxDimension(direction: Direction) = if (direction == Direction.HORIZONTAL) maxWidth else maxHeight
+	fun Styled<Component>.dimension(direction: Direction) = if (direction == Direction.HORIZONTAL) delegateRoot.width else delegateRoot.height
+	fun Styled<Component>.minDimension(direction: Direction) = if (direction == Direction.HORIZONTAL) delegateRoot.minWidth else delegateRoot.minHeight
+	fun Styled<Component>.maxDimension(direction: Direction) = if (direction == Direction.HORIZONTAL) delegateRoot.maxWidth else delegateRoot.maxHeight
 
 	//fun Styled<Component>.preferred(direction: Direction) = if (direction == Direction.HORIZONTAL) preferredDimensions.width else preferredDimensions.height
-	fun Styled<Component>.preferred(direction: Direction) = if (direction == Direction.HORIZONTAL) component.preferredSize.width else component.preferredSize.height
+	fun Styled<Component>.preferred(direction: Direction) = if (direction == Direction.HORIZONTAL) delegateRoot.component.preferredSize.width else delegateRoot.component.preferredSize.height
 	fun Styled<Component>.min(direction: Direction) = if (direction == Direction.HORIZONTAL) minDimensions.width else minDimensions.height
 	fun Styled<Component>.max(direction: Direction) = if (direction == Direction.HORIZONTAL) maxDimensions.width else maxDimensions.height
 	fun Component.size(direction: Direction) = if (direction == Direction.HORIZONTAL) width else height
@@ -316,4 +325,11 @@ abstract class LayoutAdapter : LayoutManager2 {
 		//println("removeLayoutComponent: $comp")
 		children.remove(comp.styled)
 	}
+}
+
+fun JComponent.repaintAndInvalidate() {
+	invalidate()
+	repaint()
+	parent?.invalidate()
+	parent?.repaint()
 }

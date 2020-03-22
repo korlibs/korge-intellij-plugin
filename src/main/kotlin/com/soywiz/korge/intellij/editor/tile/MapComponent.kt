@@ -12,6 +12,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionAdapter
 import javax.swing.JComponent
+import javax.swing.SwingUtilities
 
 
 class MapComponent(val tmx: TiledMap) : JComponent() {
@@ -19,6 +20,7 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 	val onZoom = Signal<Int>()
 	val upTileSignal = Signal<PointInt>()
 	val downTileSignal = Signal<PointInt>()
+	val middleTileSignal = Signal<PointInt>()
 	val overTileSignal = Signal<PointInt>()
 	val outTileSignal = Signal<PointInt>()
 
@@ -60,7 +62,11 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 		addMouseMotionListener(object : MouseMotionAdapter() {
 			override fun mouseDragged(e: MouseEvent) {
 				//println("mouseDragged: $e")
-				onPressMouse(e.point)
+				when {
+					SwingUtilities.isLeftMouseButton(e) -> onPressMouse(e.point)
+					SwingUtilities.isMiddleMouseButton(e) -> Unit
+					else -> Unit
+				}
 			}
 
 			override fun mouseMoved(e: MouseEvent) {
@@ -91,10 +97,10 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 
 			override fun mousePressed(e: MouseEvent) {
 				//println("mousePressed: $e")
-				if (e.button == MouseEvent.BUTTON1) {
-					onPressMouse(e.point)
-				} else {
-					onRightPressMouse(e.point)
+				when {
+					SwingUtilities.isLeftMouseButton(e) -> onPressMouse(e.point)
+					SwingUtilities.isMiddleMouseButton(e) -> onMiddleMouse(e.point)
+					else -> onRightPressMouse(e.point)
 				}
 			}
 		})
@@ -102,6 +108,10 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 
 	var currentTileSelected = 1
 
+	fun onMiddleMouse(point: Point) {
+		val tileIndex = getTileIndex(point)
+		middleTileSignal(tileIndex)
+	}
 
 	fun onPressMouse(point: Point) {
 		val tileIndex = getTileIndex(point)

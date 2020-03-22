@@ -5,6 +5,7 @@ import com.soywiz.kmem.clamp
 import com.soywiz.korge.intellij.editor.HistoryManager
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.ObservableProperty
+import com.soywiz.korge.intellij.util.addCallInit
 import com.soywiz.korge.intellij.util.swapIndices
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
@@ -101,7 +102,7 @@ fun Styled<out Container>.createTileMapEditor() {
 										val patternLayer = tilemap.patternLayers.first()
 										mapComponent.selectedRange(0, 0)
 										var downStart: PointInt? = null
-										val zoomLevel = ObservableProperty(zoomLevels.indexOf(200)) { it.clamp(0, zoomLevels.size - 1) }
+										val zoomLevel = ObservableProperty(zoomLevels.indexOf(100)) { it.clamp(0, zoomLevels.size - 1) }
 										fun zoomRatio(): Double = zoomLevels[zoomLevel.value].toDouble() / 100.0
 										zoomLevel {
 											mapComponent.scale = zoomRatio()
@@ -206,6 +207,8 @@ fun Styled<out Container>.createTileMapEditor() {
 											for (x in 0 until pickedData.width) {
 												val tx = it.x + x
 												val ty = it.y + y
+												if (tx !in 0 until layer.map.width) continue
+												if (ty !in 0 until layer.map.height) continue
 												val drawEntry = DrawEntry(tx, ty, layerIndex, layer.map[tx, ty], pickedData[x, y])
 												drawEntry.apply(mapComponent.tmx, redo = true)
 												bufferDraw.add(drawEntry)
@@ -390,7 +393,27 @@ fun Styled<out Container>.createTileMapEditor() {
 				}
 				tabs {
 					height = 50.percentage
-					tab("Preview") {
+					tab("History") {
+						list(listOf<String>()) {
+							var preventUpdating = false
+							component.addListSelectionListener {
+								if (!preventUpdating) {
+									if (component.selectedIndex != history.cursor) {
+										history.moveTo(component.selectedIndex)
+									}
+								}
+							}
+							history.onChange.addCallInit {
+								preventUpdating = true
+								try {
+									component.setListData((listOf("Start") + history.entries.map { it.name }).toTypedArray())
+									component.selectedIndex = history.cursor
+								} finally {
+									preventUpdating = false
+								}
+								//component.repaintAndInvalidate()
+							}
+						}
 					}
 				}
 			}
@@ -430,6 +453,7 @@ fun Styled<out Container>.createTileMapEditor() {
 		}
 	}
 }
+
 
 private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 	val tileset = this.tileset
