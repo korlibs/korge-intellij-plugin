@@ -4,6 +4,7 @@ import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBTabbedPane
 import com.soywiz.korge.intellij.KorgeIcons
+import com.soywiz.korge.intellij.editor.tile.createTileMapEditor
 import org.intellij.lang.annotations.Language
 import java.awt.*
 import java.awt.image.BufferedImage
@@ -13,140 +14,32 @@ import javax.swing.*
 import javax.swing.border.Border
 import kotlin.collections.ArrayList
 
-object UIBuilderSample {
-	@JvmStatic
-	fun main(args: Array<String>) {
-		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
-		val frame = JFrame()
-		frame.minimumSize = Dimension(800, 600)
-		frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-		frame.contentPane.layout = FillLayout()
-		frame.contentPane.styled.createTileMapEditor()
-
-		frame.pack()
-		frame.setLocationRelativeTo(null)
-		frame.isVisible = true
-	}
+fun Component.showPopupMenu(menu: JPopupMenu) {
+	menu.show(this, 0, this.height)
 }
 
-
-fun Styled<out Container>.createLayerEditor(block: Styled<Container>.() -> Unit) {
-	verticalStack {
-		list(listOf("layer1", "layer2", "layer2")) {
-			height = MUnit.Fill
-		}
-		toolbar {
-			iconButton(toolbarIcon("add.png"))
-			iconButton(toolbarIcon("up.png"))
-			iconButton(toolbarIcon("down.png"))
-			iconButton(toolbarIcon("delete.png"))
-			iconButton(toolbarIcon("copy.png"))
-			iconButton(toolbarIcon("show.png"))
-			iconButton(toolbarIcon("locked_dark.png"))
-		}
-		block()
-	}
-}
-
-fun Styled<out Container>.createTileMapEditor() {
-	verticalStack {
-		toolbar {
-			button("Stamp")
-			button("Dropper")
-			button("Eraser")
-			button("Fill")
-			button("Rect")
-			button("Poly")
-			button("Point")
-			button("Oval")
-			iconButton(toolbarIcon("settings.png"))
-			iconButton(toolbarIcon("zoomIn.png"))
-			iconButton(toolbarIcon("zoomOut.png"))
-			button("FlipX")
-			button("FlipY")
-			button("RotateL")
-			button("RotateR")
-		}
-		horizontalStack {
-			fill()
-			verticalStack {
-				width = 20.percentage
-				tabs {
-					height = 50.percentage
-					tab("Properties") {
-						verticalStack {
-							list(listOf("prop1", "prop2", "prop3")) {
-								height = MUnit.Fill
-							}
-							toolbar {
-								iconButton(toolbarIcon("add.png"))
-								iconButton(toolbarIcon("edit.png"))
-								iconButton(toolbarIcon("delete.png"))
-							}
-						}
-					}
-				}
-				tabs {
-					height = 50.percentage
-					tab("Tileset") {
-						verticalStack {
-							tabs {
-								fill()
-								tab("Untitled") {
-									list(listOf("tileset")) {
-										height = MUnit.Fill
-									}
-								}
-							}
-							toolbar {
-								iconButton(toolbarIcon("add.png"))
-								iconButton(toolbarIcon("openDisk.png"))
-								iconButton(toolbarIcon("edit.png"))
-								iconButton(toolbarIcon("delete.png"))
-							}
-						}
-					}
-				}
-			}
-			verticalStack {
-				fill()
-				tabs {
-					fill()
-					tab("Map") {
-						createLayerEditor {
-							fill()
-						}
-					}
-				}
-			}
-			verticalStack {
-				width = 20.percentage
-				tabs {
-					height = 50.percentage
-					tab("Layers") {
-						createLayerEditor {
-							fill()
-						}
-					}
-				}
-				tabs {
-					height = 50.percentage
-					tab("Preview") {
-					}
-				}
+fun <T : Any> Component.showPopupMenu(options: List<T>, handler: (element: T) -> Unit = { }) {
+	showPopupMenu(JPopupMenu("Menu").apply {
+		for ((index, option) in options.withIndex()) {
+			when (option) {
+				is JMenuItem -> add(option)
+				else -> add(option.toString())
+			}.addActionListener {
+				handler(option)
 			}
 		}
-		horizontalStack {
-			height = 32.points
-			label("Status Status 2")
-			slider()
-		}
-	}
+	})
 }
 
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class UIDslMarker
+
+fun <T : AbstractButton> Styled<T>.click(handler: T.() -> Unit) {
+	component.addActionListener {
+		handler(component)
+	}
+}
 
 fun Styled<out Container>.button(text: String, block: @UIDslMarker Styled<JButton>.() -> Unit = {}) {
 	component.add(JButton(text).also { block(it.styled) })
@@ -156,8 +49,12 @@ fun Styled<out Container>.label(text: String, block: @UIDslMarker Styled<JLabel>
 	component.add(JLabel(text).also { block(it.styled) })
 }
 
-fun Styled<out Container>.slider(block: @UIDslMarker Styled<JSlider>.() -> Unit = {}) {
-	component.add(JSlider().also { block(it.styled) })
+fun Styled<out Container>.slider(min: Int = 0, max: Int = 100, value: Int = (max + min) / 2, block: @UIDslMarker Styled<JSlider>.() -> Unit = {}) {
+	component.add(JSlider().also {
+		it.minimum = min
+		it.maximum = max
+		it.value = value
+	}.also { block(it.styled) })
 }
 
 fun <E : Any> Styled<out Container>.list(items: List<E> = listOf(), block: @UIDslMarker Styled<JList<E>>.() -> Unit = {}) {
@@ -223,8 +120,8 @@ fun Styled<out Container>.stack(direction: Direction, props: LinearLayout.Props,
 fun Styled<out Container>.verticalStack(props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<Container>.() -> Unit = {}) = stack(direction = Direction.VERTICAL, props = props, block = block)
 fun Styled<out Container>.horizontalStack(props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<Container>.() -> Unit = {}) = stack(direction = Direction.HORIZONTAL, props = props, block = block)
 
-fun icon(@Language("file-reference") path: String) = ImageIcon(ImageIO.read(UIBuilderSample::class.java.getResource(path)))
-fun toolbarIcon(@Language("file-reference") path: String) = icon("/com/soywiz/korge/intellij/toolbar/$path")
+fun icon(path: String) = ImageIcon(ImageIO.read(UIBuilderSample::class.java.getResource(path)))
+fun toolbarIcon(path: String) = icon("/com/soywiz/korge/intellij/toolbar/$path")
 
 val Container.root: Container get() = this.parent?.root ?: this
 
@@ -256,7 +153,9 @@ sealed class MUnit {
 	}
 }
 
-val Number.points get() = MUnit.Points(this.toInt())
+val Number.pt get() = MUnit.Points(this.toInt())
+@Deprecated("", ReplaceWith("this.pt"))
+val Number.points get() = this.pt
 val Number.ratio get() = MUnit.Ratio(this.toDouble())
 val Number.percentage get() = (this.toDouble() / 100.0).ratio
 
