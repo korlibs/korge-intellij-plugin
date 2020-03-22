@@ -13,14 +13,19 @@ import com.soywiz.korio.async.Signal
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korma.geom.PointInt
 import kotlinx.coroutines.runBlocking
+import java.awt.BorderLayout
 import java.awt.Container
 import java.awt.KeyboardFocusManager
 import java.awt.event.KeyEvent
+import javax.swing.JFrame
+import javax.swing.JPanel
 import kotlin.math.max
 import kotlin.math.min
 
 
-fun Styled<out Container>.createTileMapEditor() {
+fun Styled<out Container>.createTileMapEditor(
+		tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() }
+) {
 	//val zoomLevels = listOf(10, 15, 25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
 	val zoomLevels = listOf(25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
 	val zoomLevel = ObservableProperty(zoomLevels.indexOf(200)) { it.clamp(0, zoomLevels.size - 1) }
@@ -33,7 +38,6 @@ fun Styled<out Container>.createTileMapEditor() {
 	val picked = ObservableProperty(PickedSelection(Bitmap32(1, 1) { _, _ -> RGBA(0) }))
 	fun zoomIn() = run { zoomLevel.value++ }
 	fun zoomOut() = run { zoomLevel.value-- }
-	val tilemap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() }
 	val selectedLayerIndex = ObservableProperty(0)
 	val history = HistoryManager()
 
@@ -454,7 +458,6 @@ fun Styled<out Container>.createTileMapEditor() {
 	}
 }
 
-
 private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 	val tileset = this.tileset
 	val mapWidth = this.data.columns
@@ -466,3 +469,94 @@ private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 		allLayers = arrayListOf(TiledMap.Layer.Patterns(Bitmap32(mapWidth, mapHeight) { x, y -> RGBA(y * mapWidth + x) }))
 	), listOf(this), tileset)
 }
+
+
+class MyTileMapEditorPanel(val tmx: TiledMap) : JPanel(BorderLayout()) {
+	init {
+		styled.createTileMapEditor(tmx)
+	}
+/*
+	val realPanel = tileMapEditor.contentPanel
+
+	val mapComponent = MapComponent(tmx)
+
+	var scale: Double
+		get() = mapComponent.scale
+		set(value) = run { mapComponent.scale = value }
+
+	val mapComponentScroll = JBScrollPane(mapComponent).also { scroll ->
+		//scroll.verticalScrollBar.unitIncrement = 16
+	}
+
+	fun updatedSize() {
+		tileMapEditor.leftSplitPane.dividerLocation = 200
+		tileMapEditor.rightSplitPane.dividerLocation = tileMapEditor.rightSplitPane.width - 200
+	}
+
+	val layersController = LayersController(tileMapEditor.layersPane)
+	val propertiesController = PropertiesController(tileMapEditor.propertiesPane)
+
+	init {
+
+		add(realPanel, BorderLayout.CENTER)
+
+		tileMapEditor.mapPanel.add(mapComponentScroll, GridConstraints().also { it.fill = GridConstraints.FILL_BOTH })
+
+		tileMapEditor.zoomInButton.addActionListener { scale *= 1.5 }
+		tileMapEditor.zoomOutButton.addActionListener { scale /= 1.5 }
+
+
+		updatedSize()
+		addComponentListener(object : ComponentAdapter() {
+			override fun componentResized(e: ComponentEvent) {
+				updatedSize()
+			}
+		})
+	}
+ */
+}
+
+/*
+class PropertiesController(val panel: PropertiesPane) {
+	var width = 100
+	var height = 100
+	val propertyTable = KorgePropertyTable(KorgePropertyTable.Properties().register(::width,::height)).also {
+		panel.tablePane.add(JScrollPane(it), BorderLayout.CENTER)
+	}
+}
+
+class LayersController(val panel: LayersPane) {
+	init {
+		val menu = JPopupMenu("Menu").apply {
+			add("Tile Layer")
+			add("Object Layer")
+			add("Image Layer")
+		}
+
+		panel.newButton.addActionListener {
+			menu.show(panel.newButton, 0, panel.newButton.height)
+		}
+	}
+}
+ */
+
+class MyTileMapEditorFrame(val tmx: TiledMap) : JFrame() {
+	init {
+		contentPane = MyTileMapEditorPanel(tmx)
+		pack()
+	}
+
+	companion object {
+		@JvmStatic
+		fun main(args: Array<String>) {
+			val tmx = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() }
+			val frame = MyTileMapEditorFrame(tmx)
+			frame.defaultCloseOperation = EXIT_ON_CLOSE
+			frame.setLocationRelativeTo(null)
+			frame.isVisible = true
+		}
+	}
+}
+
+inline fun Bitmap32.anyFixed(callback: (RGBA) -> Boolean): Boolean = (0 until area).any { callback(data[it]) }
+inline fun Bitmap32.allFixed(callback: (RGBA) -> Boolean): Boolean = (0 until area).all { callback(data[it]) }

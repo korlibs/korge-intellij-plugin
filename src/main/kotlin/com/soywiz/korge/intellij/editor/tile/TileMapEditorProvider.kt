@@ -1,22 +1,16 @@
 package com.soywiz.korge.intellij.editor.tile
 
-import com.intellij.debugger.impl.*
-import com.intellij.designer.model.*
-import com.intellij.designer.propertyTable.*
-import com.intellij.diff.util.*
+import com.intellij.diff.util.FileEditorBase
 import com.intellij.openapi.fileEditor.*
-import com.intellij.openapi.options.newEditor.*
-import com.intellij.openapi.project.*
-import com.intellij.openapi.util.*
-import com.intellij.openapi.vfs.*
-import com.intellij.ui.table.*
-import com.soywiz.korge.intellij.*
-import com.soywiz.korge.intellij.debug.*
-import com.soywiz.korge.tiled.*
-import kotlinx.coroutines.*
-import java.awt.*
-import java.beans.*
-import javax.swing.*
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VirtualFile
+import com.soywiz.korge.intellij.toVfs
+import kotlinx.coroutines.runBlocking
+import java.beans.PropertyChangeListener
+import javax.swing.JComponent
+import javax.swing.JFrame
 
 class TileMapEditorProvider : FileEditorProvider, DumbAware {
 	override fun getEditorTypeId(): String = this::class.java.name
@@ -38,7 +32,7 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 		val tmx = runBlocking { tmxFile.readTiledMap() }
 
 		return object : FileEditorBase(), DumbAware {
-			val panel by lazy { MyTileMapEditorPanel(tmx).realPanel }
+			val panel by lazy { MyTileMapEditorPanel(tmx) }
 
 			override fun isModified(): Boolean {
 				return false

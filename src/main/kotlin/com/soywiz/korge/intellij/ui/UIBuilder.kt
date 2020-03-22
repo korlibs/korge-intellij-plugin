@@ -1,7 +1,10 @@
 package com.soywiz.korge.intellij.ui
 
 import com.intellij.ui.components.JBTabbedPane
-import java.awt.*
+import java.awt.Component
+import java.awt.Container
+import java.awt.Dimension
+import java.awt.LayoutManager2
 import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.*
@@ -66,10 +69,10 @@ fun Styled<out Container>.iconButton(icon: Icon, tooltip: String? = null, block:
 	component.add(
 		JButton(icon)
 			.also {
-				it.iconTextGap = 0
-				it.margin = Insets(0, 0, 0, 0)
-				it.toolTipText = tooltip
-				it.border = BorderFactory.createEmptyBorder()
+				//it.iconTextGap = 0
+				//it.margin = Insets(0, 0, 0, 0)
+				//it.toolTipText = tooltip
+				//it.border = BorderFactory.createEmptyBorder()
 			}
 			.also {
 				it.styled
