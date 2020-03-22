@@ -1,6 +1,8 @@
 package com.soywiz.korge.intellij.ui
 
 import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.components.JBPanel
+import com.intellij.ui.components.JBTabbedPane
 import com.soywiz.korge.intellij.KorgeIcons
 import org.intellij.lang.annotations.Language
 import java.awt.*
@@ -11,22 +13,166 @@ import javax.swing.*
 import javax.swing.border.Border
 import kotlin.collections.ArrayList
 
+object UIBuilderSample {
+	@JvmStatic
+	fun main(args: Array<String>) {
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+		val frame = JFrame()
+		frame.minimumSize = Dimension(800, 600)
+		frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+		frame.contentPane.layout = FillLayout()
+		frame.contentPane.styled.createTileMapEditor()
+
+		frame.pack()
+		frame.setLocationRelativeTo(null)
+		frame.isVisible = true
+	}
+}
+
+
+fun Styled<out Container>.createLayerEditor(block: Styled<Container>.() -> Unit) {
+	verticalStack {
+		list(listOf("layer1", "layer2", "layer2")) {
+			height = MUnit.Fill
+		}
+		toolbar {
+			iconButton(toolbarIcon("add.png"))
+			iconButton(toolbarIcon("up.png"))
+			iconButton(toolbarIcon("down.png"))
+			iconButton(toolbarIcon("delete.png"))
+			iconButton(toolbarIcon("copy.png"))
+			iconButton(toolbarIcon("show.png"))
+			iconButton(toolbarIcon("locked_dark.png"))
+		}
+		block()
+	}
+}
+
+fun Styled<out Container>.createTileMapEditor() {
+	verticalStack {
+		toolbar {
+			button("Stamp")
+			button("Dropper")
+			button("Eraser")
+			button("Fill")
+			button("Rect")
+			button("Poly")
+			button("Point")
+			button("Oval")
+			iconButton(toolbarIcon("settings.png"))
+			iconButton(toolbarIcon("zoomIn.png"))
+			iconButton(toolbarIcon("zoomOut.png"))
+			button("FlipX")
+			button("FlipY")
+			button("RotateL")
+			button("RotateR")
+		}
+		horizontalStack {
+			fill()
+			verticalStack {
+				width = 20.percentage
+				tabs {
+					height = 50.percentage
+					tab("Properties") {
+						verticalStack {
+							list(listOf("prop1", "prop2", "prop3")) {
+								height = MUnit.Fill
+							}
+							toolbar {
+								iconButton(toolbarIcon("add.png"))
+								iconButton(toolbarIcon("edit.png"))
+								iconButton(toolbarIcon("delete.png"))
+							}
+						}
+					}
+				}
+				tabs {
+					height = 50.percentage
+					tab("Tileset") {
+						verticalStack {
+							tabs {
+								fill()
+								tab("Untitled") {
+									list(listOf("tileset")) {
+										height = MUnit.Fill
+									}
+								}
+							}
+							toolbar {
+								iconButton(toolbarIcon("add.png"))
+								iconButton(toolbarIcon("openDisk.png"))
+								iconButton(toolbarIcon("edit.png"))
+								iconButton(toolbarIcon("delete.png"))
+							}
+						}
+					}
+				}
+			}
+			verticalStack {
+				fill()
+				tabs {
+					fill()
+					tab("Map") {
+						createLayerEditor {
+							fill()
+						}
+					}
+				}
+			}
+			verticalStack {
+				width = 20.percentage
+				tabs {
+					height = 50.percentage
+					tab("Layers") {
+						createLayerEditor {
+							fill()
+						}
+					}
+				}
+				tabs {
+					height = 50.percentage
+					tab("Preview") {
+					}
+				}
+			}
+		}
+		horizontalStack {
+			height = 32.points
+			label("Status Status 2")
+			slider()
+		}
+	}
+}
+
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class UIDslMarker
 
-fun <T : Container> Styled<T>.button(text: String, block: @UIDslMarker Styled<JButton>.() -> Unit = {}) {
+fun Styled<out Container>.button(text: String, block: @UIDslMarker Styled<JButton>.() -> Unit = {}) {
 	component.add(JButton(text).also { block(it.styled) })
 }
 
-fun <T : Container> Styled<T>.iconButton(icon: Icon, tooltip: String? = null, block: @UIDslMarker Styled<JButton>.() -> Unit = {}) {
-	println("ICON: ${icon.iconWidth}x${icon.iconHeight}")
+fun Styled<out Container>.label(text: String, block: @UIDslMarker Styled<JLabel>.() -> Unit = {}) {
+	component.add(JLabel(text).also { block(it.styled) })
+}
+
+fun Styled<out Container>.slider(block: @UIDslMarker Styled<JSlider>.() -> Unit = {}) {
+	component.add(JSlider().also { block(it.styled) })
+}
+
+fun <E : Any> Styled<out Container>.list(items: List<E> = listOf(), block: @UIDslMarker Styled<JList<E>>.() -> Unit = {}) {
+	component.add(JList<E>(Vector(items.toMutableList())).also { block(it.styled) })
+}
+
+fun Styled<out Container>.iconButton(icon: Icon, tooltip: String? = null, block: @UIDslMarker Styled<JButton>.() -> Unit = {}) {
+	//println("ICON: ${icon.iconWidth}x${icon.iconHeight}")
 	component.add(
 		JButton(icon)
 			.also {
 				it.iconTextGap = 0
 				it.margin = Insets(0, 0, 0, 0)
 				it.toolTipText = tooltip
+				it.border = BorderFactory.createEmptyBorder()
 			}
 			.also {
 				it.styled
@@ -40,7 +186,7 @@ fun <T : Container> Styled<T>.iconButton(icon: Icon, tooltip: String? = null, bl
 	)
 }
 
-fun <T : Container> Styled<T>.toolbar(direction: Direction = Direction.HORIZONTAL, props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<JToolBar>.() -> Unit = {}): JToolBar {
+fun Styled<out Container>.toolbar(direction: Direction = Direction.HORIZONTAL, props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<JToolBar>.() -> Unit = {}): JToolBar {
 	val container = JToolBar(if (direction.horizontal) JToolBar.HORIZONTAL else JToolBar.VERTICAL)
 	container.styled.height = 32.points
 	container.isFloatable = false
@@ -50,7 +196,23 @@ fun <T : Container> Styled<T>.toolbar(direction: Direction = Direction.HORIZONTA
 	return container
 }
 
-fun <T : Container> Styled<T>.stack(direction: Direction, props: LinearLayout.Props,  block: @UIDslMarker Styled<Container>.() -> Unit = {}): Container {
+fun Styled<out Container>.tabs(block: @UIDslMarker Styled<JBTabbedPane>.() -> Unit = {}): JBTabbedPane {
+	val container = JBTabbedPane(JBTabbedPane.TOP)
+	component.add(container)
+	block(container.styled)
+	return container
+}
+
+fun Styled<out JTabbedPane>.tab(title: String, block: @UIDslMarker Styled<JPanel>.() -> Unit = {}): JPanel {
+	val container = JPanel()
+	//container.title = title
+	container.layout = FillLayout()
+	component.addTab(title, container)
+	block(container.styled)
+	return container
+}
+
+fun Styled<out Container>.stack(direction: Direction, props: LinearLayout.Props,  block: @UIDslMarker Styled<Container>.() -> Unit = {}): Container {
 	val container = Container()
 	container.layout = LinearLayout(if (direction.horizontal) Direction.HORIZONTAL else Direction.VERTICAL, props)
 	component.add(container)
@@ -58,46 +220,11 @@ fun <T : Container> Styled<T>.stack(direction: Direction, props: LinearLayout.Pr
 	return container
 }
 
-fun <T : Container> Styled<T>.verticalStack(props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<Container>.() -> Unit = {}) = stack(direction = Direction.VERTICAL, props = props, block = block)
-fun <T : Container> Styled<T>.horizontalStack(props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<Container>.() -> Unit = {}) = stack(direction = Direction.HORIZONTAL, props = props, block = block)
+fun Styled<out Container>.verticalStack(props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<Container>.() -> Unit = {}) = stack(direction = Direction.VERTICAL, props = props, block = block)
+fun Styled<out Container>.horizontalStack(props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<Container>.() -> Unit = {}) = stack(direction = Direction.HORIZONTAL, props = props, block = block)
 
 fun icon(@Language("file-reference") path: String) = ImageIcon(ImageIO.read(UIBuilderSample::class.java.getResource(path)))
-
-object UIBuilderSample {
-	@JvmStatic
-	fun main(args: Array<String>) {
-		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
-		val frame = JFrame()
-		//frame.minimumSize = Dimension(200, 200)
-		frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-		frame.contentPane.layout = FillLayout()
-		frame.contentPane.styled.verticalStack {
-			toolbar {
-				//height = 32.points
-
-
-				iconButton(icon("/com/soywiz/korge/intellij/icon/particle.png"))
-				iconButton(IconLoader.getIcon("general/add.png"))
-				iconButton(IconLoader.getIcon("general/add.png"))
-				println(component.componentCount)
-			}
-			button("HELLO") {
-				height = 10.percentage
-				minHeight = 64.points
-			}
-			button("WORLD") {
-				height = MUnit.Fill
-			}
-			button("DEMO") {
-				height = 10.percentage
-			}
-		}
-
-		frame.pack()
-		frame.setLocationRelativeTo(null)
-		frame.isVisible = true
-	}
-}
+fun toolbarIcon(@Language("file-reference") path: String) = icon("/com/soywiz/korge/intellij/toolbar/$path")
 
 val Container.root: Container get() = this.parent?.root ?: this
 
@@ -107,6 +234,7 @@ data class MUnit2(val width: MUnit, val height: MUnit) {
 	fun with(direction: Direction, value: MUnit) = if (direction.horizontal) copy(width = value) else copy(height = value)
 }
 
+val FILL = MUnit.Fill
 sealed class MUnit {
 	abstract fun compute(total: Int): Int
 	fun compute(total: Int, preferred: Int): Int {
@@ -149,6 +277,11 @@ class Styled<T : Component> constructor(val component: T) {
 		get() = preferred.height
 		set(value) = run { preferred = preferred.copy( height = value) }
 
+	fun fill() {
+		width = FILL
+		height = FILL
+	}
+
 	var minWidth: MUnit = 0.points
 	var minHeight: MUnit = 0.points
 	var maxWidth: MUnit = Int.MAX_VALUE.points
@@ -178,7 +311,8 @@ class LinearLayout(
 	fun Styled<Component>.minDimension(direction: Direction) = if (direction == Direction.HORIZONTAL) minWidth else minHeight
 	fun Styled<Component>.maxDimension(direction: Direction) = if (direction == Direction.HORIZONTAL) maxWidth else maxHeight
 
-	fun Styled<Component>.preferred(direction: Direction) = if (direction == Direction.HORIZONTAL) preferredDimensions.width else preferredDimensions.height
+	//fun Styled<Component>.preferred(direction: Direction) = if (direction == Direction.HORIZONTAL) preferredDimensions.width else preferredDimensions.height
+	fun Styled<Component>.preferred(direction: Direction) = if (direction == Direction.HORIZONTAL) component.preferredSize.width else component.preferredSize.height
 	fun Styled<Component>.min(direction: Direction) = if (direction == Direction.HORIZONTAL) minDimensions.width else minDimensions.height
 	fun Styled<Component>.max(direction: Direction) = if (direction == Direction.HORIZONTAL) maxDimensions.width else maxDimensions.height
 	fun Component.size(direction: Direction) = if (direction == Direction.HORIZONTAL) width else height
