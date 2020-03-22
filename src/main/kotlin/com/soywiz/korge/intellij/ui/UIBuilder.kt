@@ -1,31 +1,25 @@
 package com.soywiz.korge.intellij.ui
 
-import com.intellij.openapi.util.IconLoader
-import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBTabbedPane
-import com.soywiz.korge.intellij.KorgeIcons
-import com.soywiz.korge.intellij.editor.tile.createTileMapEditor
-import org.intellij.lang.annotations.Language
 import java.awt.*
-import java.awt.image.BufferedImage
 import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.*
-import javax.swing.border.Border
 import kotlin.collections.ArrayList
 
 fun Component.showPopupMenu(menu: JPopupMenu) {
 	menu.show(this, 0, this.height)
 }
 
-fun <T : Any> Component.showPopupMenu(options: List<T>, handler: (element: T) -> Unit = { }) {
+fun <T : Any> Component.showPopupMenu(options: List<T>, handler: JMenuItem.(element: T) -> Unit = { }) {
 	showPopupMenu(JPopupMenu("Menu").apply {
 		for ((index, option) in options.withIndex()) {
-			when (option) {
+			val item = when (option) {
 				is JMenuItem -> add(option)
 				else -> add(option.toString())
-			}.addActionListener {
-				handler(option)
+			}
+			item.addActionListener {
+				handler(item, option)
 			}
 		}
 	})
@@ -74,9 +68,9 @@ fun Styled<out Container>.iconButton(icon: Icon, tooltip: String? = null, block:
 			.also {
 				it.styled
 					.also {
-						it.preferred = MUnit2(32.points)
-						it.min = MUnit2(32.points)
-						it.max = MUnit2(32.points)
+						it.preferred = MUnit2(32.pt)
+						it.min = MUnit2(32.pt)
+						it.max = MUnit2(32.pt)
 					}
 					.block()
 			}
@@ -85,7 +79,7 @@ fun Styled<out Container>.iconButton(icon: Icon, tooltip: String? = null, block:
 
 fun Styled<out Container>.toolbar(direction: Direction = Direction.HORIZONTAL, props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<JToolBar>.() -> Unit = {}): JToolBar {
 	val container = JToolBar(if (direction.horizontal) JToolBar.HORIZONTAL else JToolBar.VERTICAL)
-	container.styled.height = 32.points
+	container.styled.height = 32.pt
 	container.isFloatable = false
 	container.layout = LinearLayout(if (direction.horizontal) Direction.HORIZONTAL else Direction.VERTICAL, props)
 	component.add(container)
@@ -165,8 +159,8 @@ val <T : Component> T.styled: Styled<T> get() = styledWeakMap.getOrPut(this) { S
 
 class Styled<T : Component> constructor(val component: T) {
 	var preferred: MUnit2 = MUnit2(MUnit.Auto, MUnit.Auto)
-	var min: MUnit2 = MUnit2(0.points, 0.points)
-	var max: MUnit2 = MUnit2(0.points, 0.points)
+	var min: MUnit2 = MUnit2(0.pt, 0.pt)
+	var max: MUnit2 = MUnit2(0.pt, 0.pt)
 
 	var width: MUnit
 		get() = preferred.width
@@ -181,12 +175,12 @@ class Styled<T : Component> constructor(val component: T) {
 		height = FILL
 	}
 
-	var minWidth: MUnit = 0.points
-	var minHeight: MUnit = 0.points
-	var maxWidth: MUnit = Int.MAX_VALUE.points
-	var maxHeight: MUnit = Int.MAX_VALUE.points
-	var padding: MUnit = 0.points
-	var margin: MUnit = 0.points
+	var minWidth: MUnit = 0.pt
+	var minHeight: MUnit = 0.pt
+	var maxWidth: MUnit = Int.MAX_VALUE.pt
+	var maxHeight: MUnit = Int.MAX_VALUE.pt
+	var padding: MUnit = 0.pt
+	var margin: MUnit = 0.pt
 
 	internal var temp: Int = 0
 }

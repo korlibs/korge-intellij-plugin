@@ -1,37 +1,46 @@
 // @TODO: @WARNING: Duplicated from KorGE to be able to modify it. Please, copy again to KorGE once this is stable
 package com.soywiz.korge.intellij.editor.tile
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.klogger.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.view.tiles.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.util.encoding.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klogger.Logger
+import com.soywiz.kmem.readIntArrayLE
+import com.soywiz.korge.view.tiles.TileSet
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korio.compression.deflate.GZIP
+import com.soywiz.korio.compression.deflate.ZLib
+import com.soywiz.korio.compression.uncompress
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.serialization.xml.Xml
+import com.soywiz.korio.serialization.xml.readXml
+import com.soywiz.korio.util.encoding.fromBase64
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.IRectangleInt
+import kotlin.collections.set
+import kotlin.text.toInt
 
-class TiledMapData {
-	var width = 0
-	var height = 0
-	var tilewidth = 0
-	var tileheight = 0
+class TiledMapData(
+	var width: Int = 0,
+	var height: Int = 0,
+	var tilewidth: Int = 0,
+	var tileheight: Int = 0,
+	val allLayers: ArrayList<TiledMap.Layer> = arrayListOf(),
+	val tilesets: ArrayList<TileSetData> = arrayListOf()
+) {
+	val maxGid get() = tilesets.map { it.firstgid + it.tilecount }.max() ?: 0
 	val pixelWidth: Int get() = width * tilewidth
 	val pixelHeight: Int get() = height * tileheight
-	val allLayers = arrayListOf<TiledMap.Layer>()
 	inline val patternLayers get() = allLayers.patterns
 	inline val imageLayers get() = allLayers.images
 	inline val objectLayers get() = allLayers.objects
-	val tilesets = arrayListOf<TileSetData>()
-
 	fun getObjectByName(name: String) = objectLayers.mapNotNull { it.getByName(name) }.firstOrNull()
-
-	val maxGid get() = tilesets.map { it.firstgid + it.tilecount }.max() ?: 0
 }
 
 fun TiledMap.Layer.Objects.Object.getPos(map: TiledMapData): IPoint =
@@ -73,7 +82,7 @@ class TiledMap(
 	val imageLayers get() = data.imageLayers
 	val objectLayers get() = data.objectLayers
 
-	class TiledTileset(val tileset: TileSet, val firstgid: Int = 0) {
+	class TiledTileset(val tileset: TileSet, val data: TileSetData, val firstgid: Int = 0) {
 	}
 
 	sealed class Layer {
@@ -86,10 +95,9 @@ class TiledMap(
 		var offsety: Double = 0.0
 		val properties = hashMapOf<String, Any>()
 
-		class Patterns : Layer() {
-			//val tilemap = TileMap(Bitmap32(0, 0), )
+		class Patterns(
 			var map: Bitmap32 = Bitmap32(0, 0)
-		}
+		) : Layer()
 
 		data class ObjectInfo(
 			val id: Int, val name: String, val type: String,
@@ -390,6 +398,7 @@ suspend fun VfsFile.readTiledMap(
 
 		val tiledTileset = TiledMap.TiledTileset(
 			tileset = ptileset,
+			data = tileset,
 			firstgid = tileset.firstgid
 		)
 

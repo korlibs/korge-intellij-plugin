@@ -10,8 +10,8 @@ object UIBuilderSample {
 	@JvmStatic
 	fun main(args: Array<String>) {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
-		val frame = JFrame()
-		frame.preferredSize = Dimension(800, 600)
+		val frame = JFrame("UIBuilderSample")
+		frame.preferredSize = Dimension(1280, 720)
 		frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
 		frame.contentPane.layout = FillLayout()
 		frame.contentPane.styled.createTileMapEditor()

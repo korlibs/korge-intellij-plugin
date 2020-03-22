@@ -6,7 +6,7 @@ import kotlin.reflect.KProperty
 class ObservableProperty<T>(val initial: T, val adjust: (T) -> T = { it }) {
 	val changed = Signal<T>()
 
-	var value: T = initial
+	var value: T = adjust(initial)
 		set(value) = run { field = adjust(value) }.also { changed(field) }
 
 	operator fun invoke(handler: (T) -> Unit) {

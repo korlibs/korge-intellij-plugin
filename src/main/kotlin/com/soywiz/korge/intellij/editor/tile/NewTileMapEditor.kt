@@ -1,20 +1,28 @@
 package com.soywiz.korge.intellij.editor.tile
 
+import com.intellij.ui.components.JBScrollPane
 import com.soywiz.kmem.clamp
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.ObservableProperty
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.file.std.localCurrentDirVfs
+import kotlinx.coroutines.runBlocking
 import java.awt.Container
 
 fun Styled<out Container>.createTileMapEditor() {
-	val zoom = ObservableProperty(1.0) { it.clamp(0.25, 20.0) }
+	val zoom = ObservableProperty(2.0) { it.clamp(0.25, 20.0) }
+	data class PickedSelection(val gid: Int)
+	val picked = ObservableProperty(PickedSelection(0))
 	fun zoomIn() = run { zoom.value *= 1.25 }
 	fun zoomOut() = run { zoom.value /= 1.25 }
+	val tilemap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() }
 
 	verticalStack {
 		//horizontalStack {
 		//	height = 32.points
 		toolbar {
-			button("Stamp")
+			iconButton(toolbarIcon("edit.png"))
 			button("Dropper")
 			button("Eraser")
 			button("Fill")
@@ -43,7 +51,8 @@ fun Styled<out Container>.createTileMapEditor() {
 		horizontalStack {
 			fill()
 			verticalStack {
-				minWidth = 132.pt
+				//minWidth = 132.pt
+				minWidth = 228.pt
 				width = minWidth
 				//width = 20.percentage
 				tabs {
@@ -67,9 +76,17 @@ fun Styled<out Container>.createTileMapEditor() {
 						verticalStack {
 							tabs {
 								fill()
-								tab("Untitled") {
-									list(listOf("tileset")) {
-										height = MUnit.Fill
+								for (tileset in tilemap.tilesets) {
+									tab("Untitled") {
+										val tilemap = tileset.pickerTilemap()
+										val mapComponent = MapComponent(tilemap)
+										val patternLayer = tilemap.patternLayers.first()
+										mapComponent.selectedRange(0, 0)
+										mapComponent.downTileSignal {
+											picked.value = PickedSelection(patternLayer.map[it.x, it.y].value)
+											mapComponent.selectedRange(it.x, it.y)
+										}
+										this.component.add(JBScrollPane(mapComponent))
 									}
 								}
 							}
@@ -89,6 +106,16 @@ fun Styled<out Container>.createTileMapEditor() {
 				tabs {
 					fill()
 					tab("Map") {
+						val mapComponent = MapComponent(tilemap)
+						mapComponent.overTileSignal { println("OVER: $it") }
+						mapComponent.downTileSignal {
+							println("DOWN: $it")
+							mapComponent.tmx.patternLayers[0].map[it.x, it.y] = RGBA(picked.value.gid)
+							mapComponent.repaint()
+						}
+						mapComponent.downRightTileSignal { println("DOWN_RIGHT: $it") }
+						this.component.add(JBScrollPane(mapComponent))
+						zoom { mapComponent.scale = it }
 					}
 				}
 			}
@@ -130,24 +157,30 @@ fun Styled<out Container>.createTileMapEditor() {
 			}
 		}
 		horizontalStack {
-			height = 32.points
+			height = 32.pt
 			label("Status Status 2") {
-				zoom {
-					component.text = "Zoom: ${"%.0f".format(zoom.value * 100)}%"
-				}
+				zoom { component.text = "Zoom: ${"%.0f".format(zoom.value * 100)}%" }
 			}
 			slider(min = 25, max = 2000) {
-				component.addChangeListener {
-					zoom.value = component.value.toDouble() / 100.0
-				}
-
-				zoom {
-					val zoomPer = (zoom.value * 100).toInt()
-					component.value = zoomPer
-				}
+				component.addChangeListener { zoom.value = component.value.toDouble() / 100.0 }
+				zoom { component.value = (zoom.value * 100).toInt() }
 			}
 		}
 	}
 
-	zoom.value = 1.0
+	zoom.value = 2.0
+}
+
+private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
+	val tileset = this.tileset
+
+	val mapWidth = this.data.columns
+	val mapHeight = Math.ceil(this.data.tilecount.toDouble() / this.data.columns.toDouble()).toInt()
+
+
+	return TiledMap(TiledMapData(
+		width = mapWidth, height = mapHeight,
+		tilewidth = tileset.width, tileheight = tileset.height,
+		allLayers = arrayListOf(TiledMap.Layer.Patterns(Bitmap32(mapWidth, mapHeight) { x, y -> RGBA(y * mapWidth + x) }))
+	), listOf(this), tileset)
 }
