@@ -89,6 +89,9 @@ fun Styled<out Container>.createTileMapEditor() {
 										mapComponent.upTileSignal {
 											downStart = null
 										}
+										mapComponent.outTileSignal {
+											downStart = null
+										}
 										mapComponent.downTileSignal {
 											if (downStart == null) {
 												downStart = it
