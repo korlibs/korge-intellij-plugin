@@ -22,9 +22,10 @@ import javax.swing.JPanel
 import kotlin.math.max
 import kotlin.math.min
 
-
 fun Styled<out Container>.createTileMapEditor(
-		tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() }
+		tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() },
+		history: HistoryManager = HistoryManager(),
+		registerHistoryShortcuts: Boolean = true
 ) {
 	//val zoomLevels = listOf(10, 15, 25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
 	val zoomLevels = listOf(25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
@@ -39,7 +40,6 @@ fun Styled<out Container>.createTileMapEditor(
 	fun zoomIn() = run { zoomLevel.value++ }
 	fun zoomOut() = run { zoomLevel.value-- }
 	val selectedLayerIndex = ObservableProperty(0)
-	val history = HistoryManager()
 
 	verticalStack {
 		//horizontalStack {
@@ -440,19 +440,21 @@ fun Styled<out Container>.createTileMapEditor(
 
 	zoomLevel.trigger()
 
-	KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher { ke ->
-		//println("KeyEventDispatcher.ke: $ke")
-		when {
-			(ke.isControlDown && ke.id == KeyEvent.KEY_PRESSED) && ((ke.keyCode == KeyEvent.VK_Z && ke.isShiftDown) || (ke.keyCode == KeyEvent.VK_Y)) -> {
-				history.redo()
-				true
-			}
-			(ke.isControlDown && ke.id == KeyEvent.KEY_PRESSED) && (ke.keyCode == KeyEvent.VK_Z) -> {
-				history.undo()
-				true
-			}
-			else -> {
-				false
+	if (registerHistoryShortcuts) {
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher { ke ->
+			//println("KeyEventDispatcher.ke: $ke")
+			when {
+				(ke.isControlDown && ke.id == KeyEvent.KEY_PRESSED) && ((ke.keyCode == KeyEvent.VK_Z && ke.isShiftDown) || (ke.keyCode == KeyEvent.VK_Y)) -> {
+					history.redo()
+					true
+				}
+				(ke.isControlDown && ke.id == KeyEvent.KEY_PRESSED) && (ke.keyCode == KeyEvent.VK_Z) -> {
+					history.undo()
+					true
+				}
+				else -> {
+					false
+				}
 			}
 		}
 	}
@@ -471,9 +473,13 @@ private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 }
 
 
-class MyTileMapEditorPanel(val tmx: TiledMap) : JPanel(BorderLayout()) {
+class MyTileMapEditorPanel(
+		val tmx: TiledMap,
+		val history: HistoryManager = HistoryManager(),
+		val registerHistoryShortcuts: Boolean = true
+) : JPanel(BorderLayout()) {
 	init {
-		styled.createTileMapEditor(tmx)
+		styled.createTileMapEditor(tmx, history, registerHistoryShortcuts)
 	}
 /*
 	val realPanel = tileMapEditor.contentPanel

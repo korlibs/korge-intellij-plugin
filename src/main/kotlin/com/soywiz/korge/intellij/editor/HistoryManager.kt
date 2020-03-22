@@ -3,7 +3,7 @@ package com.soywiz.korge.intellij.editor
 import com.soywiz.korio.async.Signal
 
 class HistoryManager {
-	class Entry(val name: String, val apply: (redo: Boolean) -> Unit) {
+	class Entry(val cursor: Int, val name: String, val apply: (redo: Boolean) -> Unit) {
 		fun redo() = apply(true).also { println("REDO: $this") }
 		fun undo() = apply(false).also { println("UNDO: $this") }
 		override fun toString(): String = "HistoryManager.Entry('$name')"
@@ -12,18 +12,22 @@ class HistoryManager {
 	var cursor = 0
 	val entries = arrayListOf<Entry>()
 	val onChange = Signal<Unit>()
+	val isModified: Boolean get() = cursor != 0
+	val onAdd = Signal<Entry>()
+	val onUndo = Signal<Entry>()
+	val onRedo = Signal<Entry>()
 
-	fun add(entry: Entry): Entry {
+	fun add(name: String, apply: (redo: Boolean) -> Unit): Entry {
 		while (cursor < entries.size) entries.removeAt(entries.size - 1)
+		val entry = Entry(this.entries.size + 1, name, apply)
 		this.entries.add(entry)
 		println("ADD: $entry")
-		cursor = this.entries.size
+		cursor = entry.cursor
 		onChange(Unit)
+		onAdd(entry)
 		return entry
 	}
-
-	fun add(name: String, apply: (redo: Boolean) -> Unit) = add(Entry(name, apply))
-	fun addAndDo(name: String, apply: (redo: Boolean) -> Unit) = add(Entry(name, apply)).redo()
+	fun addAndDo(name: String, apply: (redo: Boolean) -> Unit) = add(name, apply).redo()
 
 	fun undo(): Boolean {
 		if (cursor > 0) {
@@ -31,6 +35,7 @@ class HistoryManager {
 			if (entry != null) {
 				entry.undo()
 				onChange(Unit)
+				onUndo(entry)
 				return true
 			}
 		}
@@ -43,6 +48,7 @@ class HistoryManager {
 			if (entry != null) {
 				entry.redo()
 				onChange(Unit)
+				onRedo(entry)
 				return true
 			}
 		}
