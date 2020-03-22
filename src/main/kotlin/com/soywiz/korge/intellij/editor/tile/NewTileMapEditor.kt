@@ -241,31 +241,14 @@ fun Styled<out Container>.createTileMapEditor() {
 							list(listOf<String>()) {
 								val list = this
 								height = MUnit.Fill
-								selectedLayerIndex {
-									//println("SET selectedIndex=$it")
-									list.component.selectedIndex = it
-								}
-								selectedLayerIndex.addAdjuster {
-									if (list.component.model.size == 0) {
-										0
-									} else {
-										it.coerceIn(0, list.component.model.size - 1)
-									}
-								}
-								list.component.addVetoableChangeListener {
-									//println("addVetoableChangeListener: $it")
-								}
-								list.component.addListSelectionListener {
-									//println("selection: ${list.component.selectedIndex} ${it.firstIndex}")
-								}
+								selectedLayerIndex { list.component.selectedIndex = it }
+								selectedLayerIndex.addAdjuster { if (list.component.model.size == 0) 0 else it.coerceIn(0, list.component.model.size - 1) }
 								list.component.addListSelectionListener {
 									selectedLayerIndex.value = list.component.selectedIndex
-									//println("it.firstIndex: ${it.firstIndex} :: $it")
-									//selectedLayerIndex.value = it.firstIndex
 								}
 								updateLayersSignal {
 									val preservedLayerIndex = selectedLayerIndex.value
-									list.component.setListData(tilemap.allLayers.map { it.name }.toTypedArray())
+									list.component.setListData(tilemap.allLayers.map { "${it.name} [${if (it.visible) "\u2600" else "\u223C" }] [${if (it.locked) "\u274C" else "\u2714" }]" }.toTypedArray())
 									list.component.selectedIndex = preservedLayerIndex
 									list.component.repaint()
 									list.component.parent?.repaint()
@@ -276,13 +259,19 @@ fun Styled<out Container>.createTileMapEditor() {
 								iconButton(toolbarIcon("add.png")) {
 									click {
 										showPopupMenu(listOf("Tile Layer", "Object Layer", "Image Layer")) {
-											tilemap.allLayers.add(
-													TiledMap.Layer.Patterns(Bitmap32(tilemap.width, tilemap.height)).also {
-														it.name = "Tile Layer ${tilemap.allLayers.size + 1}"
-													}
-											)
-											updateLayersSignal(Unit)
-											selectedLayerIndex.value = tilemap.allLayers.size - 1
+											val layerIndex = selectedLayerIndex.value
+											val newLayer = TiledMap.Layer.Patterns(Bitmap32(tilemap.width, tilemap.height)).also {
+												it.name = "Tile Layer ${tilemap.allLayers.size + 1}"
+											}
+											history.addAndDo("ADD LAYER") { redo ->
+												if (redo) {
+													tilemap.allLayers.add(layerIndex, newLayer.clone())
+												} else {
+													tilemap.allLayers.removeAt(layerIndex)
+												}
+												updateLayersSignal(Unit)
+												selectedLayerIndex.value = if (redo) layerIndex else layerIndex
+											}
 											println("CLICKED ON: $it")
 										}
 									}
@@ -304,6 +293,9 @@ fun Styled<out Container>.createTileMapEditor() {
 								}
 
 								iconButton(toolbarIcon("up.png")) {
+									updateLayersSignal {
+										component.isEnabled = tilemap.allLayers.isNotEmpty()
+									}
 									click {
 										if (selectedLayerIndex.value > 0) {
 											moveLayer(-1)
@@ -311,6 +303,9 @@ fun Styled<out Container>.createTileMapEditor() {
 									}
 								}
 								iconButton(toolbarIcon("down.png")) {
+									updateLayersSignal {
+										component.isEnabled = tilemap.allLayers.isNotEmpty()
+									}
 									click {
 										if (selectedLayerIndex.value < tilemap.allLayers.size - 1) {
 											moveLayer(+1)
@@ -318,39 +313,72 @@ fun Styled<out Container>.createTileMapEditor() {
 									}
 								}
 								iconButton(toolbarIcon("delete.png")) {
+									updateLayersSignal {
+										component.isEnabled = tilemap.allLayers.isNotEmpty()
+									}
 									click {
 										val layerIndex = selectedLayerIndex.value
-										val layer = tilemap.allLayers[layerIndex].clone()
-										history.addAndDo("REMOVE LAYER") { redo ->
-											if (redo) {
-												tilemap.allLayers.removeAt(layerIndex)
-											} else {
-												tilemap.allLayers.add(layerIndex, layer)
+										val layer = tilemap.allLayers.getOrNull(layerIndex)?.clone()
+										if (layer != null) {
+											history.addAndDo("REMOVE LAYER") { redo ->
+												if (redo) {
+													tilemap.allLayers.removeAt(layerIndex)
+												} else {
+													tilemap.allLayers.add(layerIndex, layer.clone())
+												}
+												updateLayersSignal(Unit)
+												selectedLayerIndex.value = (if (redo) layerIndex - 1 else layerIndex)
+												updateTilemap(Unit)
 											}
-											updateLayersSignal(Unit)
-											selectedLayerIndex.value = (if (redo) layerIndex - 1 else layerIndex)
-											updateTilemap(Unit)
 										}
 									}
 								}
-								iconButton(toolbarIcon("copy.png"))
+								iconButton(toolbarIcon("copy.png")) {
+									updateLayersSignal {
+										component.isEnabled = tilemap.allLayers.isNotEmpty()
+									}
+									click {
+										val layerIndex = selectedLayerIndex.value
+										val layer = tilemap.allLayers.getOrNull(layerIndex)?.clone()
+										if (layer != null) {
+											history.addAndDo("REMOVE LAYER") { redo ->
+												if (redo) {
+													tilemap.allLayers.add(layerIndex, layer.clone())
+												} else {
+													tilemap.allLayers.removeAt(layerIndex)
+												}
+												updateLayersSignal(Unit)
+												selectedLayerIndex.value = (if (redo) layerIndex + 1 else layerIndex)
+												updateTilemap(Unit)
+											}
+										}
+									}
+								}
 								iconButton(toolbarIcon("show.png")) {
+									updateLayersSignal {
+										component.isEnabled = tilemap.allLayers.isNotEmpty()
+									}
 									click {
 										val layer = tilemap.allLayers.getOrNull(selectedLayerIndex.value)
 										if (layer != null) {
 											history.addAndDo("TOGGLE VISIBLE") {
 												layer.visible = !layer.visible
+												updateLayersSignal(Unit)
 												updateTilemap(Unit)
 											}
 										}
 									}
 								}
 								iconButton(toolbarIcon("locked_dark.png")) {
+									updateLayersSignal {
+										component.isEnabled = tilemap.allLayers.isNotEmpty()
+									}
 									click {
 										val layer = tilemap.allLayers.getOrNull(selectedLayerIndex.value)
 										if (layer != null) {
 											history.addAndDo("TOGGLE LOCKED") {
 												layer.locked = !layer.locked
+												updateLayersSignal(Unit)
 												updateTilemap(Unit)
 											}
 										}
