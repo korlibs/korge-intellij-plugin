@@ -11,6 +11,11 @@
 </features>
 <files>
 
+<file path=".gitignore"><![CDATA[
+/.idea
+/.gradle
+]]></file>
+
 <file path="build.gradle.kts"><![CDATA[
 import com.soywiz.korge.gradle.*
 
