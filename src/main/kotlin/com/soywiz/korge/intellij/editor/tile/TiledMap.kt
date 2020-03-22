@@ -88,6 +88,7 @@ class TiledMap(
 	sealed class Layer {
 		var name: String = ""
 		var visible: Boolean = true
+		var locked: Boolean = false
 		var draworder: String = ""
 		var color: RGBA = Colors.WHITE
 		var opacity = 1.0

@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tile
 
+import com.soywiz.korge.intellij.util.preserveStroke
 import com.soywiz.korim.awt.toAwt
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BitmapSlice
@@ -12,14 +13,16 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionAdapter
 import javax.swing.JComponent
 
+
 class MapComponent(val tmx: TiledMap) : JComponent() {
 	val downRightTileSignal = Signal<PointInt>()
+	val onZoom = Signal<Int>()
 	val upTileSignal = Signal<PointInt>()
 	val downTileSignal = Signal<PointInt>()
 	val overTileSignal = Signal<PointInt>()
 	val outTileSignal = Signal<PointInt>()
 
-	fun mapDoRefreshing() {
+	fun mapRepaint() {
 		updateSize()
 		revalidate()
 		parent?.revalidate()
@@ -29,7 +32,7 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 	var scale: Double = 2.0
 		set(value) {
 			field = value
-			mapDoRefreshing()
+			mapRepaint()
 		}
 	val maxTileGid = tmx.tilesets.map { it.firstgid + it.tileset.textures.size }.max() ?: 0
 
@@ -64,7 +67,17 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 				//println("mouseMoved: $e")
 				overTileSignal(getTileIndex(e.point))
 			}
+
 		})
+		addMouseWheelListener { e ->
+			if (e.isControlDown) {
+				//val dir = e.wheelRotation
+				//println("mouseWheelMoved: $e")
+				onZoom(-e.wheelRotation)
+			} else {
+				parent.dispatchEvent(e)
+			}
+		}
 		addMouseListener(object : MouseAdapter() {
 			override fun mouseExited(e: MouseEvent) {
 				outTileSignal(getTileIndex(e.point))
@@ -140,6 +153,7 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 		val offsetY = (clipBounds.y / TILE_HEIGHT / scale).toInt()
 
 		for (layer in tmx.allLayers) {
+			if (!layer.visible) continue
 			when (layer) {
 				is TiledMap.Layer.Patterns -> {
 					for (x in 0 until displayTilesX) {
@@ -169,34 +183,38 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 
 		//g.transform = oldTransform
 
-		g.stroke = BasicStroke((1f / scale).toFloat())
-		g.color = Color.DARK_GRAY
 		//g.translate(offsetX * TILE_WIDTH * scale, offsetY * TILE_HEIGHT * scale)
-		for (y in 0 until displayTilesY) g.drawLine(0, y * TILE_HEIGHT, displayTilesX * TILE_WIDTH, y * TILE_HEIGHT)
-		for (x in 0 until displayTilesX) g.drawLine(x * TILE_WIDTH, 0, x * TILE_WIDTH, displayTilesY * TILE_HEIGHT)
+		g.preserveStroke {
+			g.color = Color.DARK_GRAY
+			g.stroke = BasicStroke((1f / scale).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0f, floatArrayOf(2f), 0f)
+			for (y in 0 until displayTilesY) g.drawLine(0, y * TILE_HEIGHT, displayTilesX * TILE_WIDTH, y * TILE_HEIGHT)
+			for (x in 0 until displayTilesX) g.drawLine(x * TILE_WIDTH, 0, x * TILE_WIDTH, displayTilesY * TILE_HEIGHT)
+		}
 
 		g.transform = oldTransform
 		g.scale(scale, scale)
 
 		selected?.let { selected ->
-			g.stroke = BasicStroke((2f / scale).toFloat())
-			g.color = Color.RED
-			g.drawRect(
-				selected.x * TILE_WIDTH,
-				selected.y * TILE_HEIGHT,
-				selected.width * TILE_WIDTH,
-				selected.height * TILE_HEIGHT
-			)
+			g.preserveStroke {
+				g.stroke = BasicStroke((2f / scale).toFloat())
+				g.color = Color.RED
+				g.drawRect(
+						selected.x * TILE_WIDTH,
+						selected.y * TILE_HEIGHT,
+						selected.width * TILE_WIDTH,
+						selected.height * TILE_HEIGHT
+				)
+			}
 		}
 	}
 
 	var selected: Rectangle? = null
 	fun selectedRange(x: Int, y: Int, width: Int = 1, height: Int = 1) {
 		selected = Rectangle(x, y, width, height)
-		mapDoRefreshing()
+		mapRepaint()
 	}
 	fun unselect() {
 		selected = null
-		mapDoRefreshing()
+		mapRepaint()
 	}
 }

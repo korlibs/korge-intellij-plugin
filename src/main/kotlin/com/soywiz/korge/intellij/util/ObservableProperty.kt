@@ -3,11 +3,24 @@ package com.soywiz.korge.intellij.util
 import com.soywiz.korio.async.Signal
 import kotlin.reflect.KProperty
 
-class ObservableProperty<T>(val initial: T, val adjust: (T) -> T = { it }) {
+class ObservableProperty<T>(val initial: T, var adjust: (T) -> T = { it }) {
 	val changed = Signal<T>()
 
+	fun addAdjuster(adjust: (T) -> T) {
+		val oldAdjust = this.adjust
+		this.adjust = { adjust(oldAdjust(it)) }
+	}
+
 	var value: T = adjust(initial)
-		set(value) = run { field = adjust(value) }.also { changed(field) }
+		set(value) {
+			val newValue = adjust(value)
+			if (field != newValue) {
+				field = newValue
+				changed(field)
+			}
+		}
+
+	fun trigger() = changed(value)
 
 	operator fun invoke(handler: (T) -> Unit) {
 		changed(handler)
