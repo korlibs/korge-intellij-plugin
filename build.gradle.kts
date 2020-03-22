@@ -97,6 +97,12 @@ tasks {
 
 		main = "com.soywiz.korge.intellij.editor.tile.MyTileMapEditorFrame"
 	}
+	val runUISample by creating(JavaExec::class) {
+		//classpath = sourceSets.main.runtimeClasspath
+		classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
+
+		main = "com.soywiz.korge.intellij.ui.UIBuilderSample"
+	}
 	val publishPlugin by existing(org.jetbrains.intellij.tasks.PublishTask::class) {
 		if (findProperty("jetbrainsUsername") != null) {
 			setUsername(findProperty("jetbrainsUsername"))
