@@ -24,6 +24,7 @@ import com.soywiz.korio.util.encoding.fromBase64
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IRectangleInt
 import kotlin.collections.set
+import kotlin.reflect.KMutableProperty1
 import kotlin.text.toInt
 
 class TiledMapData(
@@ -94,11 +95,28 @@ class TiledMap(
 		var opacity = 1.0
 		var offsetx: Double = 0.0
 		var offsety: Double = 0.0
-		val properties = hashMapOf<String, Any>()
+		val properties = LinkedHashMap<String, Any>()
+		companion object {
+			val BASE_PROPS = listOf(
+				Layer::name, Layer::visible, Layer::locked, Layer::draworder,
+				Layer::color, Layer::opacity, Layer::offsetx, Layer::offsety
+			)
+		}
+		open fun copyFrom(other: Layer) {
+			for (prop in BASE_PROPS) {
+				val p = prop as KMutableProperty1<Layer, Any>
+				p.set(this, p.get(other))
+			}
+			this.properties.clear()
+			this.properties.putAll(other.properties)
+		}
+		abstract fun clone(): Layer
 
 		class Patterns(
 			var map: Bitmap32 = Bitmap32(0, 0)
-		) : Layer()
+		) : Layer() {
+			override fun clone(): Patterns = Patterns(map.clone()).also { it.copyFrom(this) }
+		}
 
 		data class ObjectInfo(
 			val id: Int, val name: String, val type: String,
@@ -106,7 +124,9 @@ class TiledMap(
 			val objprops: Map<String, Any>
 		)
 
-		class Objects : Layer() {
+		class Objects(
+			val objects: MutableList<Object> = arrayListOf<Object>()
+		) : Layer() {
 			interface Object {
 				val info: ObjectInfo
 			}
@@ -120,21 +140,26 @@ class TiledMap(
 			data class Polyline(override val info: ObjectInfo, override val points: List<IPoint>) : Poly
 			data class Polygon(override val info: ObjectInfo, override val points: List<IPoint>) : Poly
 
-			val objects = arrayListOf<Object>()
-			val objectsById by lazy { objects.associateBy { it.id } }
-			val objectsByName by lazy { objects.associateBy { it.name } }
+			override fun clone(): Objects = Objects(objects.toMutableList()).also { it.copyFrom(this) }
 
-			fun getById(id: Int): Object? = objectsById[id]
-			fun getByName(name: String): Object? = objectsByName[name]
+			fun getById(id: Int): Object? = objects.firstOrNull { it.id == id }
+			fun getByName(name: String): Object? = objects.firstOrNull { it.name == name }
 		}
 
-		class Image : Layer() {
-			var width = 0
-			var height = 0
-			var source = ""
+		class Image(
+			var width: Int = 0,
+			var height: Int = 0,
+			var source: String = "",
 			var image: Bitmap = Bitmap32(0, 0)
+		) : Layer() {
+			override fun clone(): Image = Image(width, height, source, image.clone()).also { it.copyFrom(this) }
 		}
 	}
+}
+
+fun Bitmap.clone(): Bitmap = when (this) {
+	is Bitmap32 -> this.clone()
+	else -> TODO()
 }
 
 val TiledMap.Layer.Objects.Object.id get() = this.info.id

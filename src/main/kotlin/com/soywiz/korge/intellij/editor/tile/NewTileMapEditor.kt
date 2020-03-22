@@ -197,8 +197,8 @@ fun Styled<out Container>.createTileMapEditor() {
 							val pickedData = picked.value.data
 							mapComponent.selectedRange(it.x, it.y, pickedData.width, pickedData.height)
 							val layerIndex = selectedLayerIndex.value
-							val layer = mapComponent.tmx.allLayers[layerIndex]
-							if (!layer.locked) {
+							val layer = mapComponent.tmx.allLayers.getOrNull(layerIndex)
+							if (layer != null && !layer.locked) {
 								when (layer) {
 									is TiledMap.Layer.Patterns -> {
 										//println("DOWN: $it")
@@ -319,10 +319,18 @@ fun Styled<out Container>.createTileMapEditor() {
 								}
 								iconButton(toolbarIcon("delete.png")) {
 									click {
-										tilemap.allLayers.removeAt(selectedLayerIndex.value)
-										selectedLayerIndex.value--
-										updateLayersSignal(Unit)
-										updateTilemap(Unit)
+										val layerIndex = selectedLayerIndex.value
+										val layer = tilemap.allLayers[layerIndex].clone()
+										history.addAndDo("REMOVE LAYER") { redo ->
+											if (redo) {
+												tilemap.allLayers.removeAt(layerIndex)
+											} else {
+												tilemap.allLayers.add(layerIndex, layer)
+											}
+											updateLayersSignal(Unit)
+											selectedLayerIndex.value = (if (redo) layerIndex - 1 else layerIndex)
+											updateTilemap(Unit)
+										}
 									}
 								}
 								iconButton(toolbarIcon("copy.png"))
