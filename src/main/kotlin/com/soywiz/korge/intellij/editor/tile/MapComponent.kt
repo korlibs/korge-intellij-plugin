@@ -139,10 +139,11 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
             Dimension((tmx.pixelWidth * scale).toInt(), (tmx.pixelHeight * scale).toInt())
 	}
 
+	val iscale get() = 1.0 / scale
 	fun getTileIndex(coords: Point): PointInt =
 		PointInt(
-            (coords.x / tmx.tilewidth / scale).toInt(),
-            (coords.y / tmx.tileheight / scale).toInt()
+            ((iscale * coords.x) / tmx.tilewidth).toInt(),
+            ((iscale * coords.y) / tmx.tileheight).toInt()
         )
 
 	data class CacheKey(
@@ -169,8 +170,8 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
             RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
         )
 		val clipBounds = g.clipBounds
-		val displayTilesX = ((clipBounds.width / TILE_WIDTH / scale) + 3).toInt()
-		val displayTilesY = ((clipBounds.height / TILE_HEIGHT / scale) + 3).toInt()
+		val displayTilesX = ((clipBounds.width / TILE_WIDTH / scale) + 3).toInt().coerceIn(0, tmx.width - 1)
+		val displayTilesY = ((clipBounds.height / TILE_HEIGHT / scale) + 3).toInt().coerceIn(0, tmx.height - 1)
 		val offsetX = (clipBounds.x / TILE_WIDTH / scale).toInt()
 		val offsetY = (clipBounds.y / TILE_HEIGHT / scale).toInt()
 

@@ -243,6 +243,7 @@ fun Styled<out Container>.createTileMapEditor(
 							list(listOf<String>()) {
 								val list = this
 								height = MUnit.Fill
+								selectedLayerIndex.value = tilemap.allLayers.size - 1
 								selectedLayerIndex { list.component.selectedIndex = it }
 								selectedLayerIndex.addAdjuster { if (list.component.model.size == 0) 0 else it.coerceIn(0, list.component.model.size - 1) }
 								list.component.addListSelectionListener {
@@ -267,12 +268,12 @@ fun Styled<out Container>.createTileMapEditor(
 											}
 											history.addAndDo("ADD LAYER") { redo ->
 												if (redo) {
-													tilemap.allLayers.add(layerIndex, newLayer.clone())
+													tilemap.allLayers.add(layerIndex + 1, newLayer.clone())
 												} else {
-													tilemap.allLayers.removeAt(layerIndex)
+													tilemap.allLayers.removeAt(layerIndex + 1)
 												}
 												updateLayersSignal(Unit)
-												selectedLayerIndex.value = if (redo) layerIndex else layerIndex
+												selectedLayerIndex.value = if (redo) layerIndex + 1 else layerIndex
 											}
 											println("CLICKED ON: $it")
 										}

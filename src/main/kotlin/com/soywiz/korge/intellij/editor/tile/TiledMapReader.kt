@@ -165,8 +165,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 		when {
 			elementName == "tileset" -> {
 				tilemapLog.trace { "tileset" }
-				val firstgid = element.int("firstgid")
-
+				val firstgid = element.int("firstgid", +1)
 				// TSX file / embedded element
 				val sourcePath = element.getString("source")
 				val element = if (sourcePath != null) folder[sourcePath].readXml() else element
