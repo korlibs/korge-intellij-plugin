@@ -1,8 +1,10 @@
 package com.soywiz.korge.intellij.editor.tile
 
+import com.intellij.util.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import java.awt.*
@@ -24,7 +26,7 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 
 	fun mapRepaint(invalidateBitmapCache: Boolean) {
 		if (invalidateBitmapCache) {
-			cachedBitmapKey = null
+			cachedBitmap.invalidate()
 		}
 		updateSize()
 		revalidate()
@@ -41,6 +43,7 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 
 	data class TileInfo(val bmp32: Bitmap32) {
 		val miniSlice = bmp32.slice()
+		val isTransparent by lazy { bmp32.all { it.a == 0 } }
 	}
 
 	val tiles = Array<TileInfo?>(maxTileGid) { null }.also { tiles ->
@@ -147,8 +150,13 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 		val displayTilesX: Int, val displayTilesY: Int,
 		val TILE_WIDTH: Int, val TILE_HEIGHT: Int
 	)
-	private var cachedBitmapKey: CacheKey? = null
-	private var cachedBitmap: BufferedImage? = null
+	data class GridCacheKey(
+		val displayTilesX: Int, val displayTilesY: Int,
+		val TILE_WIDTH: Int, val TILE_HEIGHT: Int,
+		val scale: Double
+	)
+	private var cachedBitmap = SingleCache<CacheKey, BufferedImage>()
+	private var cachedGrid = SingleCache<GridCacheKey, BufferedImage>()
 
 	override fun paintComponent(g: Graphics) {
 		val g = (g as Graphics2D)
@@ -166,16 +174,12 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 		val offsetX = (clipBounds.x / TILE_WIDTH / scale).toInt()
 		val offsetY = (clipBounds.y / TILE_HEIGHT / scale).toInt()
 
-		val cacheKey = CacheKey(
+		val tilesBitmap = cachedBitmap.get(CacheKey(
 			offsetX = offsetX, offsetY = offsetY,
 			displayTilesX = displayTilesX,
 			displayTilesY = displayTilesY,
 			TILE_WIDTH = TILE_WIDTH, TILE_HEIGHT = TILE_WIDTH
-		)
-
-		if (cachedBitmapKey != cacheKey) {
-			//println("REPAINT: $cachedBitmapKey != $cacheKey")
-			cachedBitmapKey = cacheKey
+		)) {
 			val temp = Bitmap32(
 				(displayTilesX * TILE_WIDTH),
 				(displayTilesY * TILE_HEIGHT)
@@ -194,53 +198,70 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 
 								val tileIdx = layer.map[rx, ry].value
 								val tile = tiles.getOrNull(tileIdx)
-								if (tile != null) {
-									temp._draw(tile.miniSlice, x * TILE_WIDTH, y * TILE_HEIGHT, mix = true)
+								if (tile != null && !tile.isTransparent) {
+									temp._fastMix(tile.miniSlice, x * TILE_WIDTH, y * TILE_HEIGHT)
 								}
 							}
 						}
 					}
 				}
 			}
-			cachedBitmap = temp.toAwt()
+			temp.toAwt()
 		}
 
 		//val oldTransform = g.transform
-		val oldTransform = g.transform
-		g.translate(offsetX * TILE_WIDTH * scale, offsetY * TILE_HEIGHT * scale)
-		g.scale(scale, scale)
-		g.drawImage(cachedBitmap!!, 0, 0, null)
+		g.preserveTransform {
+			g.translate(offsetX * TILE_WIDTH * scale, offsetY * TILE_HEIGHT * scale)
+			g.scale(scale, scale)
+			g.drawImage(tilesBitmap, 0, 0, null)
+		}
 
 		//g.transform = oldTransform
 
 		//g.translate(offsetX * TILE_WIDTH * scale, offsetY * TILE_HEIGHT * scale)
 
-		/*
-		g.preserveStroke {
-			g.color = Color.DARK_GRAY
-			g.stroke = BasicStroke((1f / scale).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0f, floatArrayOf(2f), 0f)
-			for (y in 0 until displayTilesY) g.drawLine(0, y * TILE_HEIGHT, displayTilesX * TILE_WIDTH, y * TILE_HEIGHT)
-			for (x in 0 until displayTilesX) g.drawLine(x * TILE_WIDTH, 0, x * TILE_WIDTH, displayTilesY * TILE_HEIGHT)
+		if (drawGrid) {
+			g.preserveTransform {
+				g.translate(offsetX * TILE_WIDTH * scale, offsetY * TILE_HEIGHT * scale)
+				g.drawImage(cachedGrid.get(GridCacheKey(
+					displayTilesX = displayTilesX,
+					displayTilesY = displayTilesY,
+					TILE_WIDTH = TILE_WIDTH,
+					TILE_HEIGHT = TILE_HEIGHT,
+					scale = scale
+				)) {
+					UIUtil.createImage(this, (displayTilesX * TILE_WIDTH * scale).toInt(), (displayTilesY * TILE_HEIGHT * scale).toInt(), BufferedImage.TYPE_INT_ARGB_PRE).also {
+						val g2 = it.createGraphics()
+						g2.scale(scale, scale)
+						g2.preserveStroke {
+							g2.color = Color.DARK_GRAY
+							g2.stroke = BasicStroke((1f / scale).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0f, floatArrayOf(2f), 0f)
+							for (y in 0 until displayTilesY) g2.drawLine(0, y * TILE_HEIGHT, displayTilesX * TILE_WIDTH, y * TILE_HEIGHT)
+							for (x in 0 until displayTilesX) g2.drawLine(x * TILE_WIDTH, 0, x * TILE_WIDTH, displayTilesY * TILE_HEIGHT)
+						}
+					}
+				}, 0, 0, null)
+			}
 		}
-		 */
-
-		g.transform = oldTransform
-		g.scale(scale, scale)
 
 		selected?.let { selected ->
-			g.preserveStroke {
-				g.stroke = BasicStroke((2f / scale).toFloat())
-				g.color = Color.RED
-				g.drawRect(
+			g.preserveTransform {
+				g.scale(scale, scale)
+				g.preserveStroke {
+					g.stroke = BasicStroke((2f / scale).toFloat())
+					g.color = Color.RED
+					g.drawRect(
 						selected.x * TILE_WIDTH,
 						selected.y * TILE_HEIGHT,
 						selected.width * TILE_WIDTH,
 						selected.height * TILE_HEIGHT
-				)
+					)
+				}
 			}
 		}
 	}
 
+	var drawGrid = true
 	var selected: Rectangle? = null
 	fun selectedRange(x: Int, y: Int, width: Int = 1, height: Int = 1) {
 		selected = Rectangle(x, y, width, height)
@@ -250,4 +271,46 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 		selected = null
 		mapRepaint(false)
 	}
+}
+
+fun Bitmap32._fastMix(src: BitmapSlice<Bitmap32>, dx: Int = 0, dy: Int = 0) {
+	val b = src.bounds
+	val availableWidth = width - dx
+	val availableHeight = height - dy
+	val awidth = kotlin.math.min(availableWidth, b.width)
+	val aheight = kotlin.math.min(availableHeight, b.height)
+	_fastMix(src.bmp, dx, dy, b.x, b.y, b.x + awidth, b.y + aheight)
+}
+
+fun Bitmap32._fastMix(src: Bitmap32, dx: Int, dy: Int, sleft: Int, stop: Int, sright: Int, sbottom: Int) {
+	val dst = this
+	val width = sright - sleft
+	val height = sbottom - stop
+	val dstDataPremult = dst.dataPremult
+	val srcDataPremult = src.dataPremult
+
+	for (y in 0 until height) {
+		val dstOffset = dst.index(dx, dy + y)
+		val srcOffset = src.index(sleft, stop + y)
+		for (x in 0 until width) dstDataPremult[dstOffset + x] = fastBlend(dstDataPremult[dstOffset + x], srcDataPremult[srcOffset + x])
+	}
+}
+
+fun fastBlend32(dst: RGBAPremultiplied, src: RGBAPremultiplied): RGBAPremultiplied  {
+	val alpha = (0x100 - src.a).coerceIn(0, 0x100)
+	val colora = src.value
+	val colorb = dst.value
+	val a = (src.a) + ((alpha * (dst.a and 0xFF)) ushr 8)
+	val rb = (colora and 0xFF00FF) + ((alpha * (colorb and 0xFF00FF)) ushr 8)
+	val g = (colora and 0x00FF00) + ((alpha * (colorb and 0x00FF00)) ushr 8)
+	return RGBAPremultiplied(((rb and 0xFF00FF) + (g and 0x00FF00)) or (a shl 24))
+}
+
+fun fastBlend(dst: RGBAPremultiplied, src: RGBAPremultiplied): RGBAPremultiplied  {
+	val alpha = (0xFF - src.a) and 0xFF
+	val colora = src.value.toLong()
+	val colorb = dst.value.toLong()
+	val rb = (colora and 0x00FF00FFL) + ((alpha * (colorb and 0x00FF00FFL)) ushr 8)
+	val ag = (colora and 0xFF00FF00L) + ((alpha * (colorb and 0xFF00FF00L)) ushr 8)
+	return RGBAPremultiplied(((rb and 0xFF00FFL) + (ag and 0xFF00FF00L)).toInt())
 }
