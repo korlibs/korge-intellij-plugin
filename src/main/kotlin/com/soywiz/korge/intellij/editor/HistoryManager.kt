@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
-import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.*
 
 class HistoryManager {
 	class Entry(val cursor: Int, val name: String, val apply: (redo: Boolean) -> Unit) {
@@ -10,12 +10,14 @@ class HistoryManager {
 	}
 
 	var cursor = 0
+	var saved = true
 	val entries = arrayListOf<Entry>()
 	val onChange = Signal<Unit>()
-	val isModified: Boolean get() = cursor != 0
+	val isModified: Boolean get() = !saved
 	val onAdd = Signal<Entry>()
 	val onUndo = Signal<Entry>()
 	val onRedo = Signal<Entry>()
+	val onSave = Signal<Unit>()
 
 	fun add(name: String, apply: (redo: Boolean) -> Unit): Entry {
 		while (cursor < entries.size) entries.removeAt(entries.size - 1)
@@ -25,9 +27,15 @@ class HistoryManager {
 		cursor = entry.cursor
 		onChange(Unit)
 		onAdd(entry)
+		saved = false
 		return entry
 	}
 	fun addAndDo(name: String, apply: (redo: Boolean) -> Unit) = add(name, apply).redo()
+
+	fun save() {
+		onSave()
+		saved = true
+	}
 
 	fun undo(): Boolean {
 		if (cursor > 0) {
@@ -36,6 +44,7 @@ class HistoryManager {
 				entry.undo()
 				onChange(Unit)
 				onUndo(entry)
+				saved = false
 				return true
 			}
 		}
@@ -49,6 +58,7 @@ class HistoryManager {
 				entry.redo()
 				onChange(Unit)
 				onRedo(entry)
+				saved = false
 				return true
 			}
 		}

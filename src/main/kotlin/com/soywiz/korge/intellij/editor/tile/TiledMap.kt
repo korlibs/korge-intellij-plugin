@@ -1,30 +1,23 @@
 // @TODO: @WARNING: Duplicated from KorGE to be able to modify it. Please, copy again to KorGE once this is stable
 package com.soywiz.korge.intellij.editor.tile
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klogger.Logger
-import com.soywiz.kmem.readIntArrayLE
-import com.soywiz.korge.view.tiles.TileSet
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.format.readBitmapOptimized
-import com.soywiz.korio.compression.deflate.GZIP
-import com.soywiz.korio.compression.deflate.ZLib
-import com.soywiz.korio.compression.uncompress
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korio.serialization.xml.Xml
-import com.soywiz.korio.serialization.xml.readXml
-import com.soywiz.korio.util.encoding.fromBase64
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IRectangleInt
+import com.soywiz.kds.iterators.*
+import com.soywiz.klogger.*
+import com.soywiz.kmem.*
+import com.soywiz.korge.intellij.util.*
+import com.soywiz.korge.view.tiles.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.compression.*
+import com.soywiz.korio.compression.deflate.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korio.util.encoding.*
+import com.soywiz.korma.geom.*
 import kotlin.collections.set
-import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.*
 import kotlin.text.toInt
 
 class TiledMapData(
@@ -53,16 +46,17 @@ fun TiledMapData?.getObjectPosByName(name: String): IPoint? {
 }
 
 data class TileSetData(
-	val name: String,
-	val firstgid: Int,
-	val tilewidth: Int,
-	val tileheight: Int,
-	val tilecount: Int,
-	val columns: Int,
-	val image: Xml?,
-	val source: String,
-	val width: Int,
-	val height: Int
+		val name: String,
+		val firstgid: Int,
+		val tilewidth: Int,
+		val tileheight: Int,
+		val tilecount: Int,
+		val columns: Int,
+		val image: Xml?,
+		val imageSource: String,
+		val width: Int,
+		val height: Int,
+		val tilesetSource: String? = null
 )
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
@@ -87,6 +81,7 @@ class TiledMap(
 	}
 
 	sealed class Layer {
+		var id: Int = 1
 		var name: String = ""
 		var visible: Boolean = true
 		var locked: Boolean = false
@@ -98,6 +93,7 @@ class TiledMap(
 		val properties = LinkedHashMap<String, Any>()
 		companion object {
 			val BASE_PROPS = listOf(
+				Layer::id,
 				Layer::name, Layer::visible, Layer::locked, Layer::draworder,
 				Layer::color, Layer::opacity, Layer::offsetx, Layer::offsety
 			)
@@ -112,10 +108,16 @@ class TiledMap(
 		}
 		abstract fun clone(): Layer
 
-		class Patterns(
-			var map: Bitmap32 = Bitmap32(0, 0)
+		class Patterns constructor(
+			var map: Bitmap32 = Bitmap32(0, 0),
+			var encoding: String = "csv",
+			var compression: String = ""
 		) : Layer() {
-			override fun clone(): Patterns = Patterns(map.clone()).also { it.copyFrom(this) }
+			val data get() = map
+			val width: Int get() = map.width
+			val height: Int get() = map.height
+			val area: Int get() = width * height
+			override fun clone(): Patterns = Patterns(map.clone(), encoding, compression).also { it.copyFrom(this) }
 		}
 
 		data class ObjectInfo(
@@ -198,6 +200,31 @@ private fun Xml.parseProperties(): Map<String, Any> {
 	return out
 }
 
+fun parseTileSetData(element: Xml, firstgid: Int, tilesetSource: String? = null): TileSetData {
+	//<?xml version="1.0" encoding="UTF-8"?>
+	//<tileset version="1.2" tiledversion="1.3.1" name="Overworld" tilewidth="16" tileheight="16" tilecount="1440" columns="40">
+	//	<image source="Overworld.png" width="640" height="576"/>
+	//</tileset>
+	val image = element.child("image")
+	return TileSetData(
+			name = element.str("name"),
+			firstgid = firstgid,
+			tilewidth = element.int("tilewidth"),
+			tileheight = element.int("tileheight"),
+			tilecount = element.int("tilecount", -1),
+			columns = element.int("columns", -1),
+			image = image,
+			tilesetSource = tilesetSource,
+			imageSource = image?.str("source") ?: "",
+			width = image?.int("width", 0) ?: 0,
+			height = image?.int("height", 0) ?: 0
+	)
+}
+
+suspend fun VfsFile.readTileSetData(firstgid: Int = 1): TileSetData {
+	return parseTileSetData(this.readXml(), firstgid, this.baseName)
+}
+
 suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	val log = tilemapLog
 	val file = this
@@ -231,36 +258,10 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				tilemapLog.trace { "tileset" }
 				val firstgid = element.int("firstgid")
 
-				// TSX file
-				val element = if (element.hasAttribute("source")) {
-					folder[element.str("source")].readXml()
-				} else {
-					element
-				}
-
-				val name = element.str("name")
-				val tilewidth = element.int("tilewidth")
-				val tileheight = element.int("tileheight")
-				val tilecount = element.int("tilecount", -1)
-				val columns = element.int("columns", -1)
-				val image = element.child("image")
-				val source = image?.str("source") ?: ""
-				val width = image?.int("width", 0) ?: 0
-				val height = image?.int("height", 0) ?: 0
-
-				tiledMap.tilesets += TileSetData(
-					name = name,
-					firstgid = firstgid,
-					tilewidth = tilewidth,
-					tileheight = tileheight,
-					tilecount = tilecount,
-					columns = columns,
-					image = image,
-					source = source,
-					width = width,
-					height = height
-				)
-
+				// TSX file / embedded element
+				val sourcePath = element.getString("source")
+				val element = if (sourcePath != null) folder[sourcePath].readXml() else element
+				tiledMap.tilesets += parseTileSetData(element, firstgid, sourcePath)
 				//lastBaseTexture = tex.base
 			}
 			elementName == "layer" || elementName == "objectgroup" || elementName == "imagelayer" -> {
@@ -320,6 +321,8 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 						}
 						if (tilesArray.size != count) invalidOp("tilesArray.size != count (${tilesArray.size} != ${count})")
 						layer.map = Bitmap32(width, height, RgbaArray(tilesArray))
+						layer.encoding = encoding
+						layer.compression = compression
 					}
 					is TiledMap.Layer.Image -> {
 						for (image in element.children("image")) {
@@ -378,6 +381,74 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	return tiledMap
 }
 
+suspend fun VfsFile.writeTiledMap(map: TiledMap) {
+	writeString(map.toXML().toString())
+}
+
+fun TileSetData.toXML(): Xml {
+	//<tileset version="1.2" tiledversion="1.3.1" name="Overworld" tilewidth="16" tileheight="16" tilecount="1440" columns="40">
+	//  <image source="Overworld.png" width="640" height="576"/>
+	//</tileset>
+	return buildXml("tileset",
+		"version" to 1.2,
+		"tiledversion" to "1.3.1",
+		"name" to name,
+		"tilewidth" to tilewidth,
+		"tileheight" to tileheight,
+		"tilecount" to tilecount,
+		"columns" to columns
+	) {
+		node("image", "source" to imageSource, "width" to width, "height" to height)
+	}
+}
+
+fun TiledMap.toXML(): Xml {
+	val map = this
+	return buildXml("map",
+		"version" to 1.2,
+		"tiledversion" to "1.3.1",
+		"orientation" to "orthogonal",
+		"renderorder" to "right-down",
+		"compressionlevel" to -1,
+		"width" to map.width,
+		"height" to map.height,
+		"tilewidth" to map.tilewidth,
+		"tileheight" to map.tileheight,
+		"infinite" to 0,
+		"nextlayerid" to map.allLayers.size + 1,
+		"nextobjectid" to map.objectLayers.size + 1
+	) {
+		for (tileset in map.tilesets) {
+			if (tileset.data.tilesetSource != null) {
+				node("tileset", "firstgid" to tileset.data.firstgid, "source" to tileset.data.tilesetSource)
+			} else {
+				node(tileset.data.toXML())
+			}
+		}
+		for (layer in map.allLayers) {
+			when (layer) {
+				is TiledMap.Layer.Patterns -> {
+					node("layer", "id" to layer.id, "name" to layer.name, "width" to layer.width, "height" to layer.height) {
+						node("data", "encoding" to "csv") {
+							text(buildString(layer.area * 4) {
+								appendln()
+								for (y in 0 until layer.height) {
+									for (x in 0 until layer.width) {
+										append(layer.data[x, y].value)
+										if (y != layer.height - 1 || x != layer.width - 1) append(',')
+									}
+									appendln()
+								}
+							})
+						}
+					}
+				}
+				else -> TODO("Unsupported layer $layer")
+			}
+		}
+	}
+}
+
 suspend fun VfsFile.readTiledMap(
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
@@ -396,7 +467,7 @@ suspend fun VfsFile.readTiledMap(
 	val tiledTilesets = arrayListOf<TiledMap.TiledTileset>()
 
 	data.tilesets.fastForEach { tileset ->
-		var bmp = folder[tileset.source].readBitmapOptimized()
+		var bmp = folder[tileset.imageSource].readBitmapOptimized()
 
 		// @TODO: Preprocess this, so in JS we don't have to do anything!
 		if (hasTransparentColor) {

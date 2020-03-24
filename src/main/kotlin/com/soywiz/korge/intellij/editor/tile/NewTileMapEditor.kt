@@ -1,26 +1,21 @@
 package com.soywiz.korge.intellij.editor.tile
 
-import com.intellij.ui.components.JBScrollPane
-import com.soywiz.kmem.clamp
-import com.soywiz.korge.intellij.editor.HistoryManager
+import com.intellij.ui.components.*
+import com.soywiz.kmem.*
+import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.ui.*
-import com.soywiz.korge.intellij.util.ObservableProperty
-import com.soywiz.korge.intellij.util.addCallInit
-import com.soywiz.korge.intellij.util.swapIndices
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.file.std.localCurrentDirVfs
-import com.soywiz.korma.geom.PointInt
-import kotlinx.coroutines.runBlocking
-import java.awt.BorderLayout
-import java.awt.Container
-import java.awt.KeyboardFocusManager
-import java.awt.event.KeyEvent
-import javax.swing.JFrame
-import javax.swing.JPanel
-import kotlin.math.max
-import kotlin.math.min
+import com.soywiz.korge.intellij.util.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
+import java.awt.*
+import java.awt.event.*
+import javax.swing.*
+import kotlin.math.*
 
 fun Styled<out Container>.createTileMapEditor(
 		tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() },
@@ -474,12 +469,25 @@ private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 
 
 class MyTileMapEditorPanel(
-		val tmx: TiledMap,
+		val tmxFile: VfsFile,
 		val history: HistoryManager = HistoryManager(),
-		val registerHistoryShortcuts: Boolean = true
+		val registerHistoryShortcuts: Boolean = true,
+		val onSaveXml: (String) -> Unit = {}
 ) : JPanel(BorderLayout()) {
+	val tmx = runBlocking { tmxFile.readTiledMap() }
 	init {
 		styled.createTileMapEditor(tmx, history, registerHistoryShortcuts)
+		history.onSave {
+			runBlocking {
+				val xmlString = tmx.toXML().toString()
+				onSaveXml(xmlString)
+				//tmxFile.writeString(xmlString)
+			}
+		}
+		//history.onChange {
+		history.onAdd {
+			history.save()
+		}
 	}
 /*
 	val realPanel = tileMapEditor.contentPanel
@@ -546,17 +554,16 @@ class LayersController(val panel: LayersPane) {
 }
  */
 
-class MyTileMapEditorFrame(val tmx: TiledMap) : JFrame() {
+class MyTileMapEditorFrame(val tmxFile: VfsFile) : JFrame() {
 	init {
-		contentPane = MyTileMapEditorPanel(tmx)
+		contentPane = MyTileMapEditorPanel(tmxFile)
 		pack()
 	}
 
 	companion object {
 		@JvmStatic
 		fun main(args: Array<String>) {
-			val tmx = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() }
-			val frame = MyTileMapEditorFrame(tmx)
+			val frame = MyTileMapEditorFrame(localCurrentDirVfs["samples/gfx/sample.tmx"])
 			frame.defaultCloseOperation = EXIT_ON_CLOSE
 			frame.setLocationRelativeTo(null)
 			frame.isVisible = true

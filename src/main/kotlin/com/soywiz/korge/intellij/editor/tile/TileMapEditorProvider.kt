@@ -1,22 +1,16 @@
 package com.soywiz.korge.intellij.editor.tile
 
-import com.intellij.diff.util.FileEditorBase
-import com.intellij.openapi.command.CommandProcessor
-import com.intellij.openapi.command.UndoConfirmationPolicy
-import com.intellij.openapi.command.undo.DocumentReferenceManager
-import com.intellij.openapi.command.undo.UndoManager
-import com.intellij.openapi.command.undo.UndoableAction
+import com.intellij.diff.util.*
+import com.intellij.openapi.command.*
+import com.intellij.openapi.command.undo.*
 import com.intellij.openapi.fileEditor.*
-import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VirtualFile
-import com.soywiz.korge.intellij.editor.HistoryManager
-import com.soywiz.korge.intellij.toVfs
-import kotlinx.coroutines.runBlocking
-import java.beans.PropertyChangeListener
-import javax.swing.JComponent
-import javax.swing.JFrame
+import com.intellij.openapi.project.*
+import com.intellij.openapi.util.*
+import com.intellij.openapi.vfs.*
+import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.editor.*
+import java.beans.*
+import javax.swing.*
 
 class TileMapEditorProvider : FileEditorProvider, DumbAware {
 	override fun getEditorTypeId(): String = this::class.java.name
@@ -35,11 +29,22 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 
 	override fun createEditor(project: Project, file: VirtualFile): FileEditor {
 		val tmxFile = file.toVfs()
-		val tmx = runBlocking { tmxFile.readTiledMap() }
 		val history = HistoryManager()
 		val undoManager = UndoManager.getInstance(project)
+		val ref = DocumentReferenceManager.getInstance().create(file)
+		val refs = arrayOf(ref)
+
 		val fileEditor = object : FileEditorBase(), DumbAware {
-			val panel by lazy { MyTileMapEditorPanel(tmx, history, registerHistoryShortcuts = false) }
+			val panel = MyTileMapEditorPanel(tmxFile, history, registerHistoryShortcuts = false, onSaveXml = { xmlText ->
+				val doc = ref.document
+				if (doc != null) {
+					//runWriteAction {
+					run {
+						println("DOCUMENT SET TEXT")
+						doc.setText(xmlText)
+					}
+				}
+			})
 			override fun isModified(): Boolean = panel.history.isModified
 			override fun getName(): String = "Editor"
 			override fun setState(state: FileEditorState) = Unit
@@ -54,7 +59,6 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 			override fun dispose() = Unit
 		}
 
-		val refs = arrayOf(DocumentReferenceManager.getInstance().create(file))
 		history.onAdd { entry ->
 			CommandProcessor.getInstance().executeCommand(project, {
 				undoManager.undoableActionPerformed(object : UndoableAction {
