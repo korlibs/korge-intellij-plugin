@@ -188,7 +188,7 @@ fun Styled<out Container>.createTileMapEditor(
 								val items = bufferDraw.toList()
 								history.add("DRAW") { redo ->
 									for (item in if (redo) items else items.reversed()) item.apply(mapComponent.tmx, redo = redo)
-									mapComponent.mapRepaint()
+									mapComponent.mapRepaint(true)
 								}
 								bufferDraw.clear()
 							}
@@ -214,7 +214,7 @@ fun Styled<out Container>.createTileMapEditor(
 												//layer.map[it.x + x, it.y + y] = pickedData[x, y]
 											}
 										}
-										mapComponent.mapRepaint()
+										mapComponent.mapRepaint(true)
 										unsavedChanges.value = true
 									}
 								}
@@ -224,7 +224,7 @@ fun Styled<out Container>.createTileMapEditor(
 							//println("DOWN_RIGHT: $it")
 						}
 						updateTilemap {
-							mapComponent.mapRepaint()
+							mapComponent.mapRepaint(true)
 						}
 						this.component.add(JBScrollPane(mapComponent))
 						zoomLevel { mapComponent.scale = zoomRatio() }
@@ -457,13 +457,13 @@ fun Styled<out Container>.createTileMapEditor(
 
 private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 	val tileset = this.tileset
-	val mapWidth = this.data.columns
+	val mapWidth = this.data.columns.takeIf { it >= 0 } ?: (this.tileset.width / this.data.tilewidth)
 	val mapHeight = Math.ceil(this.data.tilecount.toDouble() / this.data.columns.toDouble()).toInt()
 
 	return TiledMap(TiledMapData(
 		width = mapWidth, height = mapHeight,
 		tilewidth = tileset.width, tileheight = tileset.height,
-		allLayers = arrayListOf(TiledMap.Layer.Patterns(Bitmap32(mapWidth, mapHeight) { x, y -> RGBA(y * mapWidth + x) }))
+		allLayers = arrayListOf(TiledMap.Layer.Patterns(Bitmap32(mapWidth.coerceAtLeast(1), mapHeight.coerceAtLeast(1)) { x, y -> RGBA(y * mapWidth + x) }))
 	), listOf(this), tileset)
 }
 

@@ -27,13 +27,23 @@ suspend fun VfsFile.readTiledMap(
 	val combinedTileset = arrayOfNulls<BmpSlice>(data.maxGid + 1)
 
 	data.imageLayers.fastForEach { layer ->
-		layer.image = folder[layer.source].readBitmapOptimized()
+		layer.image = try {
+			folder[layer.source].readBitmapOptimized()
+		} catch (e: Throwable) {
+			e.printStackTrace()
+			Bitmap32(layer.width, layer.height)
+		}
 	}
 
 	val tiledTilesets = arrayListOf<TiledMap.TiledTileset>()
 
 	data.tilesets.fastForEach { tileset ->
-		var bmp = folder[tileset.imageSource].readBitmapOptimized()
+		var bmp = try {
+			folder[tileset.imageSource].readBitmapOptimized()
+		} catch (e: Throwable) {
+			e.printStackTrace()
+			Bitmap32(tileset.width, tileset.height)
+		}
 
 		// @TODO: Preprocess this, so in JS we don't have to do anything!
 		if (hasTransparentColor) {

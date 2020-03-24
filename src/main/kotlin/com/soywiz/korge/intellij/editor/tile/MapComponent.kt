@@ -1,18 +1,16 @@
 package com.soywiz.korge.intellij.editor.tile
 
-import com.soywiz.korge.intellij.util.preserveStroke
-import com.soywiz.korim.awt.toAwt
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.PointInt
+import com.soywiz.korge.intellij.util.*
+import com.soywiz.korim.awt.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
 import java.awt.*
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.MouseMotionAdapter
-import javax.swing.JComponent
-import javax.swing.SwingUtilities
+import java.awt.Point
+import java.awt.Rectangle
+import java.awt.event.*
+import java.awt.image.*
+import javax.swing.*
 
 
 class MapComponent(val tmx: TiledMap) : JComponent() {
@@ -24,7 +22,10 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 	val overTileSignal = Signal<PointInt>()
 	val outTileSignal = Signal<PointInt>()
 
-	fun mapRepaint() {
+	fun mapRepaint(invalidateBitmapCache: Boolean) {
+		if (invalidateBitmapCache) {
+			cachedBitmapKey = null
+		}
 		updateSize()
 		revalidate()
 		parent?.revalidate()
@@ -34,7 +35,7 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 	var scale: Double = 2.0
 		set(value) {
 			field = value
-			mapRepaint()
+			mapRepaint(false)
 		}
 	val maxTileGid = tmx.tilesets.map { it.firstgid + it.tileset.textures.size }.max() ?: 0
 
@@ -141,6 +142,14 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
             (coords.y / tmx.tileheight / scale).toInt()
         )
 
+	data class CacheKey(
+		val offsetX: Int, val offsetY: Int,
+		val displayTilesX: Int, val displayTilesY: Int,
+		val TILE_WIDTH: Int, val TILE_HEIGHT: Int
+	)
+	private var cachedBitmapKey: CacheKey? = null
+	private var cachedBitmap: BufferedImage? = null
+
 	override fun paintComponent(g: Graphics) {
 		val g = (g as Graphics2D)
 
@@ -154,52 +163,66 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 		val clipBounds = g.clipBounds
 		val displayTilesX = ((clipBounds.width / TILE_WIDTH / scale) + 3).toInt()
 		val displayTilesY = ((clipBounds.height / TILE_HEIGHT / scale) + 3).toInt()
-		val temp = Bitmap32(
-            (displayTilesX * TILE_WIDTH),
-            (displayTilesY * TILE_HEIGHT)
-        )
-
 		val offsetX = (clipBounds.x / TILE_WIDTH / scale).toInt()
 		val offsetY = (clipBounds.y / TILE_HEIGHT / scale).toInt()
 
-		for (layer in tmx.allLayers) {
-			if (!layer.visible) continue
-			when (layer) {
-				is TiledMap.Layer.Patterns -> {
-					for (x in 0 until displayTilesX) {
-						for (y in 0 until displayTilesY) {
-							val rx = x + offsetX
-							val ry = y + offsetY
+		val cacheKey = CacheKey(
+			offsetX = offsetX, offsetY = offsetY,
+			displayTilesX = displayTilesX,
+			displayTilesY = displayTilesY,
+			TILE_WIDTH = TILE_WIDTH, TILE_HEIGHT = TILE_WIDTH
+		)
 
-							if (rx < 0 || rx >= layer.map.width) continue
-							if (ry < 0 || ry >= layer.map.height) continue
+		if (cachedBitmapKey != cacheKey) {
+			//println("REPAINT: $cachedBitmapKey != $cacheKey")
+			cachedBitmapKey = cacheKey
+			val temp = Bitmap32(
+				(displayTilesX * TILE_WIDTH),
+				(displayTilesY * TILE_HEIGHT)
+			)
+			for (layer in tmx.allLayers) {
+				if (!layer.visible) continue
+				when (layer) {
+					is TiledMap.Layer.Patterns -> {
+						for (x in 0 until displayTilesX) {
+							for (y in 0 until displayTilesY) {
+								val rx = x + offsetX
+								val ry = y + offsetY
 
-							val tileIdx = layer.map[rx, ry].value
-							val tile = tiles.getOrNull(tileIdx)
-							if (tile != null) {
-								temp._draw(tile.miniSlice, x * TILE_WIDTH, y * TILE_HEIGHT, mix = true)
+								if (rx < 0 || rx >= layer.map.width) continue
+								if (ry < 0 || ry >= layer.map.height) continue
+
+								val tileIdx = layer.map[rx, ry].value
+								val tile = tiles.getOrNull(tileIdx)
+								if (tile != null) {
+									temp._draw(tile.miniSlice, x * TILE_WIDTH, y * TILE_HEIGHT, mix = true)
+								}
 							}
 						}
 					}
 				}
 			}
+			cachedBitmap = temp.toAwt()
 		}
 
 		//val oldTransform = g.transform
 		val oldTransform = g.transform
 		g.translate(offsetX * TILE_WIDTH * scale, offsetY * TILE_HEIGHT * scale)
 		g.scale(scale, scale)
-		g.drawImage(temp.toAwt(), 0, 0, null)
+		g.drawImage(cachedBitmap!!, 0, 0, null)
 
 		//g.transform = oldTransform
 
 		//g.translate(offsetX * TILE_WIDTH * scale, offsetY * TILE_HEIGHT * scale)
+
+		/*
 		g.preserveStroke {
 			g.color = Color.DARK_GRAY
 			g.stroke = BasicStroke((1f / scale).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0f, floatArrayOf(2f), 0f)
 			for (y in 0 until displayTilesY) g.drawLine(0, y * TILE_HEIGHT, displayTilesX * TILE_WIDTH, y * TILE_HEIGHT)
 			for (x in 0 until displayTilesX) g.drawLine(x * TILE_WIDTH, 0, x * TILE_WIDTH, displayTilesY * TILE_HEIGHT)
 		}
+		 */
 
 		g.transform = oldTransform
 		g.scale(scale, scale)
@@ -221,10 +244,10 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 	var selected: Rectangle? = null
 	fun selectedRange(x: Int, y: Int, width: Int = 1, height: Int = 1) {
 		selected = Rectangle(x, y, width, height)
-		mapRepaint()
+		mapRepaint(false)
 	}
 	fun unselect() {
 		selected = null
-		mapRepaint()
+		mapRepaint(false)
 	}
 }
