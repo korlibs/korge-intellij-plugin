@@ -14,8 +14,8 @@ class TiledMapData(
 	var height: Int = 0,
 	var tilewidth: Int = 0,
 	var tileheight: Int = 0,
-	val allLayers: ArrayList<TiledMap.Layer> = arrayListOf(),
-	val tilesets: ArrayList<TileSetData> = arrayListOf()
+	val allLayers: MutableList<TiledMap.Layer> = arrayListOf(),
+	val tilesets: MutableList<TileSetData> = arrayListOf()
 ) {
 	val maxGid get() = tilesets.map { it.firstgid + it.tilecount }.max() ?: 0
 	val pixelWidth: Int get() = width * tilewidth
@@ -24,6 +24,11 @@ class TiledMapData(
 	inline val imageLayers get() = allLayers.images
 	inline val objectLayers get() = allLayers.objects
 	fun getObjectByName(name: String) = objectLayers.mapNotNull { it.getByName(name) }.firstOrNull()
+	fun clone() = TiledMapData(
+		width, height, tilewidth, tileheight,
+		allLayers.map { it.clone() }.toMutableList(),
+		tilesets.map { it.clone() }.toMutableList()
+	)
 }
 
 fun TiledMap.Layer.Objects.Object.getPos(map: TiledMapData): IPoint =
@@ -64,14 +69,16 @@ data class TileSetData constructor(
 	val tilesetSource: String? = null,
 	val terrains: List<TerrainData> = listOf(),
 	val tiles: List<TileData> = listOf()
-)
+) {
+	fun clone() = copy()
+}
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(TiledMapFactory::class)
 class TiledMap(
-	val data: TiledMapData,
-	val tilesets: List<TiledTileset>,
-	val tileset: TileSet
+	var data: TiledMapData,
+	var tilesets: List<TiledTileset>,
+	var tileset: TileSet
 ) {
 	val width get() = data.width
 	val height get() = data.height
@@ -84,7 +91,10 @@ class TiledMap(
 	val imageLayers get() = data.imageLayers
 	val objectLayers get() = data.objectLayers
 
-	class TiledTileset(val tileset: TileSet, val data: TileSetData, val firstgid: Int = 0) {
+	fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() }, tileset.clone())
+
+	data class TiledTileset(val tileset: TileSet, val data: TileSetData, val firstgid: Int = 0) {
+		fun clone(): TiledTileset = TiledTileset(tileset.clone(), data.clone(), firstgid)
 	}
 
 	sealed class Layer {
@@ -165,6 +175,8 @@ class TiledMap(
 		}
 	}
 }
+
+private fun TileSet.clone(): TileSet = TileSet(this.textures, this.width, this.height, this.base)
 
 fun Bitmap.clone(): Bitmap = when (this) {
 	is Bitmap32 -> this.clone()

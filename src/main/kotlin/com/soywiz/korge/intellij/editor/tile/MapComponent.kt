@@ -231,14 +231,14 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 					TILE_HEIGHT = TILE_HEIGHT,
 					scale = scale
 				)) {
-					UIUtil.createImage(this, (displayTilesX * TILE_WIDTH * scale).toInt(), (displayTilesY * TILE_HEIGHT * scale).toInt(), BufferedImage.TYPE_INT_ARGB_PRE).also {
+					UIUtil.createImage(this, (displayTilesX * TILE_WIDTH * scale).toInt() + 1, (displayTilesY * TILE_HEIGHT * scale).toInt() + 1, BufferedImage.TYPE_INT_ARGB_PRE).also {
 						val g2 = it.createGraphics()
 						g2.scale(scale, scale)
 						g2.preserveStroke {
 							g2.color = Color.DARK_GRAY
 							g2.stroke = BasicStroke((1f / scale).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0f, floatArrayOf(2f), 0f)
-							for (y in 0 until displayTilesY) g2.drawLine(0, y * TILE_HEIGHT, displayTilesX * TILE_WIDTH, y * TILE_HEIGHT)
-							for (x in 0 until displayTilesX) g2.drawLine(x * TILE_WIDTH, 0, x * TILE_WIDTH, displayTilesY * TILE_HEIGHT)
+							for (y in 0..displayTilesY) g2.drawLine(0, y * TILE_HEIGHT, displayTilesX * TILE_WIDTH, y * TILE_HEIGHT)
+							for (x in 0..displayTilesX) g2.drawLine(x * TILE_WIDTH, 0, x * TILE_WIDTH, displayTilesY * TILE_HEIGHT)
 						}
 					}
 				}, 0, 0, null)

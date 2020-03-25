@@ -35,7 +35,11 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 		val refs = arrayOf(ref)
 
 		val fileEditor = object : FileEditorBase(), DumbAware {
-			val panel = MyTileMapEditorPanel(tmxFile, history, registerHistoryShortcuts = false, onSaveXml = { xmlText ->
+			val panel = MyTileMapEditorPanel(
+				tmxFile, history,
+				registerHistoryShortcuts = false,
+				projectCtx = ProjectContext(project, file),
+				onSaveXml = { xmlText ->
 				val doc = ref.document
 				if (doc != null) {
 					//runWriteAction {

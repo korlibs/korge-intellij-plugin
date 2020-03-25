@@ -1,10 +1,8 @@
 package com.soywiz.korge.intellij.ui
 
+import com.intellij.openapi.ui.*
 import com.intellij.ui.components.JBTabbedPane
-import java.awt.Component
-import java.awt.Container
-import java.awt.Dimension
-import java.awt.LayoutManager2
+import java.awt.*
 import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.*
@@ -45,6 +43,10 @@ fun Styled<out Container>.button(text: String, block: @UIDslMarker Styled<JButto
 
 fun Styled<out Container>.label(text: String, block: @UIDslMarker Styled<JLabel>.() -> Unit = {}) {
 	component.add(JLabel(text).also { block(it.styled) })
+}
+
+fun Styled<out Container>.textField(text: String = "", block: @UIDslMarker Styled<JTextField>.() -> Unit = {}) {
+	component.add(JTextField(text).also { block(it.styled) })
 }
 
 fun Styled<out Container>.slider(min: Int = 0, max: Int = 100, value: Int = (max + min) / 2, block: @UIDslMarker Styled<JSlider>.() -> Unit = {}) {
@@ -335,4 +337,23 @@ fun JComponent.repaintAndInvalidate() {
 	repaint()
 	parent?.invalidate()
 	parent?.repaint()
+}
+
+
+fun showDialog(title: String = "Dialog", block: Styled<JPanel>.() -> Unit): Boolean {
+	class MyDialogWrapper : DialogWrapper(true) {
+		override protected fun createCenterPanel(): JComponent? {
+			val dialogPanel = JPanel(FillLayout())
+			dialogPanel.preferredSize = Dimension(200, 200)
+			block(dialogPanel.styled)
+			return dialogPanel
+		}
+
+		init {
+			init()
+			this.setTitle(title)
+		}
+	}
+
+	return MyDialogWrapper().showAndGet()
 }

@@ -1,5 +1,9 @@
 package com.soywiz.korge.intellij.editor.tile
 
+import com.intellij.openapi.fileChooser.*
+import com.intellij.openapi.project.*
+import com.intellij.openapi.vfs.*
+import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.intellij.editor.*
@@ -15,12 +19,23 @@ import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
 import javax.swing.*
+import javax.swing.event.*
 import kotlin.math.*
 
+
+data class ProjectContext(val project: Project, val file: VirtualFile)
+
+fun ProjectContext?.chooseFile(): VirtualFile? {
+	return FileChooser.chooseFile(
+		FileChooserDescriptor(true, false, false, false, false, false),
+		this?.project, this?.file
+	)
+}
 fun Styled<out Container>.createTileMapEditor(
 		tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() },
 		history: HistoryManager = HistoryManager(),
-		registerHistoryShortcuts: Boolean = true
+		registerHistoryShortcuts: Boolean = true,
+		projectCtx: ProjectContext? = null
 ) {
 	//val zoomLevels = listOf(10, 15, 25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
 	val zoomLevels = listOf(25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
@@ -50,7 +65,73 @@ fun Styled<out Container>.createTileMapEditor(
 			button("Oval")
 			//}
 			//toolbar {
-			iconButton(toolbarIcon("settings.png"))
+			iconButton(toolbarIcon("settings.png")) {
+				click {
+					//val file = projectCtx.chooseFile()
+
+					var mapWidth = ObservableProperty("${tilemap.width}")
+					var mapHeight = ObservableProperty("${tilemap.height}")
+
+					val result = showDialog("Resize map") {
+						verticalStack {
+							horizontalStack {
+								label("Width:") {
+									width = 50.percentage
+									height = 32.pt
+								}
+								textField("${tilemap.width}") {
+									width = 50.percentage
+									height = 32.pt
+									component.document.addDocumentListener(object : DocumentAdapter() {
+										override fun textChanged(e: DocumentEvent) {
+											mapWidth.value = component.text
+										}
+									})
+								}
+							}
+							horizontalStack {
+								label("Height:") {
+									width = 50.percentage
+									height = 32.pt
+								}
+								textField("${tilemap.height}") {
+									width = 50.percentage
+									height = 32.pt
+									component.document.addDocumentListener(object : DocumentAdapter() {
+										override fun textChanged(e: DocumentEvent) {
+											mapHeight.value = component.text
+										}
+									})
+								}
+							}
+						}
+					}
+
+					if (result) {
+						val width = mapWidth.value.trim().toInt()
+						val height = mapHeight.value.trim().toInt()
+						//println("${mapWidth.value}x${mapHeight.value}")
+						val oldTilemap = tilemap.data.clone()
+						val newTilemap = tilemap.data.clone().also { newTilemap ->
+							newTilemap.width = width
+							newTilemap.height = height
+							for (pattern in newTilemap.patternLayers) {
+								val newMap = Bitmap32(width, height)
+								newMap.put(pattern.map, 0, 0)
+								pattern.map = newMap
+							}
+						}
+						history.addAndDo("RESIZE") { redo ->
+							if (redo) {
+								tilemap.data = newTilemap
+							} else {
+								tilemap.data = oldTilemap
+							}
+							updateTilemap(Unit)
+						}
+					}
+				}
+			}
 			iconButton(toolbarIcon("zoomIn.png")) {
 				click { zoomIn() }
 			}
@@ -473,11 +554,12 @@ class MyTileMapEditorPanel(
 		val tmxFile: VfsFile,
 		val history: HistoryManager = HistoryManager(),
 		val registerHistoryShortcuts: Boolean = true,
+		val projectCtx: ProjectContext? = null,
 		val onSaveXml: (String) -> Unit = {}
 ) : JPanel(BorderLayout()) {
 	val tmx = runBlocking { tmxFile.readTiledMap() }
 	init {
-		styled.createTileMapEditor(tmx, history, registerHistoryShortcuts)
+		styled.createTileMapEditor(tmx, history, registerHistoryShortcuts, projectCtx)
 		history.onSave {
 			runBlocking {
 				val xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + tmx.toXML().toOuterXmlIndented().toString()
@@ -555,9 +637,12 @@ class LayersController(val panel: LayersPane) {
 }
  */
 
-class MyTileMapEditorFrame(val tmxFile: VfsFile) : JFrame() {
+class MyTileMapEditorFrame(
+	val tmxFile: VfsFile,
+	val projectCtx: ProjectContext? = null
+) : JFrame() {
 	init {
-		contentPane = MyTileMapEditorPanel(tmxFile)
+		contentPane = MyTileMapEditorPanel(tmxFile, projectCtx = projectCtx)
 		pack()
 	}
 
