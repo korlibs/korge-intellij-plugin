@@ -9,6 +9,7 @@ import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.editor.*
+import com.soywiz.korge.intellij.util.*
 import java.beans.*
 import javax.swing.*
 
@@ -42,8 +43,8 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 				onSaveXml = { xmlText ->
 				val doc = ref.document
 				if (doc != null) {
-					//runWriteAction {
-					run {
+					runWriteAction {
+					//run {
 						println("DOCUMENT SET TEXT")
 						doc.setText(xmlText)
 					}
