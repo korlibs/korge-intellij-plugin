@@ -115,6 +115,7 @@ fun parseTileSetData(element: Xml, firstgid: Int, tilesetSource: String? = null)
 	//	<image source="Overworld.png" width="640" height="576"/>
 	//</tileset>
 	val image = element.child("image")
+
 	return TileSetData(
 		name = element.str("name"),
 		firstgid = firstgid,
@@ -126,7 +127,18 @@ fun parseTileSetData(element: Xml, firstgid: Int, tilesetSource: String? = null)
 		tilesetSource = tilesetSource,
 		imageSource = image?.str("source") ?: "",
 		width = image?.int("width", 0) ?: 0,
-		height = image?.int("height", 0) ?: 0
+		height = image?.int("height", 0) ?: 0,
+		terrains = element.children("terraintypes").children("terrain").map { TerrainData(name = it.str("name"), tile = it.int("tile")) },
+		tiles = element.children("tile").map {
+			TileData(
+				id = it.int("id"),
+				terrain = it.str("terrain").takeIf { it.isNotEmpty() }?.split(',')?.map { it.toIntOrNull() },
+				probability = it.double("probability", 1.0),
+				frames = it.child("animation")?.children("frame")?.map {
+					AnimationFrameData(it.int("tileid"), it.int("duration"))
+				}
+			)
+		}
 	)
 }
 

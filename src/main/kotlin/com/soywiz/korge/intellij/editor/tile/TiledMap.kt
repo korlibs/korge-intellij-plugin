@@ -34,18 +34,36 @@ fun TiledMapData?.getObjectPosByName(name: String): IPoint? {
 	return obj.getPos(this)
 }
 
-data class TileSetData(
-		val name: String,
-		val firstgid: Int,
-		val tilewidth: Int,
-		val tileheight: Int,
-		val tilecount: Int,
-		val columns: Int,
-		val image: Xml?,
-		val imageSource: String,
-		val width: Int,
-		val height: Int,
-		val tilesetSource: String? = null
+data class TerrainData(
+	val name: String,
+	val tile: Int
+)
+
+data class AnimationFrameData(
+	val tileid: Int, val duration: Int
+)
+
+data class TileData(
+	val id: Int,
+	val terrain: List<Int?>? = null,
+	val probability: Double = 1.0,
+	val frames: List<AnimationFrameData>? = null
+)
+
+data class TileSetData constructor(
+	val name: String,
+	val firstgid: Int,
+	val tilewidth: Int,
+	val tileheight: Int,
+	val tilecount: Int,
+	val columns: Int,
+	val image: Xml?,
+	val imageSource: String,
+	val width: Int,
+	val height: Int,
+	val tilesetSource: String? = null,
+	val terrains: List<TerrainData> = listOf(),
+	val tiles: List<TileData> = listOf()
 )
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory

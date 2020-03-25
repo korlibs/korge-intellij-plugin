@@ -480,7 +480,7 @@ class MyTileMapEditorPanel(
 		styled.createTileMapEditor(tmx, history, registerHistoryShortcuts)
 		history.onSave {
 			runBlocking {
-				val xmlString = tmx.toXML().toString()
+				val xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + tmx.toXML().toOuterXmlIndented().toString()
 				onSaveXml(xmlString)
 				//tmxFile.writeString(xmlString)
 			}

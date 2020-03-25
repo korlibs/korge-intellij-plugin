@@ -3,6 +3,7 @@ package com.soywiz.korge.intellij.editor.tile
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korio.util.*
 
 
 suspend fun VfsFile.writeTiledMap(map: TiledMap) {
@@ -69,6 +70,31 @@ fun TileSetData.toXML(): Xml {
 		"tilecount" to tilecount,
 		"columns" to columns
 	) {
+		Indenter
 		node("image", "source" to imageSource, "width" to width, "height" to height)
+		if (terrains.isNotEmpty()) {
+			node("terraintypes") {
+				//<terrain name="Ground1" tile="0"/>
+				for (terrain in terrains) {
+					node("terrain", "name" to terrain.name, "tile" to terrain.tile)
+				}
+			}
+		}
+		for (tile in tiles) {
+			node("tile",
+				"id" to tile.id,
+				"terrain" to tile.terrain?.joinToString(",") { it?.toString() ?: "" },
+				"probability" to tile.probability.takeIf { it != 1.0 }
+			) {
+				val frames = tile.frames
+				if (frames != null) {
+					node("animation") {
+						for (frame in frames) {
+							node("frame", "tileid" to frame.tileid, "duration" to frame.duration)
+						}
+					}
+				}
+			}
+		}
 	}
 }
