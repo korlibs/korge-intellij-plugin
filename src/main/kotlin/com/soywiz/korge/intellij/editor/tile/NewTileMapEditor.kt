@@ -1,12 +1,10 @@
 package com.soywiz.korge.intellij.editor.tile
 
-import com.intellij.openapi.fileChooser.*
-import com.intellij.openapi.project.*
-import com.intellij.openapi.vfs.*
-import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.intellij.editor.*
+import com.soywiz.korge.intellij.editor.tile.dialog.*
+import com.soywiz.korge.intellij.editor.tile.editor.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korim.bitmap.*
@@ -14,39 +12,31 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
 import javax.swing.*
-import javax.swing.event.*
-import kotlin.math.*
 
-
-data class ProjectContext(val project: Project, val file: VirtualFile)
-
-fun ProjectContext?.chooseFile(): VirtualFile? {
-	return FileChooser.chooseFile(
-		FileChooserDescriptor(true, false, false, false, false, false),
-		this?.project, this?.file
-	)
-}
 fun Styled<out Container>.createTileMapEditor(
-		tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() },
-		history: HistoryManager = HistoryManager(),
-		registerHistoryShortcuts: Boolean = true,
-		projectCtx: ProjectContext? = null
+	tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() },
+	history: HistoryManager = HistoryManager(),
+	registerHistoryShortcuts: Boolean = true,
+	projectContext: ProjectContext? = null
 ) {
+	val ctx = MapContext(
+		tilemap = tilemap,
+		projectContext = projectContext,
+		history = history
+	)
 	//val zoomLevels = listOf(10, 15, 25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
-	val zoomLevels = listOf(25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
+	val zoomLevels = ctx.zoomLevels
 	val zoomLevel = ObservableProperty(zoomLevels.indexOf(200)) { it.clamp(0, zoomLevels.size - 1) }
 	val unsavedChanges = ObservableProperty(false)
 	val updateLayersSignal = Signal<Unit>()
 	val updateTilemap = Signal<Unit>()
 	fun zoomRatio(): Double = zoomLevels[zoomLevel.value].toDouble() / 100.0
 	//val zoom = ObservableProperty(2.0) { it.clamp(0.25, 20.0) }
-	data class PickedSelection(val data: Bitmap32)
-	val picked = ObservableProperty(PickedSelection(Bitmap32(1, 1) { _, _ -> RGBA(0) }))
+	val picked = ctx.picked
 	fun zoomIn() = run { zoomLevel.value++ }
 	fun zoomOut() = run { zoomLevel.value-- }
 	val selectedLayerIndex = ObservableProperty(0)
@@ -68,48 +58,14 @@ fun Styled<out Container>.createTileMapEditor(
 			iconButton(toolbarIcon("settings.png")) {
 				click {
 					//val file = projectCtx.chooseFile()
+					val size = showResizeMapDialog(
+						tilemap.width,
+						tilemap.height
+					)
 
-					var mapWidth = ObservableProperty("${tilemap.width}")
-					var mapHeight = ObservableProperty("${tilemap.height}")
-
-					val result = showDialog("Resize map") {
-						verticalStack {
-							horizontalStack {
-								label("Width:") {
-									width = 50.percentage
-									height = 32.pt
-								}
-								textField("${tilemap.width}") {
-									width = 50.percentage
-									height = 32.pt
-									component.document.addDocumentListener(object : DocumentAdapter() {
-										override fun textChanged(e: DocumentEvent) {
-											mapWidth.value = component.text
-										}
-									})
-								}
-							}
-							horizontalStack {
-								label("Height:") {
-									width = 50.percentage
-									height = 32.pt
-								}
-								textField("${tilemap.height}") {
-									width = 50.percentage
-									height = 32.pt
-									component.document.addDocumentListener(object : DocumentAdapter() {
-										override fun textChanged(e: DocumentEvent) {
-											mapHeight.value = component.text
-										}
-									})
-								}
-							}
-						}
-					}
-
-					if (result) {
-						val width = mapWidth.value.trim().toInt()
-						val height = mapHeight.value.trim().toInt()
+					if (size != null) {
+						val width = size.width.toInt()
+						val height = size.height.toInt()
 						//println("${mapWidth.value}x${mapHeight.value}")
 						val oldTilemap = tilemap.data.clone()
 						val newTilemap = tilemap.data.clone().also { newTilemap ->
@@ -171,59 +127,7 @@ fun Styled<out Container>.createTileMapEditor(
 				}
 				tabs {
 					height = 50.percentage
-					tab("Tileset") {
-						verticalStack {
-							tabs {
-								fill()
-								for (tileset in tilemap.tilesets) {
-									tab("Untitled") {
-										val tilemap = tileset.pickerTilemap()
-										val mapComponent = MapComponent(tilemap)
-										val patternLayer = tilemap.patternLayers.first()
-										mapComponent.selectedRange(0, 0)
-										var downStart: PointInt? = null
-										val zoomLevel = ObservableProperty(zoomLevels.indexOf(100)) { it.clamp(0, zoomLevels.size - 1) }
-										fun zoomRatio(): Double = zoomLevels[zoomLevel.value].toDouble() / 100.0
-										zoomLevel {
-											mapComponent.scale = zoomRatio()
-										}
-										zoomLevel.trigger()
-										mapComponent.onZoom {
-											zoomLevel.value += it
-										}
-										mapComponent.upTileSignal {
-											downStart = null
-										}
-										mapComponent.outTileSignal {
-											//downStart = null
-										}
-										mapComponent.downTileSignal {
-											if (downStart == null) {
-												downStart = it
-											}
-											val start = downStart!!
-											val xmin = min(start.x, it.x)
-											val xmax = max(start.x, it.x)
-											val ymin = min(start.y, it.y)
-											val ymax = max(start.y, it.y)
-											val width = xmax - xmin + 1
-											val height = ymax - ymin + 1
-											val bmp = Bitmap32(width, height) { x, y -> RGBA(patternLayer.map[xmin + x, ymin + y].value) }
-											picked.value = PickedSelection(bmp)
-											mapComponent.selectedRange(xmin, ymin, bmp.width, bmp.height)
-										}
-										this.component.add(JBScrollPane(mapComponent))
-									}
-								}
-							}
-							toolbar {
-								iconButton(toolbarIcon("add.png"))
-								iconButton(toolbarIcon("openDisk.png"))
-								iconButton(toolbarIcon("edit.png"))
-								iconButton(toolbarIcon("delete.png"))
-							}
-						}
-					}
+					tilesetTab(ctx)
 				}
 			}
 			verticalStack {
@@ -537,17 +441,6 @@ fun Styled<out Container>.createTileMapEditor(
 	}
 }
 
-private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
-	val tileset = this.tileset
-	val mapWidth = this.data.columns.takeIf { it >= 0 } ?: (this.tileset.width / this.data.tilewidth)
-	val mapHeight = Math.ceil(this.data.tilecount.toDouble() / this.data.columns.toDouble()).toInt()
-
-	return TiledMap(TiledMapData(
-		width = mapWidth, height = mapHeight,
-		tilewidth = tileset.width, tileheight = tileset.height,
-		allLayers = arrayListOf(TiledMap.Layer.Patterns(Bitmap32(mapWidth.coerceAtLeast(1), mapHeight.coerceAtLeast(1)) { x, y -> RGBA(y * mapWidth + x) }))
-	), listOf(this), tileset)
-}
 
 
 class MyTileMapEditorPanel(

@@ -24,7 +24,6 @@ suspend fun VfsFile.readTiledMap(
 	val data = readTiledMapData()
 
 	//val combinedTileset = kotlin.arrayOfNulls<Texture>(data.maxGid + 1)
-	val combinedTileset = arrayOfNulls<BmpSlice>(data.maxGid + 1)
 
 	data.imageLayers.fastForEach { layer ->
 		layer.image = try {
@@ -38,54 +37,10 @@ suspend fun VfsFile.readTiledMap(
 	val tiledTilesets = arrayListOf<TiledMap.TiledTileset>()
 
 	data.tilesets.fastForEach { tileset ->
-		var bmp = try {
-			folder[tileset.imageSource].readBitmapOptimized()
-		} catch (e: Throwable) {
-			e.printStackTrace()
-			Bitmap32(tileset.width, tileset.height)
-		}
-
-		// @TODO: Preprocess this, so in JS we don't have to do anything!
-		if (hasTransparentColor) {
-			bmp = bmp.toBMP32()
-			for (n in 0 until bmp.area) {
-				if (bmp.data[n] == transparentColor) bmp.data[n] = Colors.TRANSPARENT_BLACK
-			}
-		}
-
-		val ptileset = if (createBorder > 0) {
-			bmp = bmp.toBMP32()
-
-			val slices =
-				TileSet.extractBitmaps(bmp, tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
-
-			TileSet.fromBitmaps(
-				tileset.tilewidth, tileset.tileheight,
-				slices,
-				border = createBorder,
-				mipmaps = false
-			)
-		} else {
-			TileSet(bmp.slice(), tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
-		}
-
-		val tiledTileset = TiledMap.TiledTileset(
-			tileset = ptileset,
-			data = tileset,
-			firstgid = tileset.firstgid
-		)
-
-		tiledTilesets += tiledTileset
-
-		//lastBaseTexture = tex.base
-		tilemapLog.trace { "tileset:$tiledTileset" }
-
-		for (n in 0 until ptileset.textures.size) {
-			combinedTileset[tileset.firstgid + n] = ptileset.textures[n]
-		}
+		tiledTilesets += tileset.toTiledSet(folder, hasTransparentColor, transparentColor, createBorder)
 	}
 
-	return TiledMap(data, tiledTilesets, TileSet(combinedTileset.toList(), data.tilewidth, data.tileheight))
+	return TiledMap(data, tiledTilesets, tiledTilesets.combine(data.tilewidth, data.tileheight))
 }
 
 private fun Xml.parseProperties(): Map<String, Any> {
@@ -144,6 +99,65 @@ fun parseTileSetData(element: Xml, firstgid: Int, tilesetSource: String? = null)
 
 suspend fun VfsFile.readTileSetData(firstgid: Int = 1): TileSetData {
 	return parseTileSetData(this.readXml(), firstgid, this.baseName)
+}
+
+suspend fun TileSetData.toTiledSet(
+	folder: VfsFile,
+	hasTransparentColor: Boolean = false,
+	transparentColor: RGBA = Colors.FUCHSIA,
+	createBorder: Int = 1
+): TiledMap.TiledTileset {
+	val tileset = this
+	var bmp = try {
+		folder[tileset.imageSource].readBitmapOptimized()
+	} catch (e: Throwable) {
+		e.printStackTrace()
+		Bitmap32(tileset.width, tileset.height)
+	}
+
+	// @TODO: Preprocess this, so in JS we don't have to do anything!
+	if (hasTransparentColor) {
+		bmp = bmp.toBMP32()
+		for (n in 0 until bmp.area) {
+			if (bmp.data[n] == transparentColor) bmp.data[n] = Colors.TRANSPARENT_BLACK
+		}
+	}
+
+	val ptileset = if (createBorder > 0) {
+		bmp = bmp.toBMP32()
+
+		val slices =
+			TileSet.extractBitmaps(bmp, tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
+
+		TileSet.fromBitmaps(
+			tileset.tilewidth, tileset.tileheight,
+			slices,
+			border = createBorder,
+			mipmaps = false
+		)
+	} else {
+		TileSet(bmp.slice(), tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
+	}
+
+	val tiledTileset = TiledMap.TiledTileset(
+		tileset = ptileset,
+		data = tileset,
+		firstgid = tileset.firstgid
+	)
+
+	return tiledTileset
+}
+
+fun Iterable<TiledMap.TiledTileset>.combine(tilewidth: Int, tileheight: Int): TileSet {
+	val maxGid = this.map { it.firstgid + it.tileset.textures.size }.max() ?: 1
+	val combinedTileset = arrayOfNulls<BmpSlice>(maxGid + 1)
+	for (tileset in this) {
+		val ptileset = tileset.tileset
+		for (n in ptileset.textures.indices) {
+			combinedTileset[tileset.firstgid + n] = ptileset.textures[n]
+		}
+	}
+	return TileSet(combinedTileset.toList(), tilewidth, tileheight)
 }
 
 suspend fun VfsFile.readTiledMapData(): TiledMapData {

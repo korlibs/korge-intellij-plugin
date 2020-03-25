@@ -56,8 +56,8 @@ data class TileData(
 )
 
 data class TileSetData constructor(
-	val name: String,
-	val firstgid: Int,
+	val name: String = "unknown",
+	val firstgid: Int = 1,
 	val tilewidth: Int,
 	val tileheight: Int,
 	val tilecount: Int,
@@ -75,7 +75,7 @@ data class TileSetData constructor(
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(TiledMapFactory::class)
-class TiledMap(
+class TiledMap constructor(
 	var data: TiledMapData,
 	var tilesets: List<TiledTileset>,
 	var tileset: TileSet
@@ -93,7 +93,25 @@ class TiledMap(
 
 	fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() }, tileset.clone())
 
-	data class TiledTileset(val tileset: TileSet, val data: TileSetData, val firstgid: Int = 0) {
+	data class TiledTileset(
+		val tileset: TileSet,
+		val data: TileSetData = TileSetData(
+			name = "unknown",
+			firstgid = 1,
+			tilewidth = tileset.width,
+			tileheight = tileset.height,
+			tilecount = tileset.textures.size,
+			columns = tileset.base.width / tileset.width,
+			image = null,
+			imageSource = "",
+			width = tileset.base.width,
+			height = tileset.base.height,
+			tilesetSource = null,
+			terrains = listOf(),
+			tiles = tileset.textures.mapIndexed { index, bmpSlice -> TileData(index) }
+		),
+		val firstgid: Int = 0
+	) {
 		fun clone(): TiledTileset = TiledTileset(tileset.clone(), data.clone(), firstgid)
 	}
 

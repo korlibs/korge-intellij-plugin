@@ -9,6 +9,7 @@ import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.editor.*
+import com.soywiz.korge.intellij.editor.tile.dialog.*
 import com.soywiz.korge.intellij.util.*
 import java.beans.*
 import javax.swing.*

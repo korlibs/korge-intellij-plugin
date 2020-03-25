@@ -1,10 +1,12 @@
 package com.soywiz.korge.intellij.ui
 
 import com.intellij.openapi.ui.*
-import com.intellij.ui.components.JBTabbedPane
+import com.intellij.ui.components.*
+import com.soywiz.korge.intellij.util.*
+import com.soywiz.korio.async.*
 import java.awt.*
 import java.util.*
-import javax.imageio.ImageIO
+import javax.imageio.*
 import javax.swing.*
 import kotlin.collections.ArrayList
 
@@ -339,10 +341,9 @@ fun JComponent.repaintAndInvalidate() {
 	parent?.repaint()
 }
 
-
 fun showDialog(title: String = "Dialog", block: Styled<JPanel>.() -> Unit): Boolean {
 	class MyDialogWrapper : DialogWrapper(true) {
-		override protected fun createCenterPanel(): JComponent? {
+		protected override fun createCenterPanel(): JComponent? {
 			val dialogPanel = JPanel(FillLayout())
 			dialogPanel.preferredSize = Dimension(200, 200)
 			block(dialogPanel.styled)
@@ -356,4 +357,14 @@ fun showDialog(title: String = "Dialog", block: Styled<JPanel>.() -> Unit): Bool
 	}
 
 	return MyDialogWrapper().showAndGet()
+}
+
+// @TODO: Must keep the components that has not been modified
+fun <T> Styled<out Container>.uiSequence(gen: () -> List<T>, signal: Signal<Unit>, block: (item: T) -> Unit) {
+	signal.addCallInit {
+		this.component.removeAll()
+		for (item in gen()) {
+			block(item)
+		}
+	}
 }
