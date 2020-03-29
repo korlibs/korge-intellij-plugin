@@ -48,12 +48,18 @@ data class AnimationFrameData(
 	val tileid: Int, val duration: Int
 )
 
+data class TerrainInfo(val info: List<Int?>) {
+	operator fun get(x: Int, y: Int): Int? = if (x in 0..1 && y in 0..1) info[y * 2 + x] else null
+}
+
 data class TileData(
 	val id: Int,
 	val terrain: List<Int?>? = null,
 	val probability: Double = 1.0,
 	val frames: List<AnimationFrameData>? = null
-)
+) {
+	val terrainInfo = TerrainInfo(terrain ?: listOf(null, null ,null, null))
+}
 
 data class TileSetData constructor(
 	val name: String = "unknown",
@@ -152,6 +158,8 @@ class TiledMap constructor(
 			val width: Int get() = map.width
 			val height: Int get() = map.height
 			val area: Int get() = width * height
+			operator fun set(x: Int, y: Int, value: Int) = run { data.setInt(x, y, value) }
+			operator fun get(x: Int, y: Int): Int = data.getInt(x, y)
 			override fun clone(): Patterns = Patterns(map.clone(), encoding, compression).also { it.copyFrom(this) }
 		}
 
