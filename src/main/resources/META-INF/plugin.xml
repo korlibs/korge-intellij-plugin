@@ -115,6 +115,8 @@
 
 		<fileType name="KRA"   implementationClass="com.soywiz.korge.intellij.filetype.KraFileType"        fieldName="INSTANCE"   extensions="kra"        />
 
+        <lang.parserDefinition implementationClass="com.soywiz.korge.intellij.filetype.TmxParserDefinition" language="KORGE_TMX" />
+
 		<!-- Completions -->
 		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
 
