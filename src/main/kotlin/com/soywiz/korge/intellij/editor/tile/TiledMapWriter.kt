@@ -38,13 +38,13 @@ fun TiledMap.toXML(): Xml {
 					node("layer", "id" to layer.id, "name" to layer.name, "width" to layer.width, "height" to layer.height) {
 						node("data", "encoding" to "csv") {
 							text(buildString(layer.area * 4) {
-								appendln()
+                                append("\n")
 								for (y in 0 until layer.height) {
 									for (x in 0 until layer.width) {
 										append(layer.data[x, y].value)
 										if (y != layer.height - 1 || x != layer.width - 1) append(',')
 									}
-									appendln()
+                                    append("\n")
 								}
 							})
 						}
