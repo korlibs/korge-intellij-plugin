@@ -14,7 +14,6 @@ import java.awt.event.*
 import java.awt.image.*
 import javax.swing.*
 
-
 class MapComponent(val tmx: TiledMap) : JComponent() {
 	val downRightTileSignal = Signal<PointInt>()
 	val onZoom = Signal<Int>()
@@ -315,3 +314,6 @@ fun fastBlend(dst: RGBAPremultiplied, src: RGBAPremultiplied): RGBAPremultiplied
 	val ag = (colora and 0xFF00FF00L) + ((alpha * (colorb and 0xFF00FF00L)) ushr 8)
 	return RGBAPremultiplied(((rb and 0xFF00FFL) + (ag and 0xFF00FF00L)).toInt())
 }
+
+inline fun Bitmap32.anyFixed(callback: (RGBA) -> Boolean): Boolean = (0 until area).any { callback(data[it]) }
+inline fun Bitmap32.allFixed(callback: (RGBA) -> Boolean): Boolean = (0 until area).all { callback(data[it]) }

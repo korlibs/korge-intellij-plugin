@@ -20,7 +20,7 @@ class TiledMapData(
 	val maxGid get() = tilesets.map { it.firstgid + it.tilecount }.max() ?: 0
 	val pixelWidth: Int get() = width * tilewidth
 	val pixelHeight: Int get() = height * tileheight
-	inline val patternLayers get() = allLayers.patterns
+	inline val tileLayers get() = allLayers.tiles
 	inline val imageLayers get() = allLayers.images
 	inline val objectLayers get() = allLayers.objects
 	fun getObjectByName(name: String) = objectLayers.mapNotNull { it.getByName(name) }.firstOrNull()
@@ -93,7 +93,7 @@ class TiledMap constructor(
 	val pixelWidth: Int get() = data.pixelWidth
 	val pixelHeight: Int get() = data.pixelHeight
 	val allLayers get() = data.allLayers
-	val patternLayers get() = data.patternLayers
+	val patternLayers get() = data.tileLayers
 	val imageLayers get() = data.imageLayers
 	val objectLayers get() = data.objectLayers
 
@@ -214,7 +214,7 @@ val TiledMap.Layer.Objects.Object.name get() = this.info.name
 val TiledMap.Layer.Objects.Object.bounds get() = this.info.bounds
 val TiledMap.Layer.Objects.Object.objprops get() = this.info.objprops
 
-inline val Iterable<TiledMap.Layer>.patterns get() = this.filterIsInstance<TiledMap.Layer.Tiles>()
+inline val Iterable<TiledMap.Layer>.tiles get() = this.filterIsInstance<TiledMap.Layer.Tiles>()
 inline val Iterable<TiledMap.Layer>.images get() = this.filterIsInstance<TiledMap.Layer.Image>()
 inline val Iterable<TiledMap.Layer>.objects get() = this.filterIsInstance<TiledMap.Layer.Objects>()
 
