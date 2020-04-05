@@ -201,7 +201,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 			elementName == "layer" || elementName == "objectgroup" || elementName == "imagelayer" -> {
 				tilemapLog.trace { "layer:$elementName" }
 				val layer = when (element.nameLC) {
-					"layer" -> TiledMap.Layer.Patterns()
+					"layer" -> TiledMap.Layer.Tiles()
 					"objectgroup" -> TiledMap.Layer.Objects()
 					"imagelayer" -> TiledMap.Layer.Image()
 					else -> invalidOp
@@ -221,7 +221,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				}
 
 				when (layer) {
-					is TiledMap.Layer.Patterns -> {
+					is TiledMap.Layer.Tiles -> {
 						val width = element.int("width")
 						val height = element.int("height")
 						val count = width * height

@@ -149,7 +149,7 @@ class TiledMap constructor(
 		}
 		abstract fun clone(): Layer
 
-		class Patterns constructor(
+		class Tiles constructor(
 			var map: Bitmap32 = Bitmap32(0, 0),
 			var encoding: String = "csv",
 			var compression: String = ""
@@ -160,7 +160,7 @@ class TiledMap constructor(
 			val area: Int get() = width * height
 			operator fun set(x: Int, y: Int, value: Int) = run { data.setInt(x, y, value) }
 			operator fun get(x: Int, y: Int): Int = data.getInt(x, y)
-			override fun clone(): Patterns = Patterns(map.clone(), encoding, compression).also { it.copyFrom(this) }
+			override fun clone(): Tiles = Tiles(map.clone(), encoding, compression).also { it.copyFrom(this) }
 		}
 
 		data class ObjectInfo(
@@ -214,7 +214,7 @@ val TiledMap.Layer.Objects.Object.name get() = this.info.name
 val TiledMap.Layer.Objects.Object.bounds get() = this.info.bounds
 val TiledMap.Layer.Objects.Object.objprops get() = this.info.objprops
 
-inline val Iterable<TiledMap.Layer>.patterns get() = this.filterIsInstance<TiledMap.Layer.Patterns>()
+inline val Iterable<TiledMap.Layer>.patterns get() = this.filterIsInstance<TiledMap.Layer.Tiles>()
 inline val Iterable<TiledMap.Layer>.images get() = this.filterIsInstance<TiledMap.Layer.Image>()
 inline val Iterable<TiledMap.Layer>.objects get() = this.filterIsInstance<TiledMap.Layer.Objects>()
 

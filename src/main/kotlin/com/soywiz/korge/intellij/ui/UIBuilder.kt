@@ -343,7 +343,7 @@ fun JComponent.repaintAndInvalidate() {
 
 fun showDialog(title: String = "Dialog", block: Styled<JPanel>.() -> Unit): Boolean {
 	class MyDialogWrapper : DialogWrapper(true) {
-		protected override fun createCenterPanel(): JComponent? {
+		override fun createCenterPanel(): JComponent? {
 			val dialogPanel = JPanel(FillLayout())
 			dialogPanel.preferredSize = Dimension(200, 200)
 			block(dialogPanel.styled)
@@ -352,7 +352,7 @@ fun showDialog(title: String = "Dialog", block: Styled<JPanel>.() -> Unit): Bool
 
 		init {
 			init()
-			this.setTitle(title)
+            this.title = title
 		}
 	}
 

@@ -124,6 +124,6 @@ private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 	return TiledMap(TiledMapData(
 		width = mapWidth, height = mapHeight,
 		tilewidth = tileset.width, tileheight = tileset.height,
-		allLayers = arrayListOf(TiledMap.Layer.Patterns(Bitmap32(mapWidth.coerceAtLeast(1), mapHeight.coerceAtLeast(1)) { x, y -> RGBA(y * mapWidth + x) }))
+		allLayers = arrayListOf(TiledMap.Layer.Tiles(Bitmap32(mapWidth.coerceAtLeast(1), mapHeight.coerceAtLeast(1)) { x, y -> RGBA(y * mapWidth + x) }))
 	), listOf(this), tileset)
 }

@@ -21,8 +21,8 @@ class HistoryManager {
 
 	fun add(name: String, apply: (redo: Boolean) -> Unit): Entry {
 		while (cursor < entries.size) entries.removeAt(entries.size - 1)
-		val entry = Entry(this.entries.size + 1, name, apply)
-		this.entries.add(entry)
+		val entry = Entry(entries.size + 1, name, apply)
+		entries.add(entry)
 		println("ADD: $entry")
 		cursor = entry.cursor
 		onChange(Unit)

@@ -58,25 +58,23 @@ fun Styled<out Container>.createTileMapEditor(
 			iconButton(toolbarIcon("settings.png")) {
 				click {
 					//val file = projectCtx.chooseFile()
-					val size = showResizeMapDialog(
-						tilemap.width,
-						tilemap.height
-					)
+                    val oldWidth = tilemap.width
+                    val oldHeight = tilemap.height
 
-					if (size != null) {
-						val width = size.width.toInt()
-						val height = size.height.toInt()
-						//println("${mapWidth.value}x${mapHeight.value}")
+					val size = showResizeMapDialog(oldWidth, oldHeight)
+
+					if (size != null && (size.width != oldWidth || size.height != oldHeight)) {
+						val width = size.width
+						val height = size.height
 						val oldTilemap = tilemap.data.clone()
-						val newTilemap = tilemap.data.clone().also { newTilemap ->
-							newTilemap.width = width
-							newTilemap.height = height
-							for (pattern in newTilemap.patternLayers) {
-								val newMap = Bitmap32(width, height)
-								newMap.put(pattern.map, 0, 0)
-								pattern.map = newMap
-							}
-						}
+						val newTilemap = tilemap.data.clone()
+                        newTilemap.width = width
+                        newTilemap.height = height
+                        for (pattern in newTilemap.patternLayers) {
+                            val newMap = Bitmap32(width, height)
+                            newMap.put(pattern.map, 0, 0)
+                            pattern.map = newMap
+                        }
 						history.addAndDo("RESIZE") { redo ->
 							if (redo) {
 								tilemap.data = newTilemap
@@ -161,7 +159,7 @@ fun Styled<out Container>.createTileMapEditor(
 						data class DrawEntry(val x: Int, val y: Int, val layer: Int, val oldColor: RGBA, val newColor: RGBA) {
 							fun apply(tmx: TiledMap, redo: Boolean) {
 								val layer = tmx.allLayers[layer]
-								if (layer is TiledMap.Layer.Patterns) {
+								if (layer is TiledMap.Layer.Tiles) {
 									layer.map[x, y] = if (redo) newColor else oldColor
 								}
 							}
@@ -185,7 +183,7 @@ fun Styled<out Container>.createTileMapEditor(
 							val layer = mapComponent.tmx.allLayers.getOrNull(layerIndex)
 							if (layer != null && !layer.locked) {
 								when (layer) {
-									is TiledMap.Layer.Patterns -> {
+									is TiledMap.Layer.Tiles -> {
 										//println("DOWN: $it")
 										for (y in 0 until pickedData.height) {
 											for (x in 0 until pickedData.width) {
@@ -248,7 +246,7 @@ fun Styled<out Container>.createTileMapEditor(
 									click {
 										showPopupMenu(listOf("Tile Layer", "Object Layer", "Image Layer")) {
 											val layerIndex = selectedLayerIndex.value
-											val newLayer = TiledMap.Layer.Patterns(Bitmap32(tilemap.width, tilemap.height)).also {
+											val newLayer = TiledMap.Layer.Tiles(Bitmap32(tilemap.width, tilemap.height)).also {
 												it.name = "Tile Layer ${tilemap.allLayers.size + 1}"
 											}
 											history.addAndDo("ADD LAYER") { redo ->

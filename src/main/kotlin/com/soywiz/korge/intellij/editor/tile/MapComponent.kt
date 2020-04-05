@@ -188,7 +188,7 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 			for (layer in tmx.allLayers) {
 				if (!layer.visible) continue
 				when (layer) {
-					is TiledMap.Layer.Patterns -> {
+					is TiledMap.Layer.Tiles -> {
 						for (x in 0 until displayTilesX) {
 							for (y in 0 until displayTilesY) {
 								val rx = x + offsetX
