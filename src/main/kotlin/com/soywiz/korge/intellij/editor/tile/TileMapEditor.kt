@@ -45,7 +45,7 @@ fun Styled<out Container>.createTileMapEditor(
 		//horizontalStack {
 		//	height = 32.points
 		toolbar {
-			iconButton(toolbarIcon("edit.png"))
+			iconButton(toolbarIcon("edit.png"), "Edit")
 			button("Dropper")
 			button("Eraser")
 			button("Fill")
@@ -55,7 +55,7 @@ fun Styled<out Container>.createTileMapEditor(
 			button("Oval")
 			//}
 			//toolbar {
-			iconButton(toolbarIcon("settings.png")) {
+			iconButton(toolbarIcon("settings.png"), "Settings") {
 				click {
 					//val file = projectCtx.chooseFile()
                     val oldWidth = tilemap.width
@@ -86,10 +86,10 @@ fun Styled<out Container>.createTileMapEditor(
 					}
 				}
 			}
-			iconButton(toolbarIcon("zoomIn.png")) {
+			iconButton(toolbarIcon("zoomIn.png"), "Zoom In") {
 				click { zoomIn() }
 			}
-			iconButton(toolbarIcon("zoomOut.png")) {
+			iconButton(toolbarIcon("zoomOut.png"), "Zoom Out") {
 				click { zoomOut() }
 			}
 			//}
@@ -116,9 +116,9 @@ fun Styled<out Container>.createTileMapEditor(
 								height = MUnit.Fill
 							}
 							toolbar {
-								iconButton(toolbarIcon("add.png"))
-								iconButton(toolbarIcon("edit.png"))
-								iconButton(toolbarIcon("delete.png"))
+								iconButton(toolbarIcon("add.png"), "Add")
+								iconButton(toolbarIcon("edit.png"), "Edit")
+								iconButton(toolbarIcon("delete.png"), "Delete")
 							}
 						}
 					}
@@ -431,6 +431,10 @@ fun Styled<out Container>.createTileMapEditor(
 					history.undo()
 					true
 				}
+                (ke.isControlDown && ke.id == KeyEvent.KEY_PRESSED) && (ke.keyCode == KeyEvent.VK_S) -> {
+                    history.save()
+                    true
+                }
 				else -> {
 					false
 				}
