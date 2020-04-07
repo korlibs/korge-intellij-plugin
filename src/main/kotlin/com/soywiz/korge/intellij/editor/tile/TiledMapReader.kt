@@ -14,7 +14,6 @@ import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
 
-
 suspend fun VfsFile.readTiledMap(
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
@@ -40,7 +39,7 @@ suspend fun VfsFile.readTiledMap(
 		tiledTilesets += tileset.toTiledSet(folder, hasTransparentColor, transparentColor, createBorder)
 	}
 
-	return TiledMap(data, tiledTilesets, tiledTilesets.combine(data.tilewidth, data.tileheight))
+	return TiledMap(data, tiledTilesets)
 }
 
 private fun Xml.parseProperties(): Map<String, Any> {
@@ -146,18 +145,6 @@ suspend fun TileSetData.toTiledSet(
 	)
 
 	return tiledTileset
-}
-
-fun Iterable<TiledMap.TiledTileset>.combine(tilewidth: Int, tileheight: Int): TileSet {
-	val maxGid = this.map { it.firstgid + it.tileset.textures.size }.max() ?: 1
-	val combinedTileset = arrayOfNulls<BmpSlice>(maxGid + 1)
-	for (tileset in this) {
-		val ptileset = tileset.tileset
-		for (n in ptileset.textures.indices) {
-			combinedTileset[tileset.firstgid + n] = ptileset.textures[n]
-		}
-	}
-	return TileSet(combinedTileset.toList(), tilewidth, tileheight)
 }
 
 suspend fun VfsFile.readTiledMapData(): TiledMapData {

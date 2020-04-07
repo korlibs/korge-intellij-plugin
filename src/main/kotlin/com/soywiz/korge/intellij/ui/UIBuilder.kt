@@ -101,7 +101,7 @@ fun Styled<out Container>.toolbar(direction: Direction = Direction.HORIZONTAL, p
 }
 
 fun Styled<out Container>.tabs(block: @UIDslMarker Styled<JBTabbedPane>.() -> Unit = {}): JBTabbedPane {
-	val container = JBTabbedPane(JBTabbedPane.TOP)
+	val container = JBTabbedPane(JBTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT)
 	component.add(container)
 	block(container.styled)
 	return container

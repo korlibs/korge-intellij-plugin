@@ -38,22 +38,16 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 			field = value
 			mapRepaint(false)
 		}
-	val maxTileGid = tmx.tilesets.map { it.firstgid + it.tileset.textures.size }.max() ?: 0
+	val tilesSize = tmx.tilesets.sumBy { it.tileset.textures.size }
 
-	data class TileInfo(val bmp32: Bitmap32) {
-		val miniSlice = bmp32.slice()
-		val isTransparent by lazy { bmp32.all { it.a == 0 } }
-	}
-
-	val tiles = Array<TileInfo?>(maxTileGid) { null }.also { tiles ->
+	val tiles = HashMap<Int, BitmapSlice<Bitmap32>?>(tilesSize).also { tiles ->
 		for (tileset in tmx.tilesets) {
 			for (tileIdx in tileset.tileset.textures.indices) {
 				val tile = tileset.tileset.textures[tileIdx]
 				if (tile != null) {
-					val miniSlice = (tile as BitmapSlice<*>).extract().toBMP32()
-					tiles[tileset.firstgid + tileIdx] = when {
-						miniSlice.allFixed { it.a == 0 } -> null // Transparent
-						else -> TileInfo(miniSlice)
+					val tileBmp = (tile as BitmapSlice<*>).extract().toBMP32()
+                    if (tileBmp.any { it.a != 0 }) { // not transparent
+                        tiles[tileset.firstgid + tileIdx] = tileBmp.slice()
 					}
 				}
 			}
@@ -169,8 +163,8 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
             RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
         )
 		val clipBounds = g.clipBounds
-		val displayTilesX = ((clipBounds.width / TILE_WIDTH / scale) + 3).toInt().coerceIn(0, tmx.width - 1)
-		val displayTilesY = ((clipBounds.height / TILE_HEIGHT / scale) + 3).toInt().coerceIn(0, tmx.height - 1)
+		val displayTilesX = ((clipBounds.width / TILE_WIDTH / scale) + 3).toInt().coerceIn(1, tmx.width)
+		val displayTilesY = ((clipBounds.height / TILE_HEIGHT / scale) + 3).toInt().coerceIn(1, tmx.height)
 		val offsetX = (clipBounds.x / TILE_WIDTH / scale).toInt()
 		val offsetY = (clipBounds.y / TILE_HEIGHT / scale).toInt()
 
@@ -178,7 +172,7 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 			offsetX = offsetX, offsetY = offsetY,
 			displayTilesX = displayTilesX,
 			displayTilesY = displayTilesY,
-			TILE_WIDTH = TILE_WIDTH, TILE_HEIGHT = TILE_WIDTH
+			TILE_WIDTH = TILE_WIDTH, TILE_HEIGHT = TILE_HEIGHT
 		)) {
 			val temp = Bitmap32(
 				(displayTilesX * TILE_WIDTH),
@@ -197,9 +191,9 @@ class MapComponent(val tmx: TiledMap) : JComponent() {
 								if (ry < 0 || ry >= layer.map.height) continue
 
 								val tileIdx = layer.map[rx, ry].value
-								val tile = tiles.getOrNull(tileIdx)
-								if (tile != null && !tile.isTransparent) {
-									temp._fastMix(tile.miniSlice, x * TILE_WIDTH, y * TILE_HEIGHT)
+								val tile = tiles.getOrDefault(tileIdx, null)
+								if (tile != null) {
+									temp._fastMix(tile, x * TILE_WIDTH, y * TILE_HEIGHT)
 								}
 							}
 						}
@@ -314,6 +308,3 @@ fun fastBlend(dst: RGBAPremultiplied, src: RGBAPremultiplied): RGBAPremultiplied
 	val ag = (colora and 0xFF00FF00L) + ((alpha * (colorb and 0xFF00FF00L)) ushr 8)
 	return RGBAPremultiplied(((rb and 0xFF00FFL) + (ag and 0xFF00FF00L)).toInt())
 }
-
-inline fun Bitmap32.anyFixed(callback: (RGBA) -> Boolean): Boolean = (0 until area).any { callback(data[it]) }
-inline fun Bitmap32.allFixed(callback: (RGBA) -> Boolean): Boolean = (0 until area).all { callback(data[it]) }

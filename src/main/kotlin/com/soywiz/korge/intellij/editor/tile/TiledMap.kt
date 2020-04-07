@@ -83,8 +83,7 @@ data class TileSetData constructor(
 //@AsyncFactoryClass(TiledMapFactory::class)
 class TiledMap constructor(
 	var data: TiledMapData,
-	var tilesets: List<TiledTileset>,
-	var tileset: TileSet
+	var tilesets: List<TiledTileset>
 ) {
 	val width get() = data.width
 	val height get() = data.height
@@ -93,11 +92,12 @@ class TiledMap constructor(
 	val pixelWidth: Int get() = data.pixelWidth
 	val pixelHeight: Int get() = data.pixelHeight
 	val allLayers get() = data.allLayers
-	val patternLayers get() = data.tileLayers
+	val tileLayers get() = data.tileLayers
 	val imageLayers get() = data.imageLayers
 	val objectLayers get() = data.objectLayers
+    val nextGid get() = tilesets.map { it.firstgid + it.tileset.textures.size }.max() ?: 1
 
-	fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() }, tileset.clone())
+	fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() })
 
 	data class TiledTileset(
 		val tileset: TileSet,
@@ -116,7 +116,7 @@ class TiledMap constructor(
 			terrains = listOf(),
 			tiles = tileset.textures.mapIndexed { index, bmpSlice -> TileData(index) }
 		),
-		val firstgid: Int = 0
+		val firstgid: Int = 1
 	) {
 		fun clone(): TiledTileset = TiledTileset(tileset.clone(), data.clone(), firstgid)
 	}
@@ -149,7 +149,7 @@ class TiledMap constructor(
 		}
 		abstract fun clone(): Layer
 
-		class Tiles constructor(
+		class Tiles(
 			var map: Bitmap32 = Bitmap32(0, 0),
 			var encoding: String = "csv",
 			var compression: String = ""

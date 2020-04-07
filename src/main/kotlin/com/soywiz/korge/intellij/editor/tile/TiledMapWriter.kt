@@ -60,8 +60,7 @@ fun TileSetData.toXML(): Xml {
 	//  <image source="Overworld.png" width="640" height="576"/>
 	//</tileset>
 	return buildXml("tileset",
-		"version" to 1.2,
-		"tiledversion" to "1.3.1",
+		"firstgid" to firstgid,
 		"name" to name,
 		"tilewidth" to tilewidth,
 		"tileheight" to tileheight,

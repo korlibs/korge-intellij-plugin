@@ -11,6 +11,7 @@ import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
+import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import javax.swing.*
@@ -25,10 +26,10 @@ fun Styled<out JTabbedPane>.tilesetTab(
 				fill()
 				uiSequence({ tilemap.tilesets }, tilesetsUpdated) { tileset ->
 					println("TAB.TILESET: $tileset")
-					tab("Untitled") {
+					tab(tileset.data.name) {
 						val tilemap = tileset.pickerTilemap()
 						val mapComponent = MapComponent(tilemap)
-						val patternLayer = tilemap.patternLayers.first()
+						val tileLayer = tilemap.tileLayers.first()
 						mapComponent.selectedRange(0, 0)
 						var downStart: PointInt? = null
 						val zoomLevel =
@@ -60,7 +61,7 @@ fun Styled<out JTabbedPane>.tilesetTab(
 							val width = xmax - xmin + 1
 							val height = ymax - ymin + 1
 							val bmp =
-								Bitmap32(width, height) { x, y -> RGBA(patternLayer.map[xmin + x, ymin + y].value) }
+								Bitmap32(width, height) { x, y -> RGBA(tileLayer.map[xmin + x, ymin + y].value) }
 							picked.value = PickedSelection(bmp)
 							mapComponent.selectedRange(xmin, ymin, bmp.width, bmp.height)
 						}
@@ -69,28 +70,28 @@ fun Styled<out JTabbedPane>.tilesetTab(
 				}
 			}
 			toolbar {
-				iconButton(toolbarIcon("add.png")) {
+				iconButton(toolbarIcon("add.png"), "Add tileset file or image") {
 					click {
-						val file = projectContext.chooseFile()
-						if (file != null) {
-							val vfsFile = file.toVfs()
+						val vfsFile = projectContext.chooseFile()?.toVfs()
+						if (vfsFile != null) {
 							runBlocking {
-								val tileset = try {
+                                val firstgid = tilemap.nextGid
+								val tileset = if (vfsFile.extensionLC != "tsx") {
 									val bmp = vfsFile.readBitmap()
-									TiledMap.TiledTileset(TileSet(bmp.slice().split(32, 32), 32, 32, bmp))
-								} catch (e: Throwable) {
-									vfsFile.readTileSetData().toTiledSet(vfsFile.parent)
+									tiledsetFromBitmap(vfsFile.baseName, 32, 32, bmp, firstgid)
+								} else {
+									vfsFile.readTileSetData(firstgid).toTiledSet(vfsFile.parent)
 								}
 
-								val oldMap = tilemap
 								history.addAndDo("ADD TILESET") { redo ->
 									if (redo) {
 										tilemap.data.tilesets += tileset.data
 										tilemap.tilesets += tileset
-										tilemap.tileset = tileset.tileset
 										tilesetsUpdated(Unit)
 									} else {
-										TODO("Unsupported now")
+										tilemap.data.tilesets -= tileset.data
+                                        tilemap.tilesets -= tileset
+                                        tilesetsUpdated(Unit)
 									}
 								}
 							}
@@ -124,6 +125,29 @@ private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 	return TiledMap(TiledMapData(
 		width = mapWidth, height = mapHeight,
 		tilewidth = tileset.width, tileheight = tileset.height,
-		allLayers = arrayListOf(TiledMap.Layer.Tiles(Bitmap32(mapWidth.coerceAtLeast(1), mapHeight.coerceAtLeast(1)) { x, y -> RGBA(y * mapWidth + x) }))
-	), listOf(this), tileset)
+		allLayers = arrayListOf(TiledMap.Layer.Tiles(
+            Bitmap32(mapWidth.coerceAtLeast(1), mapHeight.coerceAtLeast(1)) { x, y -> RGBA(y * mapWidth + x + firstgid) }
+        ))
+	), listOf(this))
+}
+
+private fun tiledsetFromBitmap(name: String, tileWidth: Int, tileHeight: Int, bmp: Bitmap, firstgid: Int): TiledMap.TiledTileset {
+    val tileset = TileSet(bmp.slice().split(tileWidth, tileHeight), tileWidth, tileHeight)
+    return TiledMap.TiledTileset(tileset,
+        TileSetData(
+            name = name.substringBeforeLast("."),
+            firstgid = firstgid,
+            tilewidth = tileset.width,
+            tileheight = tileset.height,
+            tilecount = tileset.textures.size,
+            columns = tileset.base.width / tileset.width,
+            image = null,
+            imageSource = name,
+            width = tileset.base.width,
+            height = tileset.base.height,
+            tilesetSource = null,
+            terrains = listOf(),
+            tiles = tileset.textures.mapIndexed { index, bmpSlice -> TileData(index) }
+        )
+    )
 }
