@@ -67,9 +67,16 @@ fun Styled<out JTabbedPane>.tilesetTab(
 							picked.value = PickedSelection(bmp)
 							mapComponent.selectedRange(xmin, ymin, bmp.width, bmp.height)
 						}
-						this.component.add(JBScrollPane(mapComponent))
+						component.add(JBScrollPane(mapComponent))
 					}
 				}
+                selectedTilesetIndex {
+                    val current = component.selectedIndex
+                    val new = selectedTilesetIndex.value
+                    if (current != new) {
+                        component.selectedIndex = new
+                    }
+                }
 			}
 			toolbar {
 				iconButton(toolbarIcon("add.png"), "Add tileset file or image") {
@@ -78,22 +85,28 @@ fun Styled<out JTabbedPane>.tilesetTab(
 						if (vfsFile != null) {
 							runBlocking {
                                 val firstgid = tilemap.nextGid
-								val tileset = if (vfsFile.extensionLC != "tsx") {
-									val bmp = vfsFile.readBitmap()
-									tiledsetFromBitmap(vfsFile.baseName, 32, 32, bmp, firstgid)
-								} else {
+                                // TODO: copy file to current directory
+								val tileset = if (vfsFile.extensionLC == "tsx") {
 									vfsFile.readTileSetData(firstgid).toTiledSet(vfsFile.parent)
+								} else {
+									val bmp = vfsFile.readBitmapOptimized()
+                                    // TODO: show dialog to specify tile width and height
+									tiledsetFromBitmap(vfsFile, 16, 16, bmp, firstgid)
 								}
 
 								history.addAndDo("ADD TILESET") { redo ->
 									if (redo) {
+                                        val index = tilemap.tilesets.size
 										tilemap.data.tilesets += tileset.data
 										tilemap.tilesets.add(tileset)
 										tilesetsUpdated(Unit)
+                                        selectedTilesetIndex.value = index
 									} else {
+                                        val index = tilemap.tilesets.indexOf(tileset)
 										tilemap.data.tilesets -= tileset.data
                                         tilemap.tilesets.remove(tileset)
                                         tilesetsUpdated(Unit)
+                                        selectedTilesetIndex.value = index
 									}
 								}
 							}
@@ -117,13 +130,15 @@ fun Styled<out JTabbedPane>.tilesetTab(
                         val tileset = tilemap.tilesets[index]
                         history.addAndDo("REMOVE TILESET") { redo ->
                             if (redo) {
-                                tilemap.data.tilesets.add(tileset.data)
-                                tilemap.tilesets.add(index, tileset)
-                                tilesetsUpdated(Unit)
-                            } else {
                                 tilemap.data.tilesets.remove(tileset.data)
                                 tilemap.tilesets.removeAt(index)
                                 tilesetsUpdated(Unit)
+                                selectedTilesetIndex.value = max(0, index - 1)
+                            } else {
+                                tilemap.data.tilesets.add(tileset.data)
+                                tilemap.tilesets.add(index, tileset)
+                                tilesetsUpdated(Unit)
+                                selectedTilesetIndex.value = index
                             }
                         }
 					}
@@ -149,23 +164,21 @@ private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 	), mutableListOf(this))
 }
 
-private fun tiledsetFromBitmap(name: String, tileWidth: Int, tileHeight: Int, bmp: Bitmap, firstgid: Int): TiledMap.TiledTileset {
-    val tileset = TileSet(bmp.slice().split(tileWidth, tileHeight), tileWidth, tileHeight)
-    return TiledMap.TiledTileset(tileset,
-        TileSetData(
-            name = name.substringBeforeLast("."),
-            firstgid = firstgid,
-            tilewidth = tileset.width,
-            tileheight = tileset.height,
-            tilecount = tileset.textures.size,
-            columns = tileset.base.width / tileset.width,
-            image = null,
-            imageSource = name,
-            width = tileset.base.width,
-            height = tileset.base.height,
-            tilesetSource = null,
-            terrains = listOf(),
-            tiles = tileset.textures.mapIndexed { index, bmpSlice -> TileData(index) }
-        )
-    )
+private suspend fun tiledsetFromBitmap(file: VfsFile, tileWidth: Int, tileHeight: Int, bmp: Bitmap, firstgid: Int): TiledMap.TiledTileset {
+    val tileset = TileSet(bmp.slice(), tileWidth, tileHeight)
+    return TileSetData(
+        name = file.baseName.substringBeforeLast("."),
+        firstgid = firstgid,
+        tilewidth = tileset.width,
+        tileheight = tileset.height,
+        tilecount = tileset.textures.size,
+        columns = tileset.base.width / tileset.width,
+        image = null,
+        imageSource = file.baseName,
+        width = tileset.base.width,
+        height = tileset.base.height,
+        tilesetSource = null,
+        terrains = listOf(),
+        tiles = listOf()
+    ).toTiledSet(file.parent)
 }

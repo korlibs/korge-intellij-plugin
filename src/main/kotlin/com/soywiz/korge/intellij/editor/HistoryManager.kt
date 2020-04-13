@@ -30,7 +30,12 @@ class HistoryManager {
 		saved = false
 		return entry
 	}
-	fun addAndDo(name: String, apply: (redo: Boolean) -> Unit) = add(name, apply).redo()
+
+	fun addAndDo(name: String, apply: (redo: Boolean) -> Unit) {
+        val entry = add(name, apply)
+        entry.redo()
+        onChange(Unit)
+    }
 
 	fun save() {
 		onSave()
