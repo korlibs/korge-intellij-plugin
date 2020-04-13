@@ -25,8 +25,8 @@ class TileMapEditorPanel(
 				//tmxFile.writeString(xmlString)
 			}
 		}
-		//history.onChange {
-		history.onAdd {
+		//history.onAdd {
+		history.onChange {
 			history.save()
 		}
 	}

@@ -16,4 +16,5 @@ data class MapContext(
 	val picked: ObservableProperty<PickedSelection> = ObservableProperty(PickedSelection(Bitmap32(1, 1) { _, _ -> RGBA(0) }))
 	val zoomLevels: List<Int> = listOf(25, 50, 75, 100, 150, 200, 300, 400, 700, 1000, 1500, 2000, 2500, 3000)
 	val tilesetsUpdated = Signal<Unit>()
+	val selectedTilesetIndex = ObservableProperty(0)
 }

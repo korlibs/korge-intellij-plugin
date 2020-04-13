@@ -24,8 +24,10 @@ fun Styled<out JTabbedPane>.tilesetTab(
 		verticalStack {
 			tabs {
 				fill()
+                component.addChangeListener {
+                    selectedTilesetIndex.value = (it.source as JBTabbedPane).selectedIndex
+                }
 				uiSequence({ tilemap.tilesets }, tilesetsUpdated) { tileset ->
-					println("TAB.TILESET: $tileset")
 					tab(tileset.data.name) {
 						val tilemap = tileset.pickerTilemap()
 						val mapComponent = MapComponent(tilemap)
@@ -86,11 +88,11 @@ fun Styled<out JTabbedPane>.tilesetTab(
 								history.addAndDo("ADD TILESET") { redo ->
 									if (redo) {
 										tilemap.data.tilesets += tileset.data
-										tilemap.tilesets += tileset
+										tilemap.tilesets.add(tileset)
 										tilesetsUpdated(Unit)
 									} else {
 										tilemap.data.tilesets -= tileset.data
-                                        tilemap.tilesets -= tileset
+                                        tilemap.tilesets.remove(tileset)
                                         tilesetsUpdated(Unit)
 									}
 								}
@@ -106,8 +108,24 @@ fun Styled<out JTabbedPane>.tilesetTab(
 					click {
 					}
 				}
-				iconButton(toolbarIcon("delete.png")) {
+				iconButton(toolbarIcon("delete.png"), "Remove tileset") {
+                    tilesetsUpdated {
+                        component.isEnabled = tilemap.tilesets.size > 1
+                    }
 					click {
+                        val index = selectedTilesetIndex.value
+                        val tileset = tilemap.tilesets[index]
+                        history.addAndDo("REMOVE TILESET") { redo ->
+                            if (redo) {
+                                tilemap.data.tilesets.add(tileset.data)
+                                tilemap.tilesets.add(index, tileset)
+                                tilesetsUpdated(Unit)
+                            } else {
+                                tilemap.data.tilesets.remove(tileset.data)
+                                tilemap.tilesets.removeAt(index)
+                                tilesetsUpdated(Unit)
+                            }
+                        }
 					}
 				}
 			}
@@ -128,7 +146,7 @@ private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
 		allLayers = arrayListOf(TiledMap.Layer.Tiles(
             Bitmap32(mapWidth.coerceAtLeast(1), mapHeight.coerceAtLeast(1)) { x, y -> RGBA(y * mapWidth + x + firstgid) }
         ))
-	), listOf(this))
+	), mutableListOf(this))
 }
 
 private fun tiledsetFromBitmap(name: String, tileWidth: Int, tileHeight: Int, bmp: Bitmap, firstgid: Int): TiledMap.TiledTileset {

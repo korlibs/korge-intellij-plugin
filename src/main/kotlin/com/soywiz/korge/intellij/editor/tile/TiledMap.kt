@@ -83,7 +83,7 @@ data class TileSetData constructor(
 //@AsyncFactoryClass(TiledMapFactory::class)
 class TiledMap constructor(
 	var data: TiledMapData,
-	var tilesets: List<TiledTileset>
+	var tilesets: MutableList<TiledTileset>
 ) {
 	val width get() = data.width
 	val height get() = data.height
@@ -97,7 +97,7 @@ class TiledMap constructor(
 	val objectLayers get() = data.objectLayers
     val nextGid get() = tilesets.map { it.firstgid + it.tileset.textures.size }.max() ?: 1
 
-	fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() })
+	fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() }.toMutableList())
 
 	data class TiledTileset(
 		val tileset: TileSet,
