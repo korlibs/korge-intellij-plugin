@@ -45,7 +45,7 @@ fun Styled<out Container>.createTileMapEditor(
 		//horizontalStack {
 		//	height = 32.points
 		toolbar {
-			iconButton(toolbarIcon("edit.png"))
+			iconButton(toolbarIcon("edit.png"), "Edit")
 			button("Dropper")
 			button("Eraser")
 			button("Fill")
@@ -55,28 +55,26 @@ fun Styled<out Container>.createTileMapEditor(
 			button("Oval")
 			//}
 			//toolbar {
-			iconButton(toolbarIcon("settings.png")) {
+			iconButton(toolbarIcon("settings.png"), "Settings") {
 				click {
 					//val file = projectCtx.chooseFile()
-					val size = showResizeMapDialog(
-						tilemap.width,
-						tilemap.height
-					)
+                    val oldWidth = tilemap.width
+                    val oldHeight = tilemap.height
 
-					if (size != null) {
-						val width = size.width.toInt()
-						val height = size.height.toInt()
-						//println("${mapWidth.value}x${mapHeight.value}")
+					val size = showResizeMapDialog(oldWidth, oldHeight)
+
+					if (size != null && (size.width != oldWidth || size.height != oldHeight)) {
+						val width = size.width
+						val height = size.height
 						val oldTilemap = tilemap.data.clone()
-						val newTilemap = tilemap.data.clone().also { newTilemap ->
-							newTilemap.width = width
-							newTilemap.height = height
-							for (pattern in newTilemap.patternLayers) {
-								val newMap = Bitmap32(width, height)
-								newMap.put(pattern.map, 0, 0)
-								pattern.map = newMap
-							}
-						}
+						val newTilemap = tilemap.data.clone()
+                        newTilemap.width = width
+                        newTilemap.height = height
+                        for (tiles in newTilemap.tileLayers) {
+                            val newMap = Bitmap32(width, height)
+                            newMap.put(tiles.map, 0, 0)
+                            tiles.map = newMap
+                        }
 						history.addAndDo("RESIZE") { redo ->
 							if (redo) {
 								tilemap.data = newTilemap
@@ -88,10 +86,10 @@ fun Styled<out Container>.createTileMapEditor(
 					}
 				}
 			}
-			iconButton(toolbarIcon("zoomIn.png")) {
+			iconButton(toolbarIcon("zoomIn.png"), "Zoom In") {
 				click { zoomIn() }
 			}
-			iconButton(toolbarIcon("zoomOut.png")) {
+			iconButton(toolbarIcon("zoomOut.png"), "Zoom Out") {
 				click { zoomOut() }
 			}
 			//}
@@ -118,9 +116,9 @@ fun Styled<out Container>.createTileMapEditor(
 								height = MUnit.Fill
 							}
 							toolbar {
-								iconButton(toolbarIcon("add.png"))
-								iconButton(toolbarIcon("edit.png"))
-								iconButton(toolbarIcon("delete.png"))
+								iconButton(toolbarIcon("add.png"), "Add")
+								iconButton(toolbarIcon("edit.png"), "Edit")
+								iconButton(toolbarIcon("delete.png"), "Delete")
 							}
 						}
 					}
@@ -161,7 +159,7 @@ fun Styled<out Container>.createTileMapEditor(
 						data class DrawEntry(val x: Int, val y: Int, val layer: Int, val oldColor: RGBA, val newColor: RGBA) {
 							fun apply(tmx: TiledMap, redo: Boolean) {
 								val layer = tmx.allLayers[layer]
-								if (layer is TiledMap.Layer.Patterns) {
+								if (layer is TiledMap.Layer.Tiles) {
 									layer.map[x, y] = if (redo) newColor else oldColor
 								}
 							}
@@ -185,7 +183,7 @@ fun Styled<out Container>.createTileMapEditor(
 							val layer = mapComponent.tmx.allLayers.getOrNull(layerIndex)
 							if (layer != null && !layer.locked) {
 								when (layer) {
-									is TiledMap.Layer.Patterns -> {
+									is TiledMap.Layer.Tiles -> {
 										//println("DOWN: $it")
 										for (y in 0 until pickedData.height) {
 											for (x in 0 until pickedData.width) {
@@ -248,7 +246,7 @@ fun Styled<out Container>.createTileMapEditor(
 									click {
 										showPopupMenu(listOf("Tile Layer", "Object Layer", "Image Layer")) {
 											val layerIndex = selectedLayerIndex.value
-											val newLayer = TiledMap.Layer.Patterns(Bitmap32(tilemap.width, tilemap.height)).also {
+											val newLayer = TiledMap.Layer.Tiles(Bitmap32(tilemap.width, tilemap.height)).also {
 												it.name = "Tile Layer ${tilemap.allLayers.size + 1}"
 											}
 											history.addAndDo("ADD LAYER") { redo ->
@@ -433,6 +431,10 @@ fun Styled<out Container>.createTileMapEditor(
 					history.undo()
 					true
 				}
+                (ke.isControlDown && ke.id == KeyEvent.KEY_PRESSED) && (ke.keyCode == KeyEvent.VK_S) -> {
+                    history.save()
+                    true
+                }
 				else -> {
 					false
 				}
@@ -440,115 +442,3 @@ fun Styled<out Container>.createTileMapEditor(
 		}
 	}
 }
-
-
-
-class MyTileMapEditorPanel(
-		val tmxFile: VfsFile,
-		val history: HistoryManager = HistoryManager(),
-		val registerHistoryShortcuts: Boolean = true,
-		val projectCtx: ProjectContext? = null,
-		val onSaveXml: (String) -> Unit = {}
-) : JPanel(BorderLayout()) {
-	val tmx = runBlocking { tmxFile.readTiledMap() }
-	init {
-		styled.createTileMapEditor(tmx, history, registerHistoryShortcuts, projectCtx)
-		history.onSave {
-			runBlocking {
-				val xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + tmx.toXML().toOuterXmlIndented().toString()
-				onSaveXml(xmlString)
-				//tmxFile.writeString(xmlString)
-			}
-		}
-		//history.onChange {
-		history.onAdd {
-			history.save()
-		}
-	}
-/*
-	val realPanel = tileMapEditor.contentPanel
-
-	val mapComponent = MapComponent(tmx)
-
-	var scale: Double
-		get() = mapComponent.scale
-		set(value) = run { mapComponent.scale = value }
-
-	val mapComponentScroll = JBScrollPane(mapComponent).also { scroll ->
-		//scroll.verticalScrollBar.unitIncrement = 16
-	}
-
-	fun updatedSize() {
-		tileMapEditor.leftSplitPane.dividerLocation = 200
-		tileMapEditor.rightSplitPane.dividerLocation = tileMapEditor.rightSplitPane.width - 200
-	}
-
-	val layersController = LayersController(tileMapEditor.layersPane)
-	val propertiesController = PropertiesController(tileMapEditor.propertiesPane)
-
-	init {
-
-		add(realPanel, BorderLayout.CENTER)
-
-		tileMapEditor.mapPanel.add(mapComponentScroll, GridConstraints().also { it.fill = GridConstraints.FILL_BOTH })
-
-		tileMapEditor.zoomInButton.addActionListener { scale *= 1.5 }
-		tileMapEditor.zoomOutButton.addActionListener { scale /= 1.5 }
-
-
-		updatedSize()
-		addComponentListener(object : ComponentAdapter() {
-			override fun componentResized(e: ComponentEvent) {
-				updatedSize()
-			}
-		})
-	}
- */
-}
-
-/*
-class PropertiesController(val panel: PropertiesPane) {
-	var width = 100
-	var height = 100
-	val propertyTable = KorgePropertyTable(KorgePropertyTable.Properties().register(::width,::height)).also {
-		panel.tablePane.add(JScrollPane(it), BorderLayout.CENTER)
-	}
-}
-
-class LayersController(val panel: LayersPane) {
-	init {
-		val menu = JPopupMenu("Menu").apply {
-			add("Tile Layer")
-			add("Object Layer")
-			add("Image Layer")
-		}
-
-		panel.newButton.addActionListener {
-			menu.show(panel.newButton, 0, panel.newButton.height)
-		}
-	}
-}
- */
-
-class MyTileMapEditorFrame(
-	val tmxFile: VfsFile,
-	val projectCtx: ProjectContext? = null
-) : JFrame() {
-	init {
-		contentPane = MyTileMapEditorPanel(tmxFile, projectCtx = projectCtx)
-		pack()
-	}
-
-	companion object {
-		@JvmStatic
-		fun main(args: Array<String>) {
-			val frame = MyTileMapEditorFrame(localCurrentDirVfs["samples/gfx/sample.tmx"])
-			frame.defaultCloseOperation = EXIT_ON_CLOSE
-			frame.setLocationRelativeTo(null)
-			frame.isVisible = true
-		}
-	}
-}
-
-inline fun Bitmap32.anyFixed(callback: (RGBA) -> Boolean): Boolean = (0 until area).any { callback(data[it]) }
-inline fun Bitmap32.allFixed(callback: (RGBA) -> Boolean): Boolean = (0 until area).all { callback(data[it]) }

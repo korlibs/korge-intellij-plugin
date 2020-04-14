@@ -37,20 +37,20 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 		val refs = arrayOf(ref)
 
 		val fileEditor = object : FileEditorBase(), DumbAware {
-			val panel = MyTileMapEditorPanel(
+			val panel = TileMapEditorPanel(
 				tmxFile, history,
 				registerHistoryShortcuts = false,
 				projectCtx = ProjectContext(project, file),
 				onSaveXml = { xmlText ->
-				val doc = ref.document
-				if (doc != null) {
-					runWriteAction {
-					//run {
-						println("DOCUMENT SET TEXT")
-						doc.setText(xmlText)
-					}
-				}
-			})
+				    ref.document?.let { doc ->
+			    		runWriteAction {
+				    	//run {
+					    	println("DOCUMENT SET TEXT")
+						    doc.setText(xmlText)
+				    	}
+				    }
+			    }
+            )
 			override fun isModified(): Boolean = panel.history.isModified
 			override fun getName(): String = "Editor"
 			override fun setState(state: FileEditorState) = Unit
@@ -75,22 +75,12 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 						history.moveTo(entry.cursor - 1)
 					}
 					//override fun isGlobal(): Boolean = false
-					//override fun getAffectedDocuments() = refs
 					override fun isGlobal(): Boolean = true
 					override fun getAffectedDocuments() = refs
 				})
 			}, entry.name, "tilemap", UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION, refs[0].document)
-
 		}
 
 		return fileEditor
-	}
-
-	companion object {
-		@JvmStatic
-		fun main(args: Array<String>) {
-			val frame = JFrame()
-			frame.isVisible = true
-		}
 	}
 }

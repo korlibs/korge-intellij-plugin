@@ -1,7 +1,7 @@
 package com.soywiz.korge.intellij.editor.tile
 
 object TerrainFiller {
-	fun updateTile(layer: TiledMap.Layer.Patterns, x: Int, y: Int, tileset: TiledMap.TiledTileset) {
+	fun updateTile(layer: TiledMap.Layer.Tiles, x: Int, y: Int, tileset: TiledMap.TiledTileset) {
 		val topLeft = layer[x - 1, y - 1]
 		val top = layer[x, y - 1]
 		val topRight = layer[x + 1, y - 1]

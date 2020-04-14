@@ -8,7 +8,7 @@ import com.soywiz.korma.geom.*
 import java.awt.event.*
 import javax.swing.event.*
 
-fun showResizeMapDialog(initialWidth: Int, initialHeight: Int): Size? {
+fun showResizeMapDialog(initialWidth: Int, initialHeight: Int): SizeInt? {
 	val mapWidth = ObservableProperty("$initialWidth")
 	val mapHeight = ObservableProperty("$initialHeight")
 	val initializedSignal = Signal<Unit>()
@@ -65,7 +65,7 @@ fun showResizeMapDialog(initialWidth: Int, initialHeight: Int): Size? {
 	}
 
 	return when {
-		result -> Size(mapWidth.value.trim().toInt(), mapHeight.value.trim().toInt())
+		result -> SizeInt(mapWidth.value.trim().toInt(), mapHeight.value.trim().toInt())
 		else -> null
 	}
 }

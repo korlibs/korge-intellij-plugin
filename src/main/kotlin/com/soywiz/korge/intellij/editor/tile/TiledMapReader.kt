@@ -14,7 +14,6 @@ import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
 
-
 suspend fun VfsFile.readTiledMap(
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
@@ -40,7 +39,7 @@ suspend fun VfsFile.readTiledMap(
 		tiledTilesets += tileset.toTiledSet(folder, hasTransparentColor, transparentColor, createBorder)
 	}
 
-	return TiledMap(data, tiledTilesets, tiledTilesets.combine(data.tilewidth, data.tileheight))
+	return TiledMap(data, tiledTilesets)
 }
 
 private fun Xml.parseProperties(): Map<String, Any> {
@@ -148,18 +147,6 @@ suspend fun TileSetData.toTiledSet(
 	return tiledTileset
 }
 
-fun Iterable<TiledMap.TiledTileset>.combine(tilewidth: Int, tileheight: Int): TileSet {
-	val maxGid = this.map { it.firstgid + it.tileset.textures.size }.max() ?: 1
-	val combinedTileset = arrayOfNulls<BmpSlice>(maxGid + 1)
-	for (tileset in this) {
-		val ptileset = tileset.tileset
-		for (n in ptileset.textures.indices) {
-			combinedTileset[tileset.firstgid + n] = ptileset.textures[n]
-		}
-	}
-	return TileSet(combinedTileset.toList(), tilewidth, tileheight)
-}
-
 suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	val log = tilemapLog
 	val file = this
@@ -201,7 +188,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 			elementName == "layer" || elementName == "objectgroup" || elementName == "imagelayer" -> {
 				tilemapLog.trace { "layer:$elementName" }
 				val layer = when (element.nameLC) {
-					"layer" -> TiledMap.Layer.Patterns()
+					"layer" -> TiledMap.Layer.Tiles()
 					"objectgroup" -> TiledMap.Layer.Objects()
 					"imagelayer" -> TiledMap.Layer.Image()
 					else -> invalidOp
@@ -221,7 +208,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				}
 
 				when (layer) {
-					is TiledMap.Layer.Patterns -> {
+					is TiledMap.Layer.Tiles -> {
 						val width = element.int("width")
 						val height = element.int("height")
 						val count = width * height

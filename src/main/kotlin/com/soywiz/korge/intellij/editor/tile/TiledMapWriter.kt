@@ -1,6 +1,5 @@
 package com.soywiz.korge.intellij.editor.tile
 
-import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 
@@ -34,7 +33,7 @@ fun TiledMap.toXML(): Xml {
 		}
 		for (layer in map.allLayers) {
 			when (layer) {
-				is TiledMap.Layer.Patterns -> {
+				is TiledMap.Layer.Tiles -> {
 					node("layer", "id" to layer.id, "name" to layer.name, "width" to layer.width, "height" to layer.height) {
 						node("data", "encoding" to "csv") {
 							text(buildString(layer.area * 4) {
@@ -61,8 +60,7 @@ fun TileSetData.toXML(): Xml {
 	//  <image source="Overworld.png" width="640" height="576"/>
 	//</tileset>
 	return buildXml("tileset",
-		"version" to 1.2,
-		"tiledversion" to "1.3.1",
+		"firstgid" to firstgid,
 		"name" to name,
 		"tilewidth" to tilewidth,
 		"tileheight" to tileheight,
