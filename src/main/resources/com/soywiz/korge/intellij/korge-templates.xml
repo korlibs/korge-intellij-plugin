@@ -1,6 +1,6 @@
 <korge-templates version="3">
 <versions>
-	<version>1.11.3.0</version>
+	<version>1.12.2.2</version>
 </versions>
 <features>
 	<feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
@@ -60,6 +60,14 @@ enableFeaturePreview("GRADLE_METADATA")
 
 <file path="gradle.properties"><![CDATA[
 org.gradle.jvmargs=-Xmx2g
+]]></file>
+
+<file path="gradle/wrapper/gradle-wrapper.properties"><![CDATA[
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-6.3-all.zip
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
 ]]></file>
 
 <file path="src/commonMain/kotlin/main.kt"><![CDATA[
