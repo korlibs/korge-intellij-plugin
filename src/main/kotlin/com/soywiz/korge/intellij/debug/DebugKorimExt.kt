@@ -5,7 +5,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.sun.jdi.*
 
-fun Type.isKorimBitmapOrDrawable() = this.instanceOf<Bitmap>() || this.instanceOf<BmpSlice>() || this.instanceOf<Context2d.Drawable>() || this.instanceOf<com.soywiz.korge.view.Image>()
+fun Type.isKorimBitmapOrDrawable() = this.instanceOf<Bitmap>() || this.instanceOf<BmpSlice>() || this.instanceOf<Drawable>() || this.instanceOf<com.soywiz.korge.view.Image>()
 
 fun ObjectReference.readKorimBitmap32(hintWidth: Int, hintHeight: Int, thread: ThreadReference?): Bitmap32 {
 	val value = this
@@ -14,8 +14,8 @@ fun ObjectReference.readKorimBitmap32(hintWidth: Int, hintHeight: Int, thread: T
 		type.instanceOf<Bitmap>() -> readKorimBitmap32Internal(thread)
 		type.instanceOf<BmpSlice>() -> readKorimBmpSliceInternal(thread)
 		type.instanceOf<com.soywiz.korge.view.Image>() -> readKorgeImageInternal(thread)
-		type.instanceOf<Context2d.Drawable>() -> {
-			val isSizedDrawable = type.instanceOf<Context2d.SizedDrawable>()
+		type.instanceOf<Drawable>() -> {
+			val isSizedDrawable = type.instanceOf<SizedDrawable>()
 			val width = if (isSizedDrawable) value.invoke("getWidth", listOf(), thread = thread).int(hintWidth) else hintWidth
 			val height = if (isSizedDrawable) value.invoke("getHeight", listOf(), thread = thread).int(hintHeight) else hintHeight
 			readKorimDrawableInternal(width, height, thread)
@@ -55,9 +55,9 @@ fun ObjectReference.readKorimDrawableInternal(requestedWidth: Int, requestedHeig
 	val value = this
 	val type = value.type()
 	val vm = virtualMachine()
-	if (!type.instanceOf<Context2d.Drawable>()) error("Not a korim Context2d.Drawable")
-	val isSizedDrawable = type.instanceOf<Context2d.SizedDrawable>()
-	val isBoundsDrawable = type.instanceOf<Context2d.BoundsDrawable>()
+	if (!type.instanceOf<Drawable>()) error("Not a korim Context2d.Drawable")
+	val isSizedDrawable = type.instanceOf<SizedDrawable>()
+	val isBoundsDrawable = type.instanceOf<BoundsDrawable>()
 
 	val width = if (isSizedDrawable) value.invoke("getWidth", thread = thread).int(requestedWidth) else requestedWidth
 	val height = if (isSizedDrawable) value.invoke("getHeight", thread = thread).int(requestedHeight) else requestedHeight

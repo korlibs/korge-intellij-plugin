@@ -183,7 +183,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 									views, defaultConfig = SWFExportConfig(
 										mipmaps = false,
 										antialiasing = true,
-										rasterizerMethod = Context2d.ShapeRasterizerMethod.X4,
+										rasterizerMethod = ShapeRasterizerMethod.X4,
 										exportScale = 1.0,
 										exportPaths = false
 									)
