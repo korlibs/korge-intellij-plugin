@@ -1,10 +1,10 @@
-package com.soywiz.korge.intellij.editor.tile.editor
+package com.soywiz.korge.intellij.editor.tiled.editor
 
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.intellij.*
-import com.soywiz.korge.intellij.editor.tile.*
-import com.soywiz.korge.intellij.editor.tile.dialog.*
+import com.soywiz.korge.intellij.editor.tiled.*
+import com.soywiz.korge.intellij.editor.tiled.dialog.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korge.view.tiles.*
@@ -172,6 +172,9 @@ private suspend fun tiledsetFromBitmap(file: VfsFile, tileWidth: Int, tileHeight
         tilewidth = tileset.width,
         tileheight = tileset.height,
         tilecount = tileset.textures.size,
+		//TODO: provide these values as params
+		spacing = 0,
+		margin = 0,
         columns = tileset.base.width / tileset.width,
         image = null,
         imageSource = file.baseName,

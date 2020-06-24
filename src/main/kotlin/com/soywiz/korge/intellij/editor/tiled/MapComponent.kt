@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 import com.intellij.util.ui.*
 import com.soywiz.korge.intellij.util.*

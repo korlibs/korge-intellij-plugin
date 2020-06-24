@@ -1,5 +1,5 @@
 // @TODO: @WARNING: Duplicated from KorGE to be able to modify it. Please, copy again to KorGE once this is stable
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 import com.soywiz.klogger.*
 import com.soywiz.korge.view.tiles.*
@@ -17,13 +17,16 @@ class TiledMapData(
 	val allLayers: MutableList<TiledMap.Layer> = arrayListOf(),
 	val tilesets: MutableList<TileSetData> = arrayListOf()
 ) {
-	val maxGid get() = tilesets.map { it.firstgid + it.tilecount }.max() ?: 0
 	val pixelWidth: Int get() = width * tilewidth
 	val pixelHeight: Int get() = height * tileheight
 	inline val tileLayers get() = allLayers.tiles
 	inline val imageLayers get() = allLayers.images
 	inline val objectLayers get() = allLayers.objects
+
+	val maxGid get() = tilesets.map { it.firstgid + it.tilecount }.max() ?: 0
+
 	fun getObjectByName(name: String) = objectLayers.mapNotNull { it.getByName(name) }.firstOrNull()
+
 	fun clone() = TiledMapData(
 		width, height, tilewidth, tileheight,
 		allLayers.map { it.clone() }.toMutableList(),
@@ -58,15 +61,17 @@ data class TileData(
 	val probability: Double = 1.0,
 	val frames: List<AnimationFrameData>? = null
 ) {
-	val terrainInfo = TerrainInfo(terrain ?: listOf(null, null ,null, null))
+	val terrainInfo = TerrainInfo(terrain ?: listOf(null, null, null, null))
 }
 
-data class TileSetData constructor(
-	val name: String = "unknown",
-	val firstgid: Int = 1,
+data class TileSetData(
+	val name: String,
+	val firstgid: Int,
 	val tilewidth: Int,
 	val tileheight: Int,
 	val tilecount: Int,
+	val spacing: Int,
+	val margin: Int,
 	val columns: Int,
 	val image: Xml?,
 	val imageSource: String,
@@ -95,7 +100,7 @@ class TiledMap constructor(
 	val tileLayers get() = data.tileLayers
 	val imageLayers get() = data.imageLayers
 	val objectLayers get() = data.objectLayers
-    val nextGid get() = tilesets.map { it.firstgid + it.tileset.textures.size }.max() ?: 1
+	val nextGid get() = tilesets.map { it.firstgid + it.tileset.textures.size }.max() ?: 1
 
 	fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() }.toMutableList())
 
@@ -107,6 +112,8 @@ class TiledMap constructor(
 			tilewidth = tileset.width,
 			tileheight = tileset.height,
 			tilecount = tileset.textures.size,
+            spacing = 0,
+            margin = 0,
 			columns = tileset.base.width / tileset.width,
 			image = null,
 			imageSource = "",
@@ -131,7 +138,8 @@ class TiledMap constructor(
 		var opacity = 1.0
 		var offsetx: Double = 0.0
 		var offsety: Double = 0.0
-		val properties = LinkedHashMap<String, Any>()
+		val properties = LinkedHashMap<String, Any?>()
+
 		companion object {
 			val BASE_PROPS = listOf(
 				Layer::id,
@@ -139,6 +147,7 @@ class TiledMap constructor(
 				Layer::color, Layer::opacity, Layer::offsetx, Layer::offsety
 			)
 		}
+
 		open fun copyFrom(other: Layer) {
 			for (prop in BASE_PROPS) {
 				val p = prop as KMutableProperty1<Layer, Any>
@@ -147,6 +156,7 @@ class TiledMap constructor(
 			this.properties.clear()
 			this.properties.putAll(other.properties)
 		}
+
 		abstract fun clone(): Layer
 
 		class Tiles(
@@ -164,8 +174,12 @@ class TiledMap constructor(
 		}
 
 		data class ObjectInfo(
-			val id: Int, val name: String, val type: String,
-			val bounds: IRectangleInt,
+			val id: Int,
+			val gid: Int?,
+			val name: String,
+			val rotation: Double, // in degrees
+			val type: String,
+			val bounds: Rectangle,
 			val objprops: Map<String, Any>
 		)
 
@@ -177,18 +191,22 @@ class TiledMap constructor(
 			}
 
 			interface Poly : Object {
-				val points: List<IPoint>
+				val points: List<Point>
 			}
 
+			data class PPoint(override val info: ObjectInfo) : Object
 			data class Rect(override val info: ObjectInfo) : Object
 			data class Ellipse(override val info: ObjectInfo) : Object
-			data class Polyline(override val info: ObjectInfo, override val points: List<IPoint>) : Poly
-			data class Polygon(override val info: ObjectInfo, override val points: List<IPoint>) : Poly
+			data class Polyline(override val info: ObjectInfo, override val points: List<Point>) : Poly
+			data class Polygon(override val info: ObjectInfo, override val points: List<Point>) : Poly
 
-			override fun clone(): Objects = Objects(objects.toMutableList()).also { it.copyFrom(this) }
+			val objectsById by lazy { objects.associateBy { it.id } }
+			val objectsByName by lazy { objects.associateBy { it.name } }
 
-			fun getById(id: Int): Object? = objects.firstOrNull { it.id == id }
-			fun getByName(name: String): Object? = objects.firstOrNull { it.name == name }
+			fun getById(id: Int): Object? = objectsById[id]
+			fun getByName(name: String): Object? = objectsByName[name]
+
+			override fun clone() = Objects().also { it.copyFrom(this) }
 		}
 
 		class Image(
@@ -203,11 +221,6 @@ class TiledMap constructor(
 }
 
 private fun TileSet.clone(): TileSet = TileSet(this.textures, this.width, this.height, this.base)
-
-fun Bitmap.clone(): Bitmap = when (this) {
-	is Bitmap32 -> this.clone()
-	else -> TODO()
-}
 
 val TiledMap.Layer.Objects.Object.id get() = this.info.id
 val TiledMap.Layer.Objects.Object.name get() = this.info.name

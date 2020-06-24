@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 object TerrainFiller {
 	fun updateTile(layer: TiledMap.Layer.Tiles, x: Int, y: Int, tileset: TiledMap.TiledTileset) {

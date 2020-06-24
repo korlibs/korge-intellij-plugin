@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
@@ -13,6 +13,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
+import kotlin.collections.set
 
 suspend fun VfsFile.readTiledMap(
 	hasTransparentColor: Boolean = false,
@@ -76,13 +77,16 @@ fun parseTileSetData(element: Xml, firstgid: Int, tilesetSource: String? = null)
 		tilewidth = element.int("tilewidth"),
 		tileheight = element.int("tileheight"),
 		tilecount = element.int("tilecount", -1),
+		spacing = element.int("spacing"),
+		margin = element.int("margin"),
 		columns = element.int("columns", -1),
 		image = image,
 		tilesetSource = tilesetSource,
 		imageSource = image?.str("source") ?: "",
 		width = image?.int("width", 0) ?: 0,
 		height = image?.int("height", 0) ?: 0,
-		terrains = element.children("terraintypes").children("terrain").map { TerrainData(name = it.str("name"), tile = it.int("tile")) },
+		terrains = element.children("terraintypes").children("terrain")
+			.map { TerrainData(name = it.str("name"), tile = it.int("tile")) },
 		tiles = element.children("tile").map {
 			TileData(
 				id = it.int("id"),
@@ -125,15 +129,31 @@ suspend fun TileSetData.toTiledSet(
 	val ptileset = if (createBorder > 0) {
 		bmp = bmp.toBMP32()
 
-		val slices =
-			TileSet.extractBitmaps(bmp, tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
-
-		TileSet.fromBitmaps(
-			tileset.tilewidth, tileset.tileheight,
-			slices,
-			border = createBorder,
-			mipmaps = false
-		)
+		if (tileset.spacing >= createBorder) {
+			// There is already separation between tiles, use it as it is
+			val slices = TileSet.extractBmpSlices(
+				bmp,
+				tileset.tilewidth,
+				tileset.tileheight,
+				tileset.columns,
+				tileset.tilecount,
+				tileset.spacing,
+				tileset.margin
+			)
+			TileSet(slices, tileset.tilewidth, tileset.tileheight, bmp)
+		} else {
+			// No separation between tiles: create a new Bitmap adding that separation
+			val bitmaps = TileSet.extractBitmaps(
+				bmp,
+				tileset.tilewidth,
+				tileset.tileheight,
+				tileset.columns,
+				tileset.tilecount,
+				tileset.spacing,
+				tileset.margin
+			)
+			TileSet.fromBitmaps(tileset.tilewidth, tileset.tileheight, bitmaps, border = createBorder, mipmaps = false)
+		}
 	} else {
 		TileSet(bmp.slice(), tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
 	}
@@ -215,6 +235,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 						val data = element.child("data")
 						val encoding = data?.str("encoding", "") ?: ""
 						val compression = data?.str("compression", "") ?: ""
+
 						@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
 						val tilesArray: IntArray = when {
 							encoding == "" || encoding == "xml" -> {
@@ -255,11 +276,14 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 					is TiledMap.Layer.Objects -> {
 						for (obj in element.children("object")) {
 							val id = obj.int("id")
+							val rotation = obj.double("rotation")
+							val gid = obj.intNull("gid")
 							val name = obj.str("name")
 							val type = obj.str("type")
-							val bounds = obj.run { IRectangleInt(int("x"), int("y"), int("width"), int("height")) }
+							val bounds =
+								obj.run { Rectangle(double("x"), double("y"), double("width"), double("height")) }
 							var rkind = RKind.RECT
-							var points = listOf<IPoint>()
+							var points = listOf<Point>()
 							var objprops: Map<String, Any> = LinkedHashMap()
 
 							for (kind in obj.allNodeChildren) {
@@ -273,7 +297,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 										val pointsStr = kind.str("points")
 										points = pointsStr.split(spaces).map {
 											val parts = it.split(',').map { it.trim().toDoubleOrNull() ?: 0.0 }
-											IPoint(parts[0], parts[1])
+											Point(parts[0], parts[1])
 										}
 
 										rkind = (if (kindType == "polyline") RKind.POLYLINE else RKind.POLYGON)
@@ -281,12 +305,16 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 									kindType == "properties" -> {
 										objprops = kind.parseProperties()
 									}
+									kindType == "point" -> {
+										rkind = RKind.POINT
+									}
 									else -> invalidOp("Invalid object kind '$kindType'")
 								}
 							}
 
-							val info = TiledMap.Layer.ObjectInfo(id, name, type, bounds, objprops)
+							val info = TiledMap.Layer.ObjectInfo(id, gid, name, rotation, type, bounds, objprops)
 							layer.objects += when (rkind) {
+								RKind.POINT -> TiledMap.Layer.Objects.PPoint(info)
 								RKind.RECT -> TiledMap.Layer.Objects.Rect(info)
 								RKind.ELLIPSE -> TiledMap.Layer.Objects.Ellipse(info)
 								RKind.POLYLINE -> TiledMap.Layer.Objects.Polyline(info, points)
@@ -302,10 +330,12 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	return tiledMap
 }
 
-private fun Xml.uint(name: String, defaultValue: Int = 0): Int = this.attributesLC[name]?.toUIntOrNull()?.toInt() ?: defaultValue
+//TODO: move to korio
+private fun Xml.uint(name: String, defaultValue: Int = 0): Int =
+	this.attributesLC[name]?.toUIntOrNull()?.toInt() ?: defaultValue
 
 private enum class RKind {
-	RECT, ELLIPSE, POLYLINE, POLYGON
+	POINT, RECT, ELLIPSE, POLYLINE, POLYGON
 }
 
 private val spaces = Regex("\\s+")

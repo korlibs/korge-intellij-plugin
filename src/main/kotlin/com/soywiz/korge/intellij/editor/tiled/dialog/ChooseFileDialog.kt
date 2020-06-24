@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij.editor.tile.dialog
+package com.soywiz.korge.intellij.editor.tiled.dialog
 
 import com.intellij.openapi.fileChooser.*
 import com.intellij.openapi.project.*

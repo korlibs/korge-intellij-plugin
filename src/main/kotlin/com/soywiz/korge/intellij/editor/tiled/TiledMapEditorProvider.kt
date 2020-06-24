@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 import com.intellij.diff.util.*
 import com.intellij.openapi.command.*
@@ -9,12 +9,12 @@ import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.editor.*
-import com.soywiz.korge.intellij.editor.tile.dialog.*
+import com.soywiz.korge.intellij.editor.tiled.dialog.*
 import com.soywiz.korge.intellij.util.*
 import java.beans.*
 import javax.swing.*
 
-class TileMapEditorProvider : FileEditorProvider, DumbAware {
+class TiledMapEditorProvider : FileEditorProvider, DumbAware {
 	override fun getEditorTypeId(): String = this::class.java.name
 	override fun getPolicy(): FileEditorPolicy = FileEditorPolicy.PLACE_BEFORE_DEFAULT_EDITOR
 
@@ -37,7 +37,7 @@ class TileMapEditorProvider : FileEditorProvider, DumbAware {
 		val refs = arrayOf(ref)
 
 		val fileEditor = object : FileEditorBase(), DumbAware {
-			val panel = TileMapEditorPanel(
+			val panel = TiledMapEditorPanel(
 				tmxFile, history,
 				registerHistoryShortcuts = false,
 				projectCtx = ProjectContext(project, file),

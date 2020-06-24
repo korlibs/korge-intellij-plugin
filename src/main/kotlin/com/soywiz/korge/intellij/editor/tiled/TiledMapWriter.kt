@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*

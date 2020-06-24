@@ -1,8 +1,8 @@
-package com.soywiz.korge.intellij.editor.tile.dialog
+package com.soywiz.korge.intellij.editor.tiled.dialog
 
 import com.intellij.ui.*
 import com.soywiz.korge.intellij.ui.*
-import com.soywiz.korge.intellij.util.*
+import com.soywiz.korge.intellij.util.ObservableProperty
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import java.awt.event.*
