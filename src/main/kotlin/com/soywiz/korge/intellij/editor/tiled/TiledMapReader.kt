@@ -43,63 +43,6 @@ suspend fun VfsFile.readTiledMap(
 	return TiledMap(data, tiledTilesets)
 }
 
-private fun Xml.parseProperties(): Map<String, Any> {
-	val out = LinkedHashMap<String, Any>()
-	for (property in this.children("property")) {
-		val pname = property.str("name")
-		val rawValue = if (property.hasAttribute("value")) property.str("value") else property.text
-		val type = property.str("type", "text")
-		val pvalue: Any = when (type) {
-			"bool" -> rawValue == "true"
-			"color" -> Colors[rawValue]
-			"text" -> rawValue
-			"int" -> rawValue.toIntOrNull() ?: 0
-			"float" -> rawValue.toDoubleOrNull() ?: 0.0
-			"file" -> TiledFile(pname)
-			else -> rawValue
-		}
-		out[pname] = pvalue
-		//println("$pname: $pvalue")
-	}
-	return out
-}
-
-fun parseTileSetData(element: Xml, firstgid: Int, tilesetSource: String? = null): TileSetData {
-	//<?xml version="1.0" encoding="UTF-8"?>
-	//<tileset version="1.2" tiledversion="1.3.1" name="Overworld" tilewidth="16" tileheight="16" tilecount="1440" columns="40">
-	//	<image source="Overworld.png" width="640" height="576"/>
-	//</tileset>
-	val image = element.child("image")
-
-	return TileSetData(
-		name = element.str("name"),
-		firstgid = firstgid,
-		tilewidth = element.int("tilewidth"),
-		tileheight = element.int("tileheight"),
-		tilecount = element.int("tilecount", -1),
-		spacing = element.int("spacing"),
-		margin = element.int("margin"),
-		columns = element.int("columns", -1),
-		image = image,
-		tilesetSource = tilesetSource,
-		imageSource = image?.str("source") ?: "",
-		width = image?.int("width", 0) ?: 0,
-		height = image?.int("height", 0) ?: 0,
-		terrains = element.children("terraintypes").children("terrain")
-			.map { TerrainData(name = it.str("name"), tile = it.int("tile")) },
-		tiles = element.children("tile").map {
-			TileData(
-				id = it.int("id"),
-				terrain = it.str("terrain").takeIf { it.isNotEmpty() }?.split(',')?.map { it.toIntOrNull() },
-				probability = it.double("probability", 1.0),
-				frames = it.child("animation")?.children("frame")?.map {
-					AnimationFrameData(it.int("tileid"), it.int("duration"))
-				}
-			)
-		}
-	)
-}
-
 suspend fun VfsFile.readTileSetData(firstgid: Int = 1): TileSetData {
 	return parseTileSetData(this.readXml(), firstgid, this.baseName)
 }
@@ -168,7 +111,6 @@ suspend fun TileSetData.toTiledSet(
 }
 
 suspend fun VfsFile.readTiledMapData(): TiledMapData {
-	val log = tilemapLog
 	val file = this
 	val folder = this.parent.jail()
 	val tiledMap = TiledMapData()
@@ -176,10 +118,21 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 
 	if (mapXml.nameLC != "map") error("Not a TiledMap XML TMX file starting with <map>")
 
+	//TODO: Support attributes
+	//val orientation = mapXml.getString("orientation")
+	//val renderorder = mapXml.getString("renderorder")
+	//val compressionlevel = mapXml.getInt("compressionlevel")
 	tiledMap.width = mapXml.getInt("width") ?: 0
 	tiledMap.height = mapXml.getInt("height") ?: 0
 	tiledMap.tilewidth = mapXml.getInt("tilewidth") ?: 32
 	tiledMap.tileheight = mapXml.getInt("tileheight") ?: 32
+	//val hexsidelength = mapXml.getInt("hexsidelength")
+	//val staggeraxis = mapXml.getString("staggeraxis")
+	//val staggerindex = mapXml.getString("staggerindex")
+	//val backgroundcolor = mapXml.getString("backgroundcolor")
+	//val nextlayerid = mapXml.getInt("nextlayerid")
+	//val nextobjectid = mapXml.getString("nextobjectid")
+	//val infinite = mapXml.getInt("infinite")
 
 	tilemapLog.trace { "tilemap: width=${tiledMap.width}, height=${tiledMap.height}, tilewidth=${tiledMap.tilewidth}, tileheight=${tiledMap.tileheight}" }
 	tilemapLog.trace { "tilemap: $tiledMap" }
@@ -188,9 +141,6 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 
 	tilemapLog.trace { "tilemap: elements=${elements.size}" }
 	tilemapLog.trace { "tilemap: elements=$elements" }
-
-	var maxGid = 1
-	//var lastBaseTexture = views.transparentTexture.base
 
 	elements.fastForEach { element ->
 		val elementName = element.nameLC
@@ -201,10 +151,10 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				val firstgid = element.int("firstgid", +1)
 				// TSX file / embedded element
 				val sourcePath = element.getString("source")
-				val element = if (sourcePath != null) folder[sourcePath].readXml() else element
-				tiledMap.tilesets += parseTileSetData(element, firstgid, sourcePath)
-				//lastBaseTexture = tex.base
+				val tileset = if (sourcePath != null) folder[sourcePath].readXml() else element
+				tiledMap.tilesets += parseTileSetData(tileset, firstgid, sourcePath)
 			}
+			//TODO: Support group //elementName == "group"
 			elementName == "layer" || elementName == "objectgroup" || elementName == "imagelayer" -> {
 				tilemapLog.trace { "layer:$elementName" }
 				val layer = when (element.nameLC) {
@@ -214,11 +164,17 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 					else -> invalidOp
 				}
 				tiledMap.allLayers += layer
+				//TODO: support layer id
+				//layer.id = element.int("id")
 				layer.name = element.str("name")
-				layer.visible = element.int("visible", 1) != 0
-				layer.draworder = element.str("draworder", "")
-				layer.color = Colors[element.str("color", "#ffffff")]
+				//TODO: move to objects only
+				layer.draworder = element.str("draworder", "topdown")
+				//TODO: move to objects only
+				layer.color = Colors[element.str("color", "#a0a0a4")]
 				layer.opacity = element.double("opacity", 1.0)
+				layer.visible = element.int("visible", 1) != 0
+				//TODO: support tintcolor
+				//val tintcolor = element.str("tintcolor") //optional
 				layer.offsetx = element.double("offsetx", 0.0)
 				layer.offsety = element.double("offsety", 0.0)
 
@@ -228,6 +184,8 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				}
 
 				when (layer) {
+					//TODO: Support group
+					//is TiledMap.Layer.Group -> {  }
 					is TiledMap.Layer.Tiles -> {
 						val width = element.int("width")
 						val height = element.int("height")
@@ -236,6 +194,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 						val encoding = data?.str("encoding", "") ?: ""
 						val compression = data?.str("compression", "") ?: ""
 
+						//TODO: support chunks as <data> elements
 						@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
 						val tilesArray: IntArray = when {
 							encoding == "" || encoding == "xml" -> {
@@ -255,6 +214,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 									"" -> rawContent
 									"gzip" -> rawContent.uncompress(GZIP)
 									"zlib" -> rawContent.uncompress(ZLib)
+									//TODO: support "zstd" compression
 									else -> invalidOp("Unknown compression '$compression'")
 								}
 								content.readIntArrayLE(0, count)
@@ -276,12 +236,15 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 					is TiledMap.Layer.Objects -> {
 						for (obj in element.children("object")) {
 							val id = obj.int("id")
-							val rotation = obj.double("rotation")
-							val gid = obj.intNull("gid")
 							val name = obj.str("name")
 							val type = obj.str("type")
 							val bounds =
 								obj.run { Rectangle(double("x"), double("y"), double("width"), double("height")) }
+							val rotation = obj.double("rotation")
+							val gid = obj.intNull("gid")
+							//TODO: support visible property
+							//val visible = obj.int("visible", 1) != 0
+							//TODO: support template
 							var rkind = RKind.RECT
 							var points = listOf<Point>()
 							var objprops: Map<String, Any> = LinkedHashMap()
@@ -308,6 +271,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 									kindType == "point" -> {
 										rkind = RKind.POINT
 									}
+									//TODO: support <text>
 									else -> invalidOp("Invalid object kind '$kindType'")
 								}
 							}
@@ -324,10 +288,86 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 					}
 				}
 			}
+			elementName == "editorsettings" -> { /* ignore */ }
 		}
 	}
 
 	return tiledMap
+}
+
+fun parseTileSetData(tileset: Xml, firstgid: Int, tilesetSource: String? = null): TileSetData {
+	//<?xml version="1.0" encoding="UTF-8"?>
+	//<tileset version="1.2" tiledversion="1.3.1" name="Overworld" tilewidth="16" tileheight="16" tilecount="1440" columns="40">
+	//	<image source="Overworld.png" width="640" height="576"/>
+	//</tileset>
+	//TODO: Support properties (just to resave them)
+	val image = tileset.child("image")
+	//TODO: Support attributes
+	//val tileoffset = tileset.child("tileoffset") ?: {x:0, y:0}
+	//val grid = tileset.child("grid") ?: {orientation:"orthogonal", width:0, height: 0} //for isometric
+
+	return TileSetData(
+		name = tileset.str("name"),
+		firstgid = firstgid,
+		tilewidth = tileset.int("tilewidth"),
+		tileheight = tileset.int("tileheight"),
+		tilecount = tileset.int("tilecount", -1),
+		spacing = tileset.int("spacing", 0),
+		margin = tileset.int("margin", 0),
+		columns = tileset.int("columns", -1),
+		//TODO: Support alignment
+		//objectalignment = tileset.str("objectalignment", "unspecified"),
+		//tileoffset = tileoffset,
+		image = image,
+		tilesetSource = tilesetSource,
+		imageSource = image?.str("source") ?: "",
+		width = image?.int("width", 0) ?: 0,
+		height = image?.int("height", 0) ?: 0,
+		//TODO: Support image transparent color
+		//imageTransparent = image?.str("trans") ?: "",
+		terrains = tileset.children("terraintypes").children("terrain")
+			.map { TerrainData(name = it.str("name"), tile = it.int("tile")) },
+		//TODO: Support wangsets
+		//wangsets = tileset.children("wangsets")
+		tiles = tileset.children("tile").map { tile ->
+			TileData(
+				id = tile.int("id"),
+				//TODO: Support type, image, objectgroup
+				//type = it...
+				//image = it...
+				//objectgroup = it...
+				terrain = tile.str("terrain").takeIf { it.isNotEmpty() }?.split(',')?.map { it.toIntOrNull() },
+				probability = tile.double("probability", 1.0),
+				frames = tile.child("animation")?.children("frame")?.map {
+					AnimationFrameData(it.int("tileid"), it.int("duration"))
+				}
+			)
+		}
+	)
+}
+
+private fun Xml.parseProperties(): Map<String, Any> {
+	val out = LinkedHashMap<String, Any>()
+	for (property in this.children("property")) {
+		val pname = property.str("name")
+		//TODO: check default property
+		val rawValue = if (property.hasAttribute("value")) property.str("value") else property.text
+		val type = property.str("type", "string")
+		val pvalue: Any = when (type) {
+			"bool" -> rawValue == "true"
+			"color" -> Colors[rawValue]
+			"text" -> rawValue
+			"int" -> rawValue.toIntOrNull() ?: 0
+			"float" -> rawValue.toDoubleOrNull() ?: 0.0
+			"file" -> TiledFile(pname)
+			//TODO: support object property
+			//"object" -> ...
+			else -> rawValue
+		}
+		out[pname] = pvalue
+		//println("$pname: $pvalue")
+	}
+	return out
 }
 
 //TODO: move to korio
