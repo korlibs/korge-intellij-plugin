@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.editor.tiled
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.intellij.editor.tiled.TiledMap.*
 import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -34,7 +35,7 @@ suspend fun VfsFile.readTiledMap(
 		}
 	}
 
-	val tiledTilesets = arrayListOf<TiledMap.TiledTileset>()
+	val tiledTilesets = arrayListOf<TiledTileset>()
 
 	data.tilesets.fastForEach { tileset ->
 		tiledTilesets += tileset.toTiledSet(folder, hasTransparentColor, transparentColor, createBorder)
@@ -52,10 +53,14 @@ suspend fun TileSetData.toTiledSet(
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
 	createBorder: Int = 1
-): TiledMap.TiledTileset {
+): TiledTileset {
 	val tileset = this
 	var bmp = try {
-		folder[tileset.imageSource].readBitmapOptimized()
+		when (tileset.image) {
+			is Image.Embedded -> TODO()
+			is Image.External -> folder[tileset.image.source].readBitmapOptimized()
+			null -> Bitmap32(0, 0)
+		}
 	} catch (e: Throwable) {
 		e.printStackTrace()
 		Bitmap32(tileset.width, tileset.height)
@@ -76,32 +81,32 @@ suspend fun TileSetData.toTiledSet(
 			// There is already separation between tiles, use it as it is
 			val slices = TileSet.extractBmpSlices(
 				bmp,
-				tileset.tilewidth,
-				tileset.tileheight,
+				tileset.tileWidth,
+				tileset.tileHeight,
 				tileset.columns,
-				tileset.tilecount,
+				tileset.tileCount,
 				tileset.spacing,
 				tileset.margin
 			)
-			TileSet(slices, tileset.tilewidth, tileset.tileheight, bmp)
+			TileSet(slices, tileset.tileWidth, tileset.tileHeight, bmp)
 		} else {
 			// No separation between tiles: create a new Bitmap adding that separation
 			val bitmaps = TileSet.extractBitmaps(
 				bmp,
-				tileset.tilewidth,
-				tileset.tileheight,
+				tileset.tileWidth,
+				tileset.tileHeight,
 				tileset.columns,
-				tileset.tilecount,
+				tileset.tileCount,
 				tileset.spacing,
 				tileset.margin
 			)
-			TileSet.fromBitmaps(tileset.tilewidth, tileset.tileheight, bitmaps, border = createBorder, mipmaps = false)
+			TileSet.fromBitmaps(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false)
 		}
 	} else {
-		TileSet(bmp.slice(), tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
+		TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount)
 	}
 
-	val tiledTileset = TiledMap.TiledTileset(
+	val tiledTileset = TiledTileset(
 		tileset = ptileset,
 		data = tileset,
 		firstgid = tileset.firstgid
@@ -118,21 +123,50 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 
 	if (mapXml.nameLC != "map") error("Not a TiledMap XML TMX file starting with <map>")
 
-	//TODO: Support attributes
-	//val orientation = mapXml.getString("orientation")
-	//val renderorder = mapXml.getString("renderorder")
-	//val compressionlevel = mapXml.getInt("compressionlevel")
+	//TODO: Support different orientations
+	val orientation = mapXml.getString("orientation")
+	@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
+	tiledMap.orientation = when {
+		orientation == "orthogonal" -> TiledMap.Orientation.ORTHOGONAL
+		else -> unsupported("Orientation \"$orientation\" is not supported")
+	}
+	val renderOrder = mapXml.getString("renderorder")
+	@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
+	tiledMap.renderOrder = when {
+		renderOrder == "right-down" -> RenderOrder.RIGHT_DOWN
+		renderOrder == "right-up" -> RenderOrder.RIGHT_UP
+		renderOrder == "left-down" -> RenderOrder.LEFT_DOWN
+		renderOrder == "left-up" -> RenderOrder.LEFT_UP
+		else -> RenderOrder.RIGHT_DOWN
+	}
+	tiledMap.compressionLevel = mapXml.getInt("compressionlevel") ?: -1
 	tiledMap.width = mapXml.getInt("width") ?: 0
 	tiledMap.height = mapXml.getInt("height") ?: 0
 	tiledMap.tilewidth = mapXml.getInt("tilewidth") ?: 32
 	tiledMap.tileheight = mapXml.getInt("tileheight") ?: 32
-	//val hexsidelength = mapXml.getInt("hexsidelength")
-	//val staggeraxis = mapXml.getString("staggeraxis")
-	//val staggerindex = mapXml.getString("staggerindex")
-	//val backgroundcolor = mapXml.getString("backgroundcolor")
-	//val nextlayerid = mapXml.getInt("nextlayerid")
-	//val nextobjectid = mapXml.getString("nextobjectid")
-	//val infinite = mapXml.getInt("infinite")
+	tiledMap.hexSideLength = mapXml.getInt("hexsidelength")
+	val staggerAxis = mapXml.getString("staggeraxis")
+	@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
+	tiledMap.staggerAxis = when {
+		staggerAxis == "x" -> StaggerAxis.X
+		staggerAxis == "y" -> StaggerAxis.Y
+		else -> null
+	}
+	val staggerIndex = mapXml.getString("staggerindex")
+	@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
+	tiledMap.staggerIndex = when {
+		staggerIndex == "even" -> StaggerIndex.EVEN
+		staggerIndex == "odd" -> StaggerIndex.ODD
+		else -> null
+	}
+	tiledMap.backgroundColor = mapXml.getString("backgroundcolor")?.let { colorFromARGB(it, Colors.TRANSPARENT_BLACK) }
+	val nextLayerId = mapXml.getInt("nextlayerid")
+	val nextObjectId = mapXml.getInt("nextobjectid")
+	tiledMap.infinite = mapXml.getInt("infinite") == 1
+
+	mapXml.child("properties")?.parseProperties()?.let {
+		tiledMap.properties.putAll(it)
+	}
 
 	tilemapLog.trace { "tilemap: width=${tiledMap.width}, height=${tiledMap.height}, tilewidth=${tiledMap.tilewidth}, tileheight=${tiledMap.tileheight}" }
 	tilemapLog.trace { "tilemap: $tiledMap" }
@@ -148,8 +182,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 		when {
 			elementName == "tileset" -> {
 				tilemapLog.trace { "tileset" }
-				val firstgid = element.int("firstgid", +1)
-				// TSX file / embedded element
+				val firstgid = element.int("firstgid", 1)
 				val sourcePath = element.getString("source")
 				val tileset = if (sourcePath != null) folder[sourcePath].readXml() else element
 				tiledMap.tilesets += parseTileSetData(tileset, firstgid, sourcePath)
@@ -173,14 +206,15 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				layer.color = Colors[element.str("color", "#a0a0a4")]
 				layer.opacity = element.double("opacity", 1.0)
 				layer.visible = element.int("visible", 1) != 0
+				//TODO: support locked
+				//layer.locked = element.int("locked", 1) != 0
 				//TODO: support tintcolor
-				//val tintcolor = element.str("tintcolor") //optional
+				//layer.tintcolor = element.str("tintcolor") //optional
 				layer.offsetx = element.double("offsetx", 0.0)
 				layer.offsety = element.double("offsety", 0.0)
 
-				val properties = element.child("properties")?.parseProperties()
-				if (properties != null) {
-					layer.properties.putAll(properties)
+				element.child("properties")?.parseProperties()?.let {
+					layer.properties.putAll(it)
 				}
 
 				when (layer) {
@@ -198,7 +232,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 						@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
 						val tilesArray: IntArray = when {
 							encoding == "" || encoding == "xml" -> {
-								val items = data?.children("tile")?.map { it.uint("gid") } ?: listOf()
+								val items = data?.children("tile")?.map { it.uint("gid").toInt() } ?: listOf()
 								items.toIntArray()
 							}
 							encoding == "csv" -> {
@@ -247,7 +281,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 							//TODO: support template
 							var rkind = RKind.RECT
 							var points = listOf<Point>()
-							var objprops: Map<String, Any> = LinkedHashMap()
+							var objprops: Map<String, Property> = LinkedHashMap()
 
 							for (kind in obj.allNodeChildren) {
 								val kindType = kind.nameLC
@@ -292,87 +326,203 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 		}
 	}
 
+	tiledMap.nextLayerId = nextLayerId ?: run {
+		var maxLayerId = 0
+		for (layer in tiledMap.allLayers) {
+			if (layer.id > maxLayerId) maxLayerId = layer.id
+		}
+		maxLayerId + 1
+	}
+	tiledMap.nextObjectId = nextObjectId ?: run {
+		var maxObjectId = 0
+		for (objects in tiledMap.objectLayers) {
+			for (obj in objects.objects) {
+				if (obj.id > maxObjectId) maxObjectId = obj.id
+			}
+		}
+		maxObjectId + 1
+	}
+
 	return tiledMap
 }
 
 fun parseTileSetData(tileset: Xml, firstgid: Int, tilesetSource: String? = null): TileSetData {
-	//<?xml version="1.0" encoding="UTF-8"?>
-	//<tileset version="1.2" tiledversion="1.3.1" name="Overworld" tilewidth="16" tileheight="16" tilecount="1440" columns="40">
-	//	<image source="Overworld.png" width="640" height="576"/>
-	//</tileset>
-	//TODO: Support properties (just to resave them)
-	val image = tileset.child("image")
-	//TODO: Support attributes
-	//val tileoffset = tileset.child("tileoffset") ?: {x:0, y:0}
-	//val grid = tileset.child("grid") ?: {orientation:"orthogonal", width:0, height: 0} //for isometric
+	val alignment = tileset.str("objectalignment", "unspecified")
+	val objectAlignment = ObjectAlignment.values().find { it.value == alignment } ?: ObjectAlignment.UNSPECIFIED
+	val image = tileset.child("image")?.parseImage()
+	val tileOffset = tileset.child("tileoffset")
 
 	return TileSetData(
 		name = tileset.str("name"),
 		firstgid = firstgid,
-		tilewidth = tileset.int("tilewidth"),
-		tileheight = tileset.int("tileheight"),
-		tilecount = tileset.int("tilecount", -1),
+		tileWidth = tileset.int("tilewidth"),
+		tileHeight = tileset.int("tileheight"),
+		tileCount = tileset.int("tilecount", 0),
 		spacing = tileset.int("spacing", 0),
 		margin = tileset.int("margin", 0),
-		columns = tileset.int("columns", -1),
-		//TODO: Support alignment
-		//objectalignment = tileset.str("objectalignment", "unspecified"),
-		//tileoffset = tileoffset,
+		columns = tileset.int("columns", 0),
 		image = image,
+		tileOffsetX = tileOffset?.int("x") ?: 0,
+		tileOffsetY = tileOffset?.int("y") ?: 0,
+		grid = tileset.child("grid")?.parseGrid(),
 		tilesetSource = tilesetSource,
-		imageSource = image?.str("source") ?: "",
-		width = image?.int("width", 0) ?: 0,
-		height = image?.int("height", 0) ?: 0,
-		//TODO: Support image transparent color
-		//imageTransparent = image?.str("trans") ?: "",
-		terrains = tileset.children("terraintypes").children("terrain")
-			.map { TerrainData(name = it.str("name"), tile = it.int("tile")) },
-		//TODO: Support wangsets
-		//wangsets = tileset.children("wangsets")
-		tiles = tileset.children("tile").map { tile ->
-			TileData(
-				id = tile.int("id"),
-				//TODO: Support type, image, objectgroup
-				//type = it...
-				//image = it...
-				//objectgroup = it...
-				terrain = tile.str("terrain").takeIf { it.isNotEmpty() }?.split(',')?.map { it.toIntOrNull() },
-				probability = tile.double("probability", 1.0),
-				frames = tile.child("animation")?.children("frame")?.map {
-					AnimationFrameData(it.int("tileid"), it.int("duration"))
-				}
-			)
-		}
+		objectAlignment = objectAlignment,
+		terrains = tileset.children("terraintypes").children("terrain").map { it.parseTerrain() },
+		wangsets = tileset.children("wangsets").children("wangset").map { it.parseWangSet() },
+		properties = tileset.child("properties")?.parseProperties() ?: mapOf(),
+		tiles = tileset.children("tile").map { it.parseTile() }
 	)
 }
 
-private fun Xml.parseProperties(): Map<String, Any> {
-	val out = LinkedHashMap<String, Any>()
+private fun Xml.parseTile(): TileData {
+	val tile = this
+	fun Xml.parseFrame(): AnimationFrameData {
+		return AnimationFrameData(this.int("tileid"), this.int("duration"))
+	}
+	return TileData(
+		id = tile.int("id"),
+		type = tile.int("type", -1),
+		terrain = tile.str("terrain").takeIf { it.isNotEmpty() }?.split(',')?.map { it.toIntOrNull() },
+		probability = tile.double("probability"),
+		image = tile.child("image")?.parseImage(),
+		properties = tile.child("properties")?.parseProperties() ?: mapOf(),
+		objectGroup = tile.child("objectgroup")?.parseObjectLayer(),
+		frames = tile.child("animation")?.children("frame")?.map { it.parseFrame() }
+	)
+}
+
+private fun Xml.parseObjectLayer(): Layer.Objects {
+	TODO()
+}
+
+private fun Xml.parseTerrain(): TerrainData {
+	return TerrainData(
+		name = str("name"),
+		tile = int("tile"),
+		properties = parseProperties()
+	)
+}
+
+private fun Xml.parseWangSet(): WangSet {
+	fun Xml.parseWangColor(): WangSet.WangColor {
+		val wangcolor = this
+		return WangSet.WangColor(
+			name = wangcolor.str("name"),
+			color = Colors[wangcolor.str("color")],
+			tileId = wangcolor.int("tile"),
+			probability = wangcolor.double("probability")
+		)
+	}
+
+	fun Xml.parseWangTile(): WangSet.WangTile {
+		val wangtile = this
+		val hflip = wangtile.str("hflip")
+		val vflip = wangtile.str("vflip")
+		val dflip = wangtile.str("dflip")
+		return WangSet.WangTile(
+			tileId = wangtile.int("tileid"),
+			wangId = wangtile.int("wangid"),
+			hflip = hflip == "1" || hflip == "true",
+			vflip = vflip == "1" || vflip == "true",
+			dflip = dflip == "1" || dflip == "true"
+		)
+	}
+	val wangset = this
+	return WangSet(
+		name = wangset.str("name"),
+		tileId = wangset.int("tile"),
+		properties = wangset.parseProperties(),
+		cornerColors = wangset.children("wangcornercolor").map { it.parseWangColor() },
+		edgeColors = wangset.children("wangedgecolor").map { it.parseWangColor() },
+		wangtiles = wangset.children("wangtile").map { it.parseWangTile() }
+	)
+}
+
+private fun Xml.parseGrid(): Grid {
+	val grid = this
+	val orientation = grid.str("orientation")
+	return Grid(
+		cellWidth = grid.int("width"),
+		cellHeight = grid.int("height"),
+		orientation = Grid.Orientation.values().find { it.value == orientation } ?: Grid.Orientation.ORTHOGONAL
+	)
+}
+
+private fun Xml.parseImage(): Image? {
+	val image = this
+	val width = image.int("width")
+	val height = image.int("height")
+	val trans = image.str("trans")
+	val transparent = when {
+		trans.isEmpty() -> null
+		trans.startsWith("#") -> Colors[trans]
+		else -> Colors["#$trans"]
+	}
+	val source = image.str("source")
+	return if (source.isNotEmpty()) {
+		Image.External(
+			source = source,
+			width = width,
+			height = height,
+			transparent = transparent
+		)
+	} else {
+		val data = image.child("data") ?: return null
+		Image.Embedded(
+			format = image.str("format"),
+			data = data.parseData(),
+			width = width,
+			height = height,
+			transparent = transparent
+		)
+	}
+}
+
+private fun Xml.parseData(): Data {
+	val encoding = str("encoding")
+	val compression = str("compression")
+	return Data(
+		encoding = Data.Encoding.values().find { it.value == encoding } ?: Data.Encoding.XML,
+		compression = Data.Compression.values().find { it.value == compression } ?: Data.Compression.NO,
+		data = content
+	)
+}
+
+private fun Xml.parseProperties(): Map<String, Property> {
+	val out = LinkedHashMap<String, Property>()
 	for (property in this.children("property")) {
 		val pname = property.str("name")
-		//TODO: check default property
-		val rawValue = if (property.hasAttribute("value")) property.str("value") else property.text
+		val rawValue = if (property.hasAttribute("value")) property.str("value") else ""
 		val type = property.str("type", "string")
-		val pvalue: Any = when (type) {
-			"bool" -> rawValue == "true"
-			"color" -> Colors[rawValue]
-			"text" -> rawValue
-			"int" -> rawValue.toIntOrNull() ?: 0
-			"float" -> rawValue.toDoubleOrNull() ?: 0.0
-			"file" -> TiledFile(pname)
-			//TODO: support object property
-			//"object" -> ...
-			else -> rawValue
+		val pvalue = when (type) {
+			"string" -> Property.StringT(rawValue)
+			"int" -> Property.IntT(rawValue.toIntOrNull() ?: 0)
+			"float" -> Property.FloatT(rawValue.toDoubleOrNull() ?: 0.0)
+			"bool" -> Property.BoolT(rawValue == "true")
+			"color" -> Property.ColorT(colorFromARGB(rawValue, Colors.TRANSPARENT_BLACK))
+			"file" -> Property.FileT(if (rawValue.isEmpty()) "." else rawValue)
+			"object" -> Property.ObjectT(rawValue.toIntOrNull() ?: 0)
+			else -> Property.StringT(rawValue)
 		}
 		out[pname] = pvalue
-		//println("$pname: $pvalue")
 	}
 	return out
 }
 
 //TODO: move to korio
-private fun Xml.uint(name: String, defaultValue: Int = 0): Int =
-	this.attributesLC[name]?.toUIntOrNull()?.toInt() ?: defaultValue
+private fun Xml.uint(name: String, defaultValue: UInt = 0u): UInt =
+	this.attributesLC[name]?.toUIntOrNull() ?: defaultValue
+
+//TODO: move to korim
+fun colorFromARGB(color: String, default: RGBA): RGBA {
+	if (!color.startsWith('#') || color.length != 9) return default
+	val hex = color.substring(1)
+	val a = (hex.substr(0, 2).toInt(0x10) * 1.0).toInt()
+	val r = (hex.substr(2, 2).toInt(0x10) * 1.0).toInt()
+	val g = (hex.substr(4, 2).toInt(0x10) * 1.0).toInt()
+	val b = (hex.substr(6, 2).toInt(0x10) * 1.0).toInt()
+	return RGBA(r, g, b, a)
+}
 
 private enum class RKind {
 	POINT, RECT, ELLIPSE, POLYLINE, POLYGON
