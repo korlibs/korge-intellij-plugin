@@ -125,18 +125,16 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 
 	//TODO: Support different orientations
 	val orientation = mapXml.getString("orientation")
-	@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
-	tiledMap.orientation = when {
-		orientation == "orthogonal" -> TiledMap.Orientation.ORTHOGONAL
+	tiledMap.orientation = when (orientation) {
+		"orthogonal" -> TiledMap.Orientation.ORTHOGONAL
 		else -> unsupported("Orientation \"$orientation\" is not supported")
 	}
 	val renderOrder = mapXml.getString("renderorder")
-	@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
-	tiledMap.renderOrder = when {
-		renderOrder == "right-down" -> RenderOrder.RIGHT_DOWN
-		renderOrder == "right-up" -> RenderOrder.RIGHT_UP
-		renderOrder == "left-down" -> RenderOrder.LEFT_DOWN
-		renderOrder == "left-up" -> RenderOrder.LEFT_UP
+	tiledMap.renderOrder = when (renderOrder) {
+		"right-down" -> RenderOrder.RIGHT_DOWN
+		"right-up" -> RenderOrder.RIGHT_UP
+		"left-down" -> RenderOrder.LEFT_DOWN
+		"left-up" -> RenderOrder.LEFT_UP
 		else -> RenderOrder.RIGHT_DOWN
 	}
 	tiledMap.compressionLevel = mapXml.getInt("compressionlevel") ?: -1
@@ -146,17 +144,15 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	tiledMap.tileheight = mapXml.getInt("tileheight") ?: 32
 	tiledMap.hexSideLength = mapXml.getInt("hexsidelength")
 	val staggerAxis = mapXml.getString("staggeraxis")
-	@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
-	tiledMap.staggerAxis = when {
-		staggerAxis == "x" -> StaggerAxis.X
-		staggerAxis == "y" -> StaggerAxis.Y
+	tiledMap.staggerAxis = when (staggerAxis) {
+		"x" -> StaggerAxis.X
+		"y" -> StaggerAxis.Y
 		else -> null
 	}
 	val staggerIndex = mapXml.getString("staggerindex")
-	@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
-	tiledMap.staggerIndex = when {
-		staggerIndex == "even" -> StaggerIndex.EVEN
-		staggerIndex == "odd" -> StaggerIndex.ODD
+	tiledMap.staggerIndex = when (staggerIndex) {
+		"even" -> StaggerIndex.EVEN
+		"odd" -> StaggerIndex.ODD
 		else -> null
 	}
 	tiledMap.backgroundColor = mapXml.getString("backgroundcolor")?.let { colorFromARGB(it, Colors.TRANSPARENT_BLACK) }
@@ -177,97 +173,47 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	tilemapLog.trace { "tilemap: elements=$elements" }
 
 	elements.fastForEach { element ->
-		val elementName = element.nameLC
-		@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
-		when {
-			elementName == "tileset" -> {
+		when (element.nameLC) {
+			"tileset" -> {
 				tilemapLog.trace { "tileset" }
 				val firstgid = element.int("firstgid", 1)
 				val sourcePath = element.getString("source")
 				val tileset = if (sourcePath != null) folder[sourcePath].readXml() else element
 				tiledMap.tilesets += parseTileSetData(tileset, firstgid, sourcePath)
 			}
-			//TODO: Support group //elementName == "group"
-			elementName == "layer" || elementName == "objectgroup" || elementName == "imagelayer" -> {
-				tilemapLog.trace { "layer:$elementName" }
+			"layer" -> {
+				val layer = element.parseTileLayer(tiledMap.infinite)
+				tiledMap.allLayers += layer
+			}
+			"objectgroup" -> {
+				val layer = element.parseObjectLayer()
+				tiledMap.allLayers += layer
+			}
+			"imagelayer" -> {
+				val layer = element.parseImageLayer()
+				tiledMap.allLayers += layer
+			}
+			"group" -> {
+				val layer = element.parseGroupLayer()
+				tiledMap.allLayers += layer
+			}
+			"objectgroup", "imagelayer" -> {
 				val layer = when (element.nameLC) {
-					"layer" -> TiledMap.Layer.Tiles()
-					"objectgroup" -> TiledMap.Layer.Objects()
-					"imagelayer" -> TiledMap.Layer.Image()
+					"objectgroup" -> Layer.Objects("")
+					"imagelayer" -> Layer.Image()
 					else -> invalidOp
 				}
-				tiledMap.allLayers += layer
-				//TODO: support layer id
-				//layer.id = element.int("id")
-				layer.name = element.str("name")
-				//TODO: move to objects only
-				layer.draworder = element.str("draworder", "topdown")
-				//TODO: move to objects only
-				layer.color = Colors[element.str("color", "#a0a0a4")]
-				layer.opacity = element.double("opacity", 1.0)
-				layer.visible = element.int("visible", 1) != 0
-				//TODO: support locked
-				//layer.locked = element.int("locked", 1) != 0
-				//TODO: support tintcolor
-				//layer.tintcolor = element.str("tintcolor") //optional
-				layer.offsetx = element.double("offsetx", 0.0)
-				layer.offsety = element.double("offsety", 0.0)
-
-				element.child("properties")?.parseProperties()?.let {
-					layer.properties.putAll(it)
-				}
-
 				when (layer) {
-					//TODO: Support group
-					//is TiledMap.Layer.Group -> {  }
-					is TiledMap.Layer.Tiles -> {
-						val width = element.int("width")
-						val height = element.int("height")
-						val count = width * height
-						val data = element.child("data")
-						val encoding = data?.str("encoding", "") ?: ""
-						val compression = data?.str("compression", "") ?: ""
-
-						//TODO: support chunks as <data> elements
-						@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
-						val tilesArray: IntArray = when {
-							encoding == "" || encoding == "xml" -> {
-								val items = data?.children("tile")?.map { it.uint("gid").toInt() } ?: listOf()
-								items.toIntArray()
-							}
-							encoding == "csv" -> {
-								val content = data?.text ?: ""
-								val items = content.replace(spaces, "").split(',').map { it.toUInt().toInt() }
-								items.toIntArray()
-							}
-							encoding == "base64" -> {
-								val base64Content = (data?.text ?: "").trim()
-								val rawContent = base64Content.fromBase64()
-
-								val content = when (compression) {
-									"" -> rawContent
-									"gzip" -> rawContent.uncompress(GZIP)
-									"zlib" -> rawContent.uncompress(ZLib)
-									//TODO: support "zstd" compression
-									else -> invalidOp("Unknown compression '$compression'")
-								}
-								content.readIntArrayLE(0, count)
-							}
-							else -> invalidOp("Unhandled encoding '$encoding'")
-						}
-						if (tilesArray.size != count) invalidOp("tilesArray.size != count (${tilesArray.size} != ${count})")
-						layer.map = Bitmap32(width, height, RgbaArray(tilesArray))
-						layer.encoding = encoding
-						layer.compression = compression
-					}
-					is TiledMap.Layer.Image -> {
+					is Layer.Image -> {
 						for (image in element.children("image")) {
 							layer.source = image.str("source")
 							layer.width = image.int("width")
 							layer.height = image.int("height")
 						}
 					}
-					is TiledMap.Layer.Objects -> {
+					is Layer.Objects -> {
+						layer.draworder = element.str("draworder", "topdown")
+						layer.color = Colors[element.str("color", "#a0a0a4")]
 						for (obj in element.children("object")) {
 							val id = obj.int("id")
 							val name = obj.str("name")
@@ -310,19 +256,25 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 								}
 							}
 
-							val info = TiledMap.Layer.ObjectInfo(id, gid, name, rotation, type, bounds, objprops)
+							val info = Layer.ObjectInfo(id, gid, name, rotation, type, bounds, objprops)
 							layer.objects += when (rkind) {
-								RKind.POINT -> TiledMap.Layer.Objects.PPoint(info)
-								RKind.RECT -> TiledMap.Layer.Objects.Rect(info)
-								RKind.ELLIPSE -> TiledMap.Layer.Objects.Ellipse(info)
-								RKind.POLYLINE -> TiledMap.Layer.Objects.Polyline(info, points)
-								RKind.POLYGON -> TiledMap.Layer.Objects.Polygon(info, points)
+								RKind.POINT -> Layer.Objects.PPoint(info)
+								RKind.RECT -> Layer.Objects.Rect(info)
+								RKind.ELLIPSE -> Layer.Objects.Ellipse(info)
+								RKind.POLYLINE -> Layer.Objects.Polyline(info, points)
+								RKind.POLYGON -> Layer.Objects.Polygon(info, points)
 							}
 						}
 					}
 				}
 			}
-			elementName == "editorsettings" -> { /* ignore */ }
+			"editorsettings" -> {
+				val chunkSize = element.child("chunksize")
+				tiledMap.editorSettings = EditorSettings(
+					chunkWidth = chunkSize?.int("width", 16) ?: 16,
+					chunkHeight = chunkSize?.int("height", 16) ?: 16
+				)
+			}
 		}
 	}
 
@@ -349,7 +301,6 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 fun parseTileSetData(tileset: Xml, firstgid: Int, tilesetSource: String? = null): TileSetData {
 	val alignment = tileset.str("objectalignment", "unspecified")
 	val objectAlignment = ObjectAlignment.values().find { it.value == alignment } ?: ObjectAlignment.UNSPECIFIED
-	val image = tileset.child("image")?.parseImage()
 	val tileOffset = tileset.child("tileoffset")
 
 	return TileSetData(
@@ -361,7 +312,7 @@ fun parseTileSetData(tileset: Xml, firstgid: Int, tilesetSource: String? = null)
 		spacing = tileset.int("spacing", 0),
 		margin = tileset.int("margin", 0),
 		columns = tileset.int("columns", 0),
-		image = image,
+		image = tileset.child("image")?.parseImage(),
 		tileOffsetX = tileOffset?.int("x") ?: 0,
 		tileOffsetY = tileOffset?.int("y") ?: 0,
 		grid = tileset.child("grid")?.parseGrid(),
@@ -389,10 +340,6 @@ private fun Xml.parseTile(): TileData {
 		objectGroup = tile.child("objectgroup")?.parseObjectLayer(),
 		frames = tile.child("animation")?.children("frame")?.map { it.parseFrame() }
 	)
-}
-
-private fun Xml.parseObjectLayer(): Layer.Objects {
-	TODO()
 }
 
 private fun Xml.parseTerrain(): TerrainData {
@@ -427,6 +374,7 @@ private fun Xml.parseWangSet(): WangSet {
 			dflip = dflip == "1" || dflip == "true"
 		)
 	}
+
 	val wangset = this
 	return WangSet(
 		name = wangset.str("name"),
@@ -446,6 +394,108 @@ private fun Xml.parseGrid(): Grid {
 		cellHeight = grid.int("height"),
 		orientation = Grid.Orientation.values().find { it.value == orientation } ?: Grid.Orientation.ORTHOGONAL
 	)
+}
+
+private fun Xml.parseCommonLayerData(layer: Layer) {
+	val element = this
+	layer.id = element.int("id")
+	layer.name = element.str("name")
+	layer.opacity = element.double("opacity", 1.0)
+	layer.visible = element.int("visible", 1) != 0
+	layer.locked = element.int("locked", 1) != 0
+	layer.tintColor = element.strNull("tintcolor")?.let { colorFromARGB(it, Colors.WHITE) }
+	layer.offsetx = element.double("offsetx")
+	layer.offsety = element.double("offsety")
+
+	element.child("properties")?.parseProperties()?.let {
+		layer.properties.putAll(it)
+	}
+}
+
+private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
+	val layer = Layer.Tiles()
+	parseCommonLayerData(layer)
+
+	val element = this
+	val width = element.int("width")
+	val height = element.int("height")
+	val data = element.child("data")
+
+	val map: Bitmap32
+	val encoding: Encoding
+	val compression: Compression
+
+	if (data == null) {
+		map = Bitmap32(width, height)
+		encoding = Encoding.CSV
+		compression = Compression.NO
+	} else {
+		val enc = data.strNull("encoding")
+		val com = data.strNull("compression")
+		encoding = Encoding.values().find { it.value == enc } ?: Encoding.XML
+		compression = Compression.values().find { it.value == com } ?: Compression.NO
+		val count = width * height
+
+		fun Xml.encodeGids(): IntArray = when (encoding) {
+			Encoding.XML -> {
+				children("tile").map { it.uint("gid").toInt() }.toIntArray()
+			}
+			Encoding.CSV -> {
+				text.replace(spaces, "").split(',').map { it.toUInt().toInt() }.toIntArray()
+			}
+			Encoding.BASE64 -> {
+				val rawContent = text.trim().fromBase64()
+				val content = when (compression) {
+					Compression.NO -> rawContent
+					Compression.GZIP -> rawContent.uncompress(GZIP)
+					Compression.ZLIB -> rawContent.uncompress(ZLib)
+					//TODO: support "zstd" compression
+					//Data.Compression.ZSTD -> rawContent.uncompress(ZSTD)
+					else -> invalidOp("Unknown compression '$compression'")
+				}
+				content.readIntArrayLE(0, count)
+			}
+		}
+
+		val tiles: IntArray
+		if (infinite) {
+			tiles = IntArray(count)
+			children("chunk").forEach { chunk ->
+				val offsetX = chunk.int("x")
+				val offsetY = chunk.int("y")
+				val cwidth = chunk.int("width")
+				val cheight = chunk.int("height")
+				chunk.encodeGids().forEachIndexed { i, gid ->
+					val x = offsetX + i % cwidth
+					val y = offsetY + i / cwidth
+					tiles[x + y * (offsetX + cwidth)] = gid
+				}
+			}
+		} else {
+			tiles = encodeGids()
+		}
+		map = Bitmap32(width, height, RgbaArray(tiles))
+	}
+
+	return Layer.Tiles(map, encoding, compression)
+}
+
+private fun Xml.parseObjectLayer(): Layer.Objects {
+	val layer = Layer.Objects("")
+	parseCommonLayerData(layer)
+	TODO()
+}
+
+private fun Xml.parseImageLayer(): Layer.Image {
+	val layer = Layer.Image()
+	parseCommonLayerData(layer)
+	TODO()
+}
+
+private fun Xml.parseGroupLayer(): Layer.Group {
+	val layer = Layer.Group()
+	parseCommonLayerData(layer)
+	TODO()
 }
 
 private fun Xml.parseImage(): Image? {
@@ -468,31 +518,27 @@ private fun Xml.parseImage(): Image? {
 		)
 	} else {
 		val data = image.child("data") ?: return null
+		val enc = data.strNull("encoding")
+		val com = data.strNull("compression")
+		val encoding = Encoding.values().find { it.value == enc } ?: Encoding.XML
+		val compression = Compression.values().find { it.value == com } ?: Compression.NO
+		//TODO: read embedded image (png, jpg, etc.) and convert to bitmap
+		val bitmap = Bitmap32(width, height)
 		Image.Embedded(
 			format = image.str("format"),
-			data = data.parseData(),
-			width = width,
-			height = height,
+			image = bitmap,
+			encoding = encoding,
+			compression = compression,
 			transparent = transparent
 		)
 	}
-}
-
-private fun Xml.parseData(): Data {
-	val encoding = str("encoding")
-	val compression = str("compression")
-	return Data(
-		encoding = Data.Encoding.values().find { it.value == encoding } ?: Data.Encoding.XML,
-		compression = Data.Compression.values().find { it.value == compression } ?: Data.Compression.NO,
-		data = content
-	)
 }
 
 private fun Xml.parseProperties(): Map<String, Property> {
 	val out = LinkedHashMap<String, Property>()
 	for (property in this.children("property")) {
 		val pname = property.str("name")
-		val rawValue = if (property.hasAttribute("value")) property.str("value") else ""
+		val rawValue = property.str("value")
 		val type = property.str("type", "string")
 		val pvalue = when (type) {
 			"string" -> Property.StringT(rawValue)
@@ -515,12 +561,13 @@ private fun Xml.uint(name: String, defaultValue: UInt = 0u): UInt =
 
 //TODO: move to korim
 fun colorFromARGB(color: String, default: RGBA): RGBA {
-	if (!color.startsWith('#') || color.length != 9) return default
+	if (!color.startsWith('#') || color.length != 9 && color.length != 7) return default
 	val hex = color.substring(1)
-	val a = (hex.substr(0, 2).toInt(0x10) * 1.0).toInt()
-	val r = (hex.substr(2, 2).toInt(0x10) * 1.0).toInt()
-	val g = (hex.substr(4, 2).toInt(0x10) * 1.0).toInt()
-	val b = (hex.substr(6, 2).toInt(0x10) * 1.0).toInt()
+	val start = if (color.length == 7) 0 else 2
+	val a = if (color.length == 9) hex.substr(0, 2).toInt(16) else 0xFF
+	val r = hex.substr(start + 0, 2).toInt(16)
+	val g = hex.substr(start + 2, 2).toInt(16)
+	val b = hex.substr(start + 4, 2).toInt(16)
 	return RGBA(r, g, b, a)
 }
 

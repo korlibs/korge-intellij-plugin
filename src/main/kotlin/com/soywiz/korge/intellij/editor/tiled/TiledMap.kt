@@ -27,7 +27,8 @@ class TiledMapData(
 	var infinite: Boolean = false,
 	val properties: MutableMap<String, TiledMap.Property> = mutableMapOf(),
 	val allLayers: MutableList<TiledMap.Layer> = arrayListOf(),
-	val tilesets: MutableList<TileSetData> = arrayListOf()
+	val tilesets: MutableList<TileSetData> = arrayListOf(),
+	var editorSettings: EditorSettings? = null
 ) {
 	val pixelWidth: Int get() = width * tilewidth
 	val pixelHeight: Int get() = height * tileheight
@@ -86,6 +87,7 @@ class WangSet(
 		val tileId: Int,
 		val probability: Double = 0.0
 	)
+
 	class WangTile(
 		val tileId: Int,
 		val wangId: Int,
@@ -94,6 +96,11 @@ class WangSet(
 		val dflip: Boolean = false
 	)
 }
+
+class EditorSettings(
+	val chunkWidth: Int = 16,
+	val chunkHeight: Int = 16
+)
 
 data class TileData(
 	val id: Int,
@@ -202,11 +209,11 @@ class TiledMap constructor(
 	sealed class Image(val width: Int, val height: Int, val transparent: RGBA? = null) {
 		class Embedded(
 			val format: String,
-			val data: Data,
-			width: Int,
-			height: Int,
+			val image: Bitmap32,
+			val encoding: Encoding,
+			val compression: Compression,
 			transparent: RGBA? = null
-		) : Image(width, height, transparent)
+		) : Image(image.width, image.height, transparent)
 
 		class External(
 			val source: String,
@@ -216,14 +223,12 @@ class TiledMap constructor(
 		) : Image(width, height, transparent)
 	}
 
-	class Data(val encoding: Encoding, val compression: Compression, val data: String) {
-		enum class Encoding(val value: String?) {
-			BASE64("base64"), CSV("csv"), XML(null)
-		}
+	enum class Encoding(val value: String?) {
+		BASE64("base64"), CSV("csv"), XML(null)
+	}
 
-		enum class Compression(val value: String?) {
-			NO(null), GZIP("gzip"), ZLIB("zlib"), ZSTD("zstd")
-		}
+	enum class Compression(val value: String?) {
+		NO(null), GZIP("gzip"), ZLIB("zlib"), ZSTD("zstd")
 	}
 
 	sealed class Property {
@@ -263,9 +268,8 @@ class TiledMap constructor(
 		var name: String = ""
 		var visible: Boolean = true
 		var locked: Boolean = false
-		var draworder: String = ""
-		var color: RGBA = Colors.WHITE
 		var opacity = 1.0
+		var tintColor: RGBA? = null
 		var offsetx: Double = 0.0
 		var offsety: Double = 0.0
 		val properties: MutableMap<String, Property> = mutableMapOf()
@@ -273,8 +277,8 @@ class TiledMap constructor(
 		companion object {
 			val BASE_PROPS = listOf(
 				Layer::id,
-				Layer::name, Layer::visible, Layer::locked, Layer::draworder,
-				Layer::color, Layer::opacity, Layer::offsetx, Layer::offsety
+				Layer::name, Layer::visible, Layer::locked,
+				Layer::opacity, Layer::offsetx, Layer::offsety
 			)
 		}
 
@@ -291,15 +295,14 @@ class TiledMap constructor(
 
 		class Tiles(
 			var map: Bitmap32 = Bitmap32(0, 0),
-			var encoding: String = "csv",
-			var compression: String = ""
+			val encoding: Encoding = Encoding.XML,
+			val compression: Compression = Compression.NO
 		) : Layer() {
-			val data get() = map
 			val width: Int get() = map.width
 			val height: Int get() = map.height
 			val area: Int get() = width * height
-			operator fun set(x: Int, y: Int, value: Int) = run { data.setInt(x, y, value) }
-			operator fun get(x: Int, y: Int): Int = data.getInt(x, y)
+			operator fun set(x: Int, y: Int, value: Int) = run { map.setInt(x, y, value) }
+			operator fun get(x: Int, y: Int): Int = map.getInt(x, y)
 			override fun clone(): Tiles = Tiles(map.clone(), encoding, compression).also { it.copyFrom(this) }
 		}
 
@@ -314,6 +317,8 @@ class TiledMap constructor(
 		)
 
 		class Objects(
+			var draworder: String,
+			var color: RGBA = Colors.WHITE,
 			val objects: MutableList<Object> = arrayListOf()
 		) : Layer() {
 			interface Object {
@@ -336,7 +341,7 @@ class TiledMap constructor(
 			fun getById(id: Int): Object? = objectsById[id]
 			fun getByName(name: String): Object? = objectsByName[name]
 
-			override fun clone() = Objects(ArrayList(objects)).also { it.copyFrom(this) }
+			override fun clone() = Objects(draworder, color, ArrayList(objects)).also { it.copyFrom(this) }
 		}
 
 		class Image(

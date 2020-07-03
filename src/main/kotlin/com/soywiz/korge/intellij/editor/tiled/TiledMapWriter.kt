@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+import com.soywiz.korge.intellij.editor.tiled.TiledMap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
@@ -41,32 +42,28 @@ fun TiledMap.toXML(): Xml {
 		}
 		for (layer in map.allLayers) {
 			when (layer) {
-				is TiledMap.Layer.Tiles -> {
-					node(
-						"layer",
-						"id" to layer.id,
-						"name" to layer.name,
-						"width" to layer.width,
-						"height" to layer.height
-					) {
-						node("data", "encoding" to "csv") {
-							text(buildString(layer.area * 4) {
-								append("\n")
-								for (y in 0 until layer.height) {
-									for (x in 0 until layer.width) {
-										append(layer.data[x, y].value)
-										if (y != layer.height - 1 || x != layer.width - 1) append(',')
-									}
-									append("\n")
-								}
-							})
-						}
-					}
+				is Layer.Tiles -> {
+					tileLayerToXml(
+						layer,
+						mapData.infinite,
+						mapData.editorSettings?.chunkWidth ?: 16,
+						mapData.editorSettings?.chunkHeight ?: 16
+					)
 				}
 				//is TiledMap.Layer.Objects -> {}
 				//is TiledMap.Layer.Image -> {}
 				//is TiledMap.Layer.Group -> {}
 				else -> TODO("Unsupported layer $layer")
+			}
+		}
+		val editorSettings = mapData.editorSettings
+		if (editorSettings != null && (editorSettings.chunkWidth != 16 || editorSettings.chunkHeight != 16)) {
+			node("editorsettings") {
+				node(
+					"chunksize",
+					"width" to editorSettings.chunkWidth,
+					"height" to editorSettings.chunkHeight
+				)
 			}
 		}
 	}
@@ -180,41 +177,136 @@ private fun TileData.toXml(): Xml {
 	}
 }
 
-private fun XmlBuilder.objectLayerToXml(objectLayer: TiledMap.Layer.Objects?) {
+private class Chunk(val x: Int, val y: Int, val ids: IntArray)
+
+private fun XmlBuilder.tileLayerToXml(
+	layer: Layer.Tiles,
+	infinite: Boolean,
+	chunkWidth: Int,
+	chunkHeight: Int
+) {
+	node(
+		"layer",
+		"id" to layer.id,
+		"name" to layer.name,
+		"width" to layer.width,
+		"height" to layer.height,
+		"opacity" to layer.opacity,
+		"visible" to layer.visible,
+		"locked" to layer.locked,
+		"tintcolor" to layer.tintColor,
+		"offsetx" to layer.offsetx,
+		"offsety" to layer.offsety
+	) {
+		propertiesToXml(layer.properties)
+		node("data", "encoding" to layer.encoding.value, "compression" to layer.compression.value) {
+			if (infinite) {
+				val chunks = divideIntoChunks(layer.map.data.ints, chunkWidth, chunkHeight, layer.width)
+				chunks.forEach { chunk ->
+					node(
+						"chunk",
+						"x" to chunk.x,
+						"y" to chunk.y,
+						"width" to chunkWidth,
+						"height" to chunkHeight
+					) {
+						when (layer.encoding) {
+							Encoding.XML -> {
+								chunk.ids.forEach { gid ->
+									node("tile", "gid" to gid.takeIf { it != 0 })
+								}
+							}
+							Encoding.CSV -> {
+								text(buildString(chunkWidth * chunkHeight * 4) {
+									append("\n")
+									for (y in 0 until chunkHeight) {
+										for (x in 0 until chunkWidth) {
+											append(chunk.ids[x + y * chunkWidth])
+											if (y != chunkHeight - 1 || x != chunkWidth - 1) append(',')
+										}
+										append("\n")
+									}
+								})
+							}
+							Encoding.BASE64 -> {
+								//TODO: convert int array of gids into compressed string
+							}
+						}
+					}
+				}
+			} else {
+				when (layer.encoding) {
+					Encoding.XML -> {
+						layer.map.data.ints.forEach { gid ->
+							node("tile", "gid" to gid.takeIf { it != 0 })
+						}
+					}
+					Encoding.CSV -> {
+						text(buildString(layer.area * 4) {
+							append("\n")
+							for (y in 0 until layer.height) {
+								for (x in 0 until layer.width) {
+									append(layer.map[x, y].value)
+									if (y != layer.height - 1 || x != layer.width - 1) append(',')
+								}
+								append("\n")
+							}
+						})
+					}
+					Encoding.BASE64 -> {
+						//TODO: convert int array of gids into compressed string
+					}
+				}
+			}
+		}
+	}
+}
+
+private fun divideIntoChunks(array: IntArray, width: Int, height: Int, totalWidth: Int): Array<Chunk> {
+	val columns = totalWidth / width
+	val rows = array.size / columns
+	return Array(rows * columns) { i ->
+		val cx = i % rows
+		val cy = i / rows
+		Chunk(cx * width, cy * height, IntArray(width * height) { j ->
+			val tx = j % width
+			val ty = j / width
+			array[(cx * width + tx) + (cy * height + ty) * totalWidth]
+		})
+	}
+}
+
+private fun XmlBuilder.objectLayerToXml(objectLayer: Layer.Objects?) {
 	if (objectLayer == null) return
 	TODO()
 }
 
-private fun XmlBuilder.imageToXml(image: TiledMap.Image?) {
+private fun XmlBuilder.imageToXml(image: Image?) {
 	if (image == null) return
 	node(
 		"image",
 		when (image) {
-			is TiledMap.Image.Embedded -> "format" to image.format
-			is TiledMap.Image.External -> "source" to image.source
+			is Image.Embedded -> "format" to image.format
+			is Image.External -> "source" to image.source
 		},
 		"width" to image.width,
 		"height" to image.height,
 		"transparent" to image.transparent
 	) {
-		if (image is TiledMap.Image.Embedded) {
-			node(image.data.toXml())
+		if (image is Image.Embedded) {
+			node(
+				"data",
+				"encoding" to image.encoding.value,
+				"compression" to image.compression.value
+			) {
+				//TODO: encode and compress image
+				text(image.toString())
+			}
 		}
 	}
 }
 
-private fun TiledMap.Data.toXml(): Xml {
-	val data = this
-	return buildXml(
-		"data",
-		"encoding" to data.encoding.value,
-		"compression" to data.compression.value
-	) {
-		text(data.data)
-	}
-}
-
-private fun XmlBuilder.propertiesToXml(properties: Map<String, TiledMap.Property>) {
+private fun XmlBuilder.propertiesToXml(properties: Map<String, Property>) {
 	if (properties.isEmpty()) return
 
 	fun property(name: String, type: String, value: Any) =
@@ -223,13 +315,13 @@ private fun XmlBuilder.propertiesToXml(properties: Map<String, TiledMap.Property
 	node("properties") {
 		properties.forEach { (name, prop) ->
 			when (prop) {
-				is TiledMap.Property.StringT -> property(name, "string", prop.value)
-				is TiledMap.Property.IntT -> property(name, "int", prop.value)
-				is TiledMap.Property.FloatT -> property(name, "float", prop.value)
-				is TiledMap.Property.BoolT -> property(name, "bool", prop.value.toString())
-				is TiledMap.Property.ColorT -> property(name, "color", prop.value.toStringARGB())
-				is TiledMap.Property.FileT -> property(name, "file", prop.path)
-				is TiledMap.Property.ObjectT -> property(name, "object", prop.id)
+				is Property.StringT -> property(name, "string", prop.value)
+				is Property.IntT -> property(name, "int", prop.value)
+				is Property.FloatT -> property(name, "float", prop.value)
+				is Property.BoolT -> property(name, "bool", prop.value.toString())
+				is Property.ColorT -> property(name, "color", prop.value.toStringARGB())
+				is Property.FileT -> property(name, "file", prop.path)
+				is Property.ObjectT -> property(name, "object", prop.id)
 			}
 		}
 	}
