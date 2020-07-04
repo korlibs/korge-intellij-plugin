@@ -1,9 +1,11 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+import com.soywiz.kmem.*
 import com.soywiz.korge.intellij.editor.tiled.TiledMap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korma.geom.*
 
 suspend fun VfsFile.writeTiledMap(map: TiledMap) {
 	writeString(map.toXML().toString())
@@ -42,15 +44,13 @@ fun TiledMap.toXML(): Xml {
 		}
 		for (layer in map.allLayers) {
 			when (layer) {
-				is Layer.Tiles -> {
-					tileLayerToXml(
-						layer,
-						mapData.infinite,
-						mapData.editorSettings?.chunkWidth ?: 16,
-						mapData.editorSettings?.chunkHeight ?: 16
-					)
-				}
-				//is TiledMap.Layer.Objects -> {}
+				is Layer.Tiles -> tileLayerToXml(
+					layer,
+					mapData.infinite,
+					mapData.editorSettings?.chunkWidth ?: 16,
+					mapData.editorSettings?.chunkHeight ?: 16
+				)
+				is Layer.Objects -> objectLayerToXml(layer)
 				//is TiledMap.Layer.Image -> {}
 				//is TiledMap.Layer.Group -> {}
 				else -> TODO("Unsupported layer $layer")
@@ -276,9 +276,66 @@ private fun divideIntoChunks(array: IntArray, width: Int, height: Int, totalWidt
 	}
 }
 
-private fun XmlBuilder.objectLayerToXml(objectLayer: Layer.Objects?) {
-	if (objectLayer == null) return
-	TODO()
+private fun XmlBuilder.objectLayerToXml(layer: Layer.Objects?) {
+	if (layer == null) return
+	node(
+		"objectgroup",
+		"id" to layer.id,
+		"name" to layer.name,
+		"color" to layer.color,
+		"opacity" to layer.opacity,
+		"visible" to layer.visible,
+		"locked" to layer.locked,
+		"tintcolor" to layer.tintColor,
+		"offsetx" to layer.offsetx,
+		"offsety" to layer.offsety,
+		"draworder" to layer.drawOrder
+	) {
+		propertiesToXml(layer.properties)
+		layer.objects.forEach { obj ->
+			node(
+				"object",
+				"id" to obj.id,
+				"gid" to obj.gid,
+				"name" to obj.name.takeIf { it.isNotEmpty() },
+				"type" to obj.type.takeIf { it.isNotEmpty() },
+				"x" to obj.bounds.x.takeIf { it != 0.0 },
+				"y" to obj.bounds.y.takeIf { it != 0.0 },
+				"width" to obj.bounds.width.takeIf { it != 0.0 },
+				"height" to obj.bounds.height.takeIf { it != 0.0 },
+				"rotation" to obj.rotation.takeIf { it != 0.0 },
+				"visible" to obj.visible.toInt().takeIf { it != 1 }
+				//TODO: support object template
+				//"template" to obj.template
+			) {
+				propertiesToXml(obj.properties)
+
+				fun List<Point>.toXml() = joinToString(" ") { p -> "${p.x},${p.y}" }
+
+				when (val type = obj.objectType) {
+					is Object.Type.Rectangle -> Unit
+					is Object.Type.Ellipse -> node("ellipse")
+					is Object.Type.PPoint -> node("point")
+					is Object.Type.Polygon -> node("polygon", "points" to type.points.toXml())
+					is Object.Type.Polyline -> node("polyline", "points" to type.points.toXml())
+					is Object.Type.Text -> node(
+						"text",
+						"fontfamily" to type.fontFamily,
+						"pixelsize" to type.pixelSize.takeIf { it != 16 },
+						"wrap" to type.wordWrap.toInt().takeIf { it != 0 },
+						"color" to type.color.toStringARGB(),
+						"bold" to type.bold.toInt().takeIf { it != 0 },
+						"italic" to type.italic.toInt().takeIf { it != 0 },
+						"underline" to type.underline.toInt().takeIf { it != 0 },
+						"strikeout" to type.strikeout.toInt().takeIf { it != 0 },
+						"kerning" to type.kerning.toInt().takeIf { it != 1 },
+						"halign" to type.hAlign.value,
+						"valign" to type.vAlign.value
+					)
+				}
+			}
+		}
+	}
 }
 
 private fun XmlBuilder.imageToXml(image: Image?) {

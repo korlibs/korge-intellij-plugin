@@ -6,8 +6,8 @@ import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import java.util.ArrayList
-import kotlin.reflect.*
+import java.util.*
+import kotlin.collections.LinkedHashMap
 
 class TiledMapData(
 	var orientation: TiledMap.Orientation = TiledMap.Orientation.ORTHOGONAL,
@@ -51,13 +51,9 @@ class TiledMapData(
 	)
 }
 
-fun TiledMap.Layer.Objects.Object.getPos(map: TiledMapData): IPoint =
-	IPoint(bounds.x / map.tilewidth, bounds.y / map.tileheight)
+fun TiledMap.Object.getPos(map: TiledMapData) = Point(bounds.x / map.tilewidth, bounds.y / map.tileheight)
 
-fun TiledMapData?.getObjectPosByName(name: String): IPoint? {
-	val obj = this?.getObjectByName(name) ?: return null
-	return obj.getPos(this)
-}
+fun TiledMapData.getObjectPosByName(name: String) = getObjectByName(name)?.getPos(this)
 
 data class TerrainData(
 	val name: String,
@@ -206,6 +202,51 @@ class TiledMap constructor(
 		}
 	}
 
+	data class Object(
+		val id: Int,
+		var gid: Int?,
+		var name: String,
+		var type: String,
+		var bounds: Rectangle,
+		var rotation: Double, // in degrees
+		var visible: Boolean,
+		var objectType: Type = Type.Rectangle,
+		val properties: MutableMap<String, Property> = mutableMapOf()
+	) {
+		enum class DrawOrder(val value: String) {
+			INDEX("index"), TOP_DOWN("topdown")
+		}
+
+		sealed class Type {
+			object Rectangle : Type()
+			object Ellipse : Type()
+			object PPoint : Type()
+			class Polygon(val points: List<Point>) : Type()
+			class Polyline(val points: List<Point>) : Type()
+			class Text(
+				val fontFamily: String,
+				val pixelSize: Int,
+				val wordWrap: Boolean,
+				val color: RGBA,
+				val bold: Boolean,
+				val italic: Boolean,
+				val underline: Boolean,
+				val strikeout: Boolean,
+				val kerning: Boolean,
+				val hAlign: TextHAlignment,
+				val vAlign: TextVAlignment
+			) : Type()
+		}
+	}
+
+	enum class TextHAlignment(val value: String) {
+		LEFT("left"), CENTER("center"), RIGHT("right"), JUSTIFY("justify")
+	}
+
+	enum class TextVAlignment(val value: String) {
+		TOP("top"), CENTER("center"), BOTTOM("bottom")
+	}
+
 	sealed class Image(val width: Int, val height: Int, val transparent: RGBA? = null) {
 		class Embedded(
 			val format: String,
@@ -274,19 +315,15 @@ class TiledMap constructor(
 		var offsety: Double = 0.0
 		val properties: MutableMap<String, Property> = mutableMapOf()
 
-		companion object {
-			val BASE_PROPS = listOf(
-				Layer::id,
-				Layer::name, Layer::visible, Layer::locked,
-				Layer::opacity, Layer::offsetx, Layer::offsety
-			)
-		}
-
 		open fun copyFrom(other: Layer) {
-			for (prop in BASE_PROPS) {
-				val p = prop as KMutableProperty1<Layer, Any>
-				p.set(this, p.get(other))
-			}
+			this.id = other.id
+			this.name = other.name
+			this.visible = other.visible
+			this.locked = other.locked
+			this.opacity = other.opacity
+			this.tintColor = other.tintColor
+			this.offsetx = other.offsetx
+			this.offsety = other.offsety
 			this.properties.clear()
 			this.properties.putAll(other.properties)
 		}
@@ -306,42 +343,18 @@ class TiledMap constructor(
 			override fun clone(): Tiles = Tiles(map.clone(), encoding, compression).also { it.copyFrom(this) }
 		}
 
-		data class ObjectInfo(
-			val id: Int,
-			val gid: Int?,
-			val name: String,
-			val rotation: Double, // in degrees
-			val type: String,
-			val bounds: Rectangle,
-			val properties: Map<String, Property>
-		)
-
 		class Objects(
-			var draworder: String,
 			var color: RGBA = Colors.WHITE,
+			var drawOrder: Object.DrawOrder = Object.DrawOrder.TOP_DOWN,
 			val objects: MutableList<Object> = arrayListOf()
 		) : Layer() {
-			interface Object {
-				val info: ObjectInfo
-			}
-
-			interface Poly : Object {
-				val points: List<Point>
-			}
-
-			data class PPoint(override val info: ObjectInfo) : Object
-			data class Rect(override val info: ObjectInfo) : Object
-			data class Ellipse(override val info: ObjectInfo) : Object
-			data class Polyline(override val info: ObjectInfo, override val points: List<Point>) : Poly
-			data class Polygon(override val info: ObjectInfo, override val points: List<Point>) : Poly
-
 			val objectsById by lazy { objects.associateBy { it.id } }
 			val objectsByName by lazy { objects.associateBy { it.name } }
 
 			fun getById(id: Int): Object? = objectsById[id]
 			fun getByName(name: String): Object? = objectsByName[name]
 
-			override fun clone() = Objects(draworder, color, ArrayList(objects)).also { it.copyFrom(this) }
+			override fun clone() = Objects(color, drawOrder, ArrayList(objects)).also { it.copyFrom(this) }
 		}
 
 		class Image(
@@ -362,11 +375,6 @@ class TiledMap constructor(
 }
 
 private fun TileSet.clone(): TileSet = TileSet(this.textures, this.width, this.height, this.base)
-
-val TiledMap.Layer.Objects.Object.id get() = this.info.id
-val TiledMap.Layer.Objects.Object.name get() = this.info.name
-val TiledMap.Layer.Objects.Object.bounds get() = this.info.bounds
-val TiledMap.Layer.Objects.Object.properties get() = this.info.properties
 
 inline val Iterable<TiledMap.Layer>.tiles get() = this.filterIsInstance<TiledMap.Layer.Tiles>()
 inline val Iterable<TiledMap.Layer>.images get() = this.filterIsInstance<TiledMap.Layer.Image>()

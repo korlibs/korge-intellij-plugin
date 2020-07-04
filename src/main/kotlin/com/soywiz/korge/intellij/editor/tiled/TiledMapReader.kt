@@ -197,75 +197,12 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				val layer = element.parseGroupLayer()
 				tiledMap.allLayers += layer
 			}
-			"objectgroup", "imagelayer" -> {
-				val layer = when (element.nameLC) {
-					"objectgroup" -> Layer.Objects("")
-					"imagelayer" -> Layer.Image()
-					else -> invalidOp
-				}
-				when (layer) {
-					is Layer.Image -> {
-						for (image in element.children("image")) {
-							layer.source = image.str("source")
-							layer.width = image.int("width")
-							layer.height = image.int("height")
-						}
-					}
-					is Layer.Objects -> {
-						layer.draworder = element.str("draworder", "topdown")
-						layer.color = Colors[element.str("color", "#a0a0a4")]
-						for (obj in element.children("object")) {
-							val id = obj.int("id")
-							val name = obj.str("name")
-							val type = obj.str("type")
-							val bounds =
-								obj.run { Rectangle(double("x"), double("y"), double("width"), double("height")) }
-							val rotation = obj.double("rotation")
-							val gid = obj.intNull("gid")
-							//TODO: support visible property
-							//val visible = obj.int("visible", 1) != 0
-							//TODO: support template
-							var rkind = RKind.RECT
-							var points = listOf<Point>()
-							var objprops: Map<String, Property> = LinkedHashMap()
-
-							for (kind in obj.allNodeChildren) {
-								val kindType = kind.nameLC
-								@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
-								when {
-									kindType == "ellipse" -> {
-										rkind = RKind.ELLIPSE
-									}
-									kindType == "polyline" || kindType == "polygon" -> {
-										val pointsStr = kind.str("points")
-										points = pointsStr.split(spaces).map {
-											val parts = it.split(',').map { it.trim().toDoubleOrNull() ?: 0.0 }
-											Point(parts[0], parts[1])
-										}
-
-										rkind = (if (kindType == "polyline") RKind.POLYLINE else RKind.POLYGON)
-									}
-									kindType == "properties" -> {
-										objprops = kind.parseProperties()
-									}
-									kindType == "point" -> {
-										rkind = RKind.POINT
-									}
-									//TODO: support <text>
-									else -> invalidOp("Invalid object kind '$kindType'")
-								}
-							}
-
-							val info = Layer.ObjectInfo(id, gid, name, rotation, type, bounds, objprops)
-							layer.objects += when (rkind) {
-								RKind.POINT -> Layer.Objects.PPoint(info)
-								RKind.RECT -> Layer.Objects.Rect(info)
-								RKind.ELLIPSE -> Layer.Objects.Ellipse(info)
-								RKind.POLYLINE -> Layer.Objects.Polyline(info, points)
-								RKind.POLYGON -> Layer.Objects.Polygon(info, points)
-							}
-						}
-					}
+			"imagelayer" -> {
+				val layer = Layer.Image()
+				for (image in element.children("image")) {
+					layer.source = image.str("source")
+					layer.width = image.int("width")
+					layer.height = image.int("height")
 				}
 			}
 			"editorsettings" -> {
@@ -481,9 +418,70 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 }
 
 private fun Xml.parseObjectLayer(): Layer.Objects {
-	val layer = Layer.Objects("")
+	val layer = Layer.Objects()
 	parseCommonLayerData(layer)
-	TODO()
+
+	val element = this
+	val order = element.str("draworder", "topdown")
+	layer.color = colorFromARGB(element.str("color"), Colors["#a0a0a4"])
+	layer.drawOrder = Object.DrawOrder.values().find { it.value == order } ?: Object.DrawOrder.TOP_DOWN
+
+	for (obj in element.children("object")) {
+		val objInstance = Object(
+			id = obj.int("id"),
+			gid = obj.intNull("gid"),
+			name = obj.str("name"),
+			type = obj.str("type"),
+			bounds = obj.run { Rectangle(double("x"), double("y"), double("width"), double("height")) },
+			rotation = obj.double("rotation"),
+			visible = obj.int("visible", 1) != 0
+			//TODO: support object templates
+			//templatePath = obj.strNull("template")
+		)
+		obj.child("properties")?.parseProperties()?.let {
+			objInstance.properties.putAll(it)
+		}
+
+		fun Xml.readPoints() = str("points").split(spaces).map { xy ->
+			val parts = xy.split(',').map { it.trim().toDoubleOrNull() ?: 0.0 }
+			Point(parts[0], parts[1])
+		}
+
+		val ellipse = obj.child("ellipse")
+		val point = obj.child("point")
+		val polygon = obj.child("polygon")
+		val polyline = obj.child("polyline")
+		val text = obj.child("text")
+		val objectType: Object.Type = when {
+			ellipse != null -> Object.Type.Ellipse
+			point != null -> Object.Type.PPoint
+			polygon != null -> Object.Type.Polygon(polygon.readPoints())
+			polyline != null -> Object.Type.Polyline(polyline.readPoints())
+			text != null -> Object.Type.Text(
+				fontFamily = text.str("fontfamily", "sans-serif"),
+				pixelSize = text.int("pixelsize", 16),
+				wordWrap = text.int("wrap", 0) == 1,
+				color = colorFromARGB(text.str("color"), Colors.BLACK),
+				bold = text.int("bold") == 1,
+				italic = text.int("italic") == 1,
+				underline = text.int("underline") == 1,
+				strikeout = text.int("strikeout") == 1,
+				kerning = text.int("kerning", 1) == 1,
+				hAlign = text.str("halign", "left").let { align ->
+					TextHAlignment.values().find { it.value == align } ?: TextHAlignment.LEFT
+				},
+				vAlign = text.str("valign", "top").let { align ->
+					TextVAlignment.values().find { it.value == align } ?: TextVAlignment.TOP
+				}
+			)
+			else -> Object.Type.Rectangle
+		}
+
+		objInstance.objectType = objectType
+		layer.objects.add(objInstance)
+	}
+
+	return layer
 }
 
 private fun Xml.parseImageLayer(): Layer.Image {
@@ -569,10 +567,6 @@ fun colorFromARGB(color: String, default: RGBA): RGBA {
 	val g = hex.substr(start + 2, 2).toInt(16)
 	val b = hex.substr(start + 4, 2).toInt(16)
 	return RGBA(r, g, b, a)
-}
-
-private enum class RKind {
-	POINT, RECT, ELLIPSE, POLYLINE, POLYGON
 }
 
 private val spaces = Regex("\\s+")
