@@ -24,17 +24,6 @@ suspend fun VfsFile.readTiledMap(
 	val folder = this.parent.jail()
 	val data = readTiledMapData()
 
-	//val combinedTileset = kotlin.arrayOfNulls<Texture>(data.maxGid + 1)
-
-	data.imageLayers.fastForEach { layer ->
-		layer.image = try {
-			folder[layer.source].readBitmapOptimized()
-		} catch (e: Throwable) {
-			e.printStackTrace()
-			Bitmap32(layer.width, layer.height)
-		}
-	}
-
 	val tiledTilesets = arrayListOf<TiledTileset>()
 
 	data.tilesets.fastForEach { tileset ->
@@ -194,16 +183,8 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				tiledMap.allLayers += layer
 			}
 			"group" -> {
-				val layer = element.parseGroupLayer()
+				val layer = element.parseGroupLayer(tiledMap.infinite)
 				tiledMap.allLayers += layer
-			}
-			"imagelayer" -> {
-				val layer = Layer.Image()
-				for (image in element.children("image")) {
-					layer.source = image.str("source")
-					layer.width = image.int("width")
-					layer.height = image.int("height")
-				}
 			}
 			"editorsettings" -> {
 				val chunkSize = element.child("chunksize")
@@ -487,13 +468,35 @@ private fun Xml.parseObjectLayer(): Layer.Objects {
 private fun Xml.parseImageLayer(): Layer.Image {
 	val layer = Layer.Image()
 	parseCommonLayerData(layer)
-	TODO()
+	layer.image = child("image")?.parseImage()
+	return layer
 }
 
-private fun Xml.parseGroupLayer(): Layer.Group {
+private fun Xml.parseGroupLayer(infinite: Boolean): Layer.Group {
 	val layer = Layer.Group()
 	parseCommonLayerData(layer)
-	TODO()
+
+	allChildrenNoComments.fastForEach { element ->
+		when (element.nameLC) {
+			"layer" -> {
+				val tileLayer = element.parseTileLayer(infinite)
+				layer.layers += tileLayer
+			}
+			"objectgroup" -> {
+				val objectLayer = element.parseObjectLayer()
+				layer.layers += objectLayer
+			}
+			"imagelayer" -> {
+				val imageLayer = element.parseImageLayer()
+				layer.layers += imageLayer
+			}
+			"group" -> {
+				val groupLayer = element.parseGroupLayer(infinite)
+				layer.layers += groupLayer
+			}
+		}
+	}
+	return layer
 }
 
 private fun Xml.parseImage(): Image? {

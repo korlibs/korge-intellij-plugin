@@ -357,13 +357,8 @@ class TiledMap constructor(
 			override fun clone() = Objects(color, drawOrder, ArrayList(objects)).also { it.copyFrom(this) }
 		}
 
-		class Image(
-			var width: Int = 0,
-			var height: Int = 0,
-			var source: String = "",
-			var image: Bitmap = Bitmap32(0, 0)
-		) : Layer() {
-			override fun clone(): Image = Image(width, height, source, image.clone()).also { it.copyFrom(this) }
+		class Image(var image: TiledMap.Image? = null) : Layer() {
+			override fun clone(): Image = Image(image).also { it.copyFrom(this) }
 		}
 
 		class Group(

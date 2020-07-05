@@ -51,9 +51,13 @@ fun TiledMap.toXML(): Xml {
 					mapData.editorSettings?.chunkHeight ?: 16
 				)
 				is Layer.Objects -> objectLayerToXml(layer)
-				//is TiledMap.Layer.Image -> {}
-				//is TiledMap.Layer.Group -> {}
-				else -> TODO("Unsupported layer $layer")
+				is Layer.Image -> imageLayerToXml(layer)
+				is Layer.Group -> groupLayerToXml(
+					layer,
+					mapData.infinite,
+					mapData.editorSettings?.chunkWidth ?: 16,
+					mapData.editorSettings?.chunkHeight ?: 16
+				)
 			}
 		}
 		val editorSettings = mapData.editorSettings
@@ -333,6 +337,47 @@ private fun XmlBuilder.objectLayerToXml(layer: Layer.Objects?) {
 						"valign" to type.vAlign.value
 					)
 				}
+			}
+		}
+	}
+}
+
+private fun XmlBuilder.imageLayerToXml(layer: Layer.Image) {
+	node(
+		"imagelayer",
+		"id" to layer.id,
+		"name" to layer.name,
+		"opacity" to layer.opacity,
+		"visible" to layer.visible,
+		"locked" to layer.locked,
+		"tintcolor" to layer.tintColor,
+		"offsetx" to layer.offsetx,
+		"offsety" to layer.offsety
+	) {
+		propertiesToXml(layer.properties)
+		imageToXml(layer.image)
+	}
+}
+
+private fun XmlBuilder.groupLayerToXml(layer: Layer.Group, infinite: Boolean, chunkWidth: Int, chunkHeight: Int) {
+	node(
+		"group",
+		"id" to layer.id,
+		"name" to layer.name,
+		"opacity" to layer.opacity,
+		"visible" to layer.visible,
+		"locked" to layer.locked,
+		"tintcolor" to layer.tintColor,
+		"offsetx" to layer.offsetx,
+		"offsety" to layer.offsety
+	) {
+		propertiesToXml(layer.properties)
+		layer.layers.forEach {
+			when (it) {
+				is Layer.Tiles -> tileLayerToXml(it, infinite, chunkWidth, chunkHeight)
+				is Layer.Objects -> objectLayerToXml(it)
+				is Layer.Image -> imageLayerToXml(it)
+				is Layer.Group -> groupLayerToXml(it, infinite, chunkWidth, chunkHeight)
 			}
 		}
 	}
