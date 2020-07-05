@@ -28,7 +28,7 @@ class TiledMapData(
 	val properties: MutableMap<String, TiledMap.Property> = mutableMapOf(),
 	val allLayers: MutableList<TiledMap.Layer> = arrayListOf(),
 	val tilesets: MutableList<TileSetData> = arrayListOf(),
-	var editorSettings: EditorSettings? = null
+	var editorSettings: TiledMap.EditorSettings? = null
 ) {
 	val pixelWidth: Int get() = width * tilewidth
 	val pixelHeight: Int get() = height * tileheight
@@ -92,11 +92,6 @@ class WangSet(
 		val dflip: Boolean = false
 	)
 }
-
-class EditorSettings(
-	val chunkWidth: Int = 16,
-	val chunkHeight: Int = 16
-)
 
 data class TileData(
 	val id: Int,
@@ -332,8 +327,8 @@ class TiledMap constructor(
 
 		class Tiles(
 			var map: Bitmap32 = Bitmap32(0, 0),
-			val encoding: Encoding = Encoding.XML,
-			val compression: Compression = Compression.NO
+			var encoding: Encoding = Encoding.XML,
+			var compression: Compression = Compression.NO
 		) : Layer() {
 			val width: Int get() = map.width
 			val height: Int get() = map.height
@@ -367,6 +362,11 @@ class TiledMap constructor(
 			override fun clone(): Group = Group(ArrayList(layers)).also { it.copyFrom(this) }
 		}
 	}
+
+	class EditorSettings(
+		val chunkWidth: Int = 16,
+		val chunkHeight: Int = 16
+	)
 }
 
 private fun TileSet.clone(): TileSet = TileSet(this.textures, this.width, this.height, this.base)

@@ -20,7 +20,7 @@ class TiledMapEditorPanel(
 		styled.createTileMapEditor(tmx, history, registerHistoryShortcuts, projectCtx)
 		history.onSave {
 			runBlocking {
-				val xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + tmx.toXML().toOuterXmlIndented().toString()
+				val xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + tmx.toXml().toOuterXmlIndented().toString()
 				onSaveXml(xmlString)
 				//tmxFile.writeString(xmlString)
 			}

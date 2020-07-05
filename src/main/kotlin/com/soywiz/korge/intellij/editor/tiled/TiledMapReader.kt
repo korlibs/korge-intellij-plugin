@@ -319,8 +319,8 @@ private fun Xml.parseCommonLayerData(layer: Layer) {
 	layer.id = element.int("id")
 	layer.name = element.str("name")
 	layer.opacity = element.double("opacity", 1.0)
-	layer.visible = element.int("visible", 1) != 0
-	layer.locked = element.int("locked", 1) != 0
+	layer.visible = element.int("visible", 1) == 1
+	layer.locked = element.int("locked", 0) == 1
 	layer.tintColor = element.strNull("tintcolor")?.let { colorFromARGB(it, Colors.WHITE) }
 	layer.offsetx = element.double("offsetx")
 	layer.offsety = element.double("offsety")
@@ -371,6 +371,7 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 					//Data.Compression.ZSTD -> rawContent.uncompress(ZSTD)
 					else -> invalidOp("Unknown compression '$compression'")
 				}
+				//TODO: read UIntArray
 				content.readIntArrayLE(0, count)
 			}
 		}
@@ -378,7 +379,7 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 		val tiles: IntArray
 		if (infinite) {
 			tiles = IntArray(count)
-			children("chunk").forEach { chunk ->
+			data.children("chunk").forEach { chunk ->
 				val offsetX = chunk.int("x")
 				val offsetY = chunk.int("y")
 				val cwidth = chunk.int("width")
@@ -390,12 +391,16 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 				}
 			}
 		} else {
-			tiles = encodeGids()
+			tiles = data.encodeGids()
 		}
 		map = Bitmap32(width, height, RgbaArray(tiles))
 	}
 
-	return Layer.Tiles(map, encoding, compression)
+	layer.map = map
+	layer.encoding = encoding
+	layer.compression = compression
+
+	return layer
 }
 
 private fun Xml.parseObjectLayer(): Layer.Objects {

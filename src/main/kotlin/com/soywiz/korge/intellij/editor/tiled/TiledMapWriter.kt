@@ -5,13 +5,14 @@ import com.soywiz.korge.intellij.editor.tiled.TiledMap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
 suspend fun VfsFile.writeTiledMap(map: TiledMap) {
-	writeString(map.toXML().toString())
+	writeString(map.toXml().toString())
 }
 
-fun TiledMap.toXML(): Xml {
+fun TiledMap.toXml(): Xml {
 	val map = this
 	val mapData = map.data
 	return buildXml(
@@ -29,9 +30,9 @@ fun TiledMap.toXML(): Xml {
 		"staggeraxis" to mapData.staggerAxis,
 		"staggerindex" to mapData.staggerIndex,
 		"backgroundcolor" to mapData.backgroundColor?.toStringARGB(),
+		"infinite" to mapData.infinite.toInt(),
 		"nextlayerid" to mapData.nextLayerId,
-		"nextobjectid" to mapData.nextObjectId,
-		"infinite" to mapData.infinite
+		"nextobjectid" to mapData.nextObjectId
 	) {
 		propertiesToXml(mapData.properties)
 		for (tileset in map.tilesets) {
@@ -39,7 +40,7 @@ fun TiledMap.toXML(): Xml {
 			if (tilesetData.tilesetSource != null) {
 				node("tileset", "firstgid" to tilesetData.firstgid, "source" to tilesetData.tilesetSource)
 			} else {
-				node(tilesetData.toXML())
+				node(tilesetData.toXml())
 			}
 		}
 		for (layer in map.allLayers) {
@@ -73,7 +74,7 @@ fun TiledMap.toXML(): Xml {
 	}
 }
 
-private fun TileSetData.toXML(): Xml {
+private fun TileSetData.toXml(): Xml {
 	return buildXml(
 		"tileset",
 		"firstgid" to firstgid,
@@ -84,7 +85,7 @@ private fun TileSetData.toXML(): Xml {
 		"margin" to margin.takeIf { it > 0 },
 		"tilecount" to tileCount,
 		"columns" to columns,
-		"objectalignment" to objectAlignment.value
+		"objectalignment" to objectAlignment.takeIf { it != ObjectAlignment.UNSPECIFIED }?.value
 	) {
 		imageToXml(image)
 		if (tileOffsetX != 0 || tileOffsetY != 0) {
@@ -108,14 +109,14 @@ private fun TileSetData.toXML(): Xml {
 				}
 			}
 		}
-		if (wangsets.isNotEmpty()) {
-			node("wangsets") {
-				for (wangset in wangsets) node(wangset.toXml())
-			}
-		}
 		if (tiles.isNotEmpty()) {
 			for (tile in tiles) {
 				node(tile.toXml())
+			}
+		}
+		if (wangsets.isNotEmpty()) {
+			node("wangsets") {
+				for (wangset in wangsets) node(wangset.toXml())
 			}
 		}
 	}
@@ -131,7 +132,7 @@ private fun WangSet.toXml(): Xml {
 					"name" to color.name,
 					"color" to color.color,
 					"tile" to color.tileId,
-					"probability" to color.probability
+					"probability" to color.probability.takeIf { it != 0.0 }?.niceStr
 				)
 			}
 		}
@@ -140,9 +141,9 @@ private fun WangSet.toXml(): Xml {
 				node(
 					"wangedgecolor",
 					"name" to color.name,
-					"color" to color.color,
+					"color" to color.color.toStringARGB(),
 					"tile" to color.tileId,
-					"probability" to color.probability
+					"probability" to color.probability.takeIf { it != 0.0 }?.niceStr
 				)
 			}
 		}
@@ -166,7 +167,7 @@ private fun TileData.toXml(): Xml {
 		"id" to id,
 		"type" to type.takeIf { it != -1 },
 		"terrain" to terrain?.joinToString(",") { it?.toString() ?: "" },
-		"probability" to probability.takeIf { it != 0.0 }
+		"probability" to probability.takeIf { it != 0.0 }?.niceStr
 	) {
 		propertiesToXml(properties)
 		imageToXml(image)
@@ -192,15 +193,15 @@ private fun XmlBuilder.tileLayerToXml(
 	node(
 		"layer",
 		"id" to layer.id,
-		"name" to layer.name,
+		"name" to layer.name.takeIf { it.isNotEmpty() },
 		"width" to layer.width,
 		"height" to layer.height,
-		"opacity" to layer.opacity,
-		"visible" to layer.visible,
-		"locked" to layer.locked,
+		"opacity" to layer.opacity.takeIf { it != 1.0 },
+		"visible" to layer.visible.toInt().takeIf { it != 1 },
+		"locked" to layer.locked.toInt().takeIf { it != 0 },
 		"tintcolor" to layer.tintColor,
-		"offsetx" to layer.offsetx,
-		"offsety" to layer.offsety
+		"offsetx" to layer.offsetx.takeIf { it != 0.0 },
+		"offsety" to layer.offsety.takeIf { it != 0.0 }
 	) {
 		propertiesToXml(layer.properties)
 		node("data", "encoding" to layer.encoding.value, "compression" to layer.compression.value) {
@@ -217,7 +218,7 @@ private fun XmlBuilder.tileLayerToXml(
 						when (layer.encoding) {
 							Encoding.XML -> {
 								chunk.ids.forEach { gid ->
-									node("tile", "gid" to gid.takeIf { it != 0 })
+									node("tile", "gid" to gid.toUInt().takeIf { it != 0u })
 								}
 							}
 							Encoding.CSV -> {
@@ -225,7 +226,7 @@ private fun XmlBuilder.tileLayerToXml(
 									append("\n")
 									for (y in 0 until chunkHeight) {
 										for (x in 0 until chunkWidth) {
-											append(chunk.ids[x + y * chunkWidth])
+											append(chunk.ids[x + y * chunkWidth].toUInt())
 											if (y != chunkHeight - 1 || x != chunkWidth - 1) append(',')
 										}
 										append("\n")
@@ -242,7 +243,7 @@ private fun XmlBuilder.tileLayerToXml(
 				when (layer.encoding) {
 					Encoding.XML -> {
 						layer.map.data.ints.forEach { gid ->
-							node("tile", "gid" to gid.takeIf { it != 0 })
+							node("tile", "gid" to gid.toUInt().takeIf { it != 0u })
 						}
 					}
 					Encoding.CSV -> {
@@ -250,7 +251,7 @@ private fun XmlBuilder.tileLayerToXml(
 							append("\n")
 							for (y in 0 until layer.height) {
 								for (x in 0 until layer.width) {
-									append(layer.map[x, y].value)
+									append(layer.map[x, y].value.toUInt())
 									if (y != layer.height - 1 || x != layer.width - 1) append(',')
 								}
 								append("\n")
@@ -284,16 +285,16 @@ private fun XmlBuilder.objectLayerToXml(layer: Layer.Objects?) {
 	if (layer == null) return
 	node(
 		"objectgroup",
+		"draworder" to layer.drawOrder.value,
 		"id" to layer.id,
-		"name" to layer.name,
-		"color" to layer.color,
-		"opacity" to layer.opacity,
-		"visible" to layer.visible,
-		"locked" to layer.locked,
+		"name" to layer.name.takeIf { it.isNotEmpty() },
+		"color" to layer.color.toStringARGB().takeIf { it != "#a0a0a4" },
+		"opacity" to layer.opacity.takeIf { it != 1.0 },
+		"visible" to layer.visible.toInt().takeIf { it != 1 },
+		"locked" to layer.locked.toInt().takeIf { it != 0 },
 		"tintcolor" to layer.tintColor,
-		"offsetx" to layer.offsetx,
-		"offsety" to layer.offsety,
-		"draworder" to layer.drawOrder
+		"offsetx" to layer.offsetx.takeIf { it != 0.0 },
+		"offsety" to layer.offsety.takeIf { it != 0.0 }
 	) {
 		propertiesToXml(layer.properties)
 		layer.objects.forEach { obj ->
@@ -314,7 +315,7 @@ private fun XmlBuilder.objectLayerToXml(layer: Layer.Objects?) {
 			) {
 				propertiesToXml(obj.properties)
 
-				fun List<Point>.toXml() = joinToString(" ") { p -> "${p.x},${p.y}" }
+				fun List<Point>.toXml() = joinToString(" ") { p -> "${p.x.niceStr},${p.y.niceStr}" }
 
 				when (val type = obj.objectType) {
 					is Object.Type.Rectangle -> Unit
@@ -346,13 +347,13 @@ private fun XmlBuilder.imageLayerToXml(layer: Layer.Image) {
 	node(
 		"imagelayer",
 		"id" to layer.id,
-		"name" to layer.name,
-		"opacity" to layer.opacity,
-		"visible" to layer.visible,
-		"locked" to layer.locked,
+		"name" to layer.name.takeIf { it.isNotEmpty() },
+		"opacity" to layer.opacity.takeIf { it != 1.0 },
+		"visible" to layer.visible.toInt().takeIf { it != 1 },
+		"locked" to layer.locked.toInt().takeIf { it != 0 },
 		"tintcolor" to layer.tintColor,
-		"offsetx" to layer.offsetx,
-		"offsety" to layer.offsety
+		"offsetx" to layer.offsetx.takeIf { it != 0.0 },
+		"offsety" to layer.offsety.takeIf { it != 0.0 }
 	) {
 		propertiesToXml(layer.properties)
 		imageToXml(layer.image)
@@ -363,13 +364,13 @@ private fun XmlBuilder.groupLayerToXml(layer: Layer.Group, infinite: Boolean, ch
 	node(
 		"group",
 		"id" to layer.id,
-		"name" to layer.name,
-		"opacity" to layer.opacity,
-		"visible" to layer.visible,
-		"locked" to layer.locked,
+		"name" to layer.name.takeIf { it.isNotEmpty() },
+		"opacity" to layer.opacity.takeIf { it != 1.0 },
+		"visible" to layer.visible.toInt().takeIf { it != 1 },
+		"locked" to layer.locked.toInt().takeIf { it != 0 },
 		"tintcolor" to layer.tintColor,
-		"offsetx" to layer.offsetx,
-		"offsety" to layer.offsety
+		"offsetx" to layer.offsetx.takeIf { it != 0.0 },
+		"offsety" to layer.offsety.takeIf { it != 0.0 }
 	) {
 		propertiesToXml(layer.properties)
 		layer.layers.forEach {
@@ -431,5 +432,9 @@ private fun XmlBuilder.propertiesToXml(properties: Map<String, Property>) {
 
 //TODO: move to korim
 private fun RGBA.toStringARGB(): String {
-	return "#%02x%02x%02x%02x".format(a, r, g, b)
+	if (a == 0xFF) {
+		return "#%02x%02x%02x".format(r, g, b)
+	} else {
+		return "#%02x%02x%02x%02x".format(a, r, g, b)
+	}
 }
