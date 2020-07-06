@@ -1,21 +1,20 @@
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.intellij.editor.*
-import com.soywiz.korge.intellij.editor.tile.dialog.*
-import com.soywiz.korge.intellij.editor.tile.editor.*
+import com.soywiz.korge.intellij.editor.tiled.dialog.*
+import com.soywiz.korge.intellij.editor.tiled.editor.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
+import com.soywiz.korge.intellij.util.ObservableProperty
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
-import javax.swing.*
 
 fun Styled<out Container>.createTileMapEditor(
 	tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() },

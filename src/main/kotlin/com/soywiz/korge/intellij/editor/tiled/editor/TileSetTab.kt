@@ -1,10 +1,10 @@
-package com.soywiz.korge.intellij.editor.tile.editor
+package com.soywiz.korge.intellij.editor.tiled.editor
 
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.intellij.*
-import com.soywiz.korge.intellij.editor.tile.*
-import com.soywiz.korge.intellij.editor.tile.dialog.*
+import com.soywiz.korge.intellij.editor.tiled.*
+import com.soywiz.korge.intellij.editor.tiled.dialog.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korge.view.tiles.*
@@ -151,9 +151,8 @@ fun Styled<out JTabbedPane>.tilesetTab(
 data class PickedSelection(val data: Bitmap32)
 
 private fun TiledMap.TiledTileset.pickerTilemap(): TiledMap {
-	val tileset = this.tileset
-	val mapWidth = this.data.columns.takeIf { it >= 0 } ?: (this.tileset.width / this.data.tilewidth)
-	val mapHeight = ceil(this.data.tilecount.toDouble() / this.data.columns.toDouble()).toInt()
+	val mapWidth = data.columns.takeIf { it >= 0 } ?: (tileset.width / data.tileWidth)
+	val mapHeight = ceil(data.tileCount.toDouble() / data.columns.toDouble()).toInt()
 
 	return TiledMap(TiledMapData(
 		width = mapWidth, height = mapHeight,
@@ -169,14 +168,14 @@ private suspend fun tiledsetFromBitmap(file: VfsFile, tileWidth: Int, tileHeight
     return TileSetData(
         name = file.baseName.substringBeforeLast("."),
         firstgid = firstgid,
-        tilewidth = tileset.width,
-        tileheight = tileset.height,
-        tilecount = tileset.textures.size,
+        tileWidth = tileset.width,
+        tileHeight = tileset.height,
+        tileCount = tileset.textures.size,
+		//TODO: provide these values as params
+		spacing = 0,
+		margin = 0,
         columns = tileset.base.width / tileset.width,
-        image = null,
-        imageSource = file.baseName,
-        width = tileset.base.width,
-        height = tileset.base.height,
+        image = TiledMap.Image.External(file.baseName, bmp.width, bmp.height),
         tilesetSource = null,
         terrains = listOf(),
         tiles = listOf()

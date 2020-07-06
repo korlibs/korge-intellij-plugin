@@ -1,9 +1,9 @@
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 import com.soywiz.korge.intellij.editor.*
-import com.soywiz.korge.intellij.editor.tile.dialog.*
-import com.soywiz.korge.intellij.editor.tile.editor.*
-import com.soywiz.korge.intellij.util.*
+import com.soywiz.korge.intellij.editor.tiled.dialog.*
+import com.soywiz.korge.intellij.editor.tiled.editor.*
+import com.soywiz.korge.intellij.util.ObservableProperty
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*

@@ -1,14 +1,14 @@
-package com.soywiz.korge.intellij.editor.tile
+package com.soywiz.korge.intellij.editor.tiled
 
 import com.soywiz.korge.intellij.editor.HistoryManager
-import com.soywiz.korge.intellij.editor.tile.dialog.ProjectContext
+import com.soywiz.korge.intellij.editor.tiled.dialog.ProjectContext
 import com.soywiz.korge.intellij.ui.styled
 import com.soywiz.korio.file.VfsFile
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import javax.swing.JPanel
 
-class TileMapEditorPanel(
+class TiledMapEditorPanel(
     val tmxFile: VfsFile,
     val history: HistoryManager = HistoryManager(),
     val registerHistoryShortcuts: Boolean = true,
@@ -20,7 +20,7 @@ class TileMapEditorPanel(
 		styled.createTileMapEditor(tmx, history, registerHistoryShortcuts, projectCtx)
 		history.onSave {
 			runBlocking {
-				val xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + tmx.toXML().toOuterXmlIndented().toString()
+				val xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + tmx.toXml().toOuterXmlIndented().toString()
 				onSaveXml(xmlString)
 				//tmxFile.writeString(xmlString)
 			}
