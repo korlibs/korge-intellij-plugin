@@ -1,6 +1,6 @@
 <korge-templates version="3">
 <versions>
-	<version>1.14.0.0</version>
+	<version>1.15.0.0</version>
 </versions>
 <features>
 	<feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
@@ -31,7 +31,7 @@ buildscript {
 		google()
 	}
 	dependencies {
-		classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:${korgeVersion}")
+		classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:${r${korgeVersion}}")
 	}
 }
 
@@ -61,6 +61,7 @@ enableFeaturePreview("GRADLE_METADATA")
 
 <file path="gradle.properties"><![CDATA[
 org.gradle.jvmargs=-Xmx2g
+korgeVersion=1.15.0.0
 ]]></file>
 
 <file path="gradle/wrapper/gradle-wrapper.properties"><![CDATA[
