@@ -21,7 +21,7 @@
 import com.soywiz.korge.gradle.*
 
 buildscript {
-	val korgeVersion: String by project
+	val korgeGradlePluginVersion: String by project
 
 	repositories {
 		mavenLocal()
@@ -31,7 +31,7 @@ buildscript {
 		google()
 	}
 	dependencies {
-		classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:${r${korgeVersion}}")
+		classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:${r${korgeGradlePluginVersion}}")
 	}
 }
 
@@ -61,7 +61,7 @@ enableFeaturePreview("GRADLE_METADATA")
 
 <file path="gradle.properties"><![CDATA[
 org.gradle.jvmargs=-Xmx2g
-korgeVersion=1.15.0.0
+korgeGradlePluginVersion=1.15.0.0
 ]]></file>
 
 <file path="gradle/wrapper/gradle-wrapper.properties"><![CDATA[
