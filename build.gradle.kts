@@ -40,11 +40,15 @@ java {
 }
 
 sourceSets {
-	main {
-		java {
-			srcDirs("src/main/kotlin")
-		}
-	}
+    this.maybeCreate("main").apply {
+        java {
+            srcDirs("src/main/kotlin")
+        }
+        resources {
+            srcDirs("src/main/resources")
+            srcDirs("src/main/resources2")
+        }
+    }
 }
 
 repositories {

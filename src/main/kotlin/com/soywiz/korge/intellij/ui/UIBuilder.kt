@@ -341,18 +341,31 @@ fun JComponent.repaintAndInvalidate() {
 	parent?.repaint()
 }
 
-fun showDialog(title: String = "Dialog", block: Styled<JPanel>.() -> Unit): Boolean {
+data class DialogSettings(
+    val onlyCancelButton: Boolean = false
+)
+
+fun showDialog(title: String = "Dialog", settings: DialogSettings = DialogSettings(), block: Styled<JPanel>.(wrapper: DialogWrapper) -> Unit): Boolean {
 	class MyDialogWrapper : DialogWrapper(true) {
 		override fun createCenterPanel(): JComponent? {
 			val dialogPanel = JPanel(FillLayout())
 			dialogPanel.preferredSize = Dimension(200, 200)
-			block(dialogPanel.styled)
+			block(dialogPanel.styled, this)
 			return dialogPanel
 		}
 
-		init {
+        override fun createActions(): Array<Action> {
+            if (settings.onlyCancelButton) {
+                return arrayOf(cancelAction)
+            } else {
+                return super.createActions()
+            }
+        }
+
+        init {
 			init()
             this.title = title
+            this.isOK
 		}
 	}
 
