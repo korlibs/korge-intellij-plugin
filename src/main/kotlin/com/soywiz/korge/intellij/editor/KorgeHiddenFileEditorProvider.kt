@@ -1,8 +1,9 @@
 package com.soywiz.korge.intellij.editor
 
 import com.intellij.openapi.fileEditor.*
+import com.intellij.openapi.project.DumbAware
 
-class KorgeHiddenFileEditorProvider : KorgeBaseFileEditorProvider() {
+class KorgeHiddenFileEditorProvider : KorgeBaseFileEditorProvider(), DumbAware {
 	override fun accept(
 		project: com.intellij.openapi.project.Project,
 		virtualFile: com.intellij.openapi.vfs.VirtualFile
