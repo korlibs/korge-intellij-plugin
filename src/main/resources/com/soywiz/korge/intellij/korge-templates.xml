@@ -1,6 +1,6 @@
 <korge-templates version="3">
 <versions>
-	<version>1.15.0.0</version>
+	<version>2.0.0.0</version>
 </versions>
 <features>
 	<feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
@@ -29,7 +29,7 @@ buildscript {
 		google()
 	}
 	dependencies {
-		classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:1.15.0.0")
+		classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:2.0.0.0")
 	}
 }
 
@@ -64,7 +64,7 @@ org.gradle.jvmargs=-Xmx2g
 <file path="gradle/wrapper/gradle-wrapper.properties"><![CDATA[
 distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
-distributionUrl=https\://services.gradle.org/distributions/gradle-6.3-all.zip
+distributionUrl=https\://services.gradle.org/distributions/gradle-6.7.1-all.zip
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists
 ]]></file>
