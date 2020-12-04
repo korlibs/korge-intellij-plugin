@@ -1,6 +1,6 @@
 <korge-templates version="3">
 <versions>
-	<version>2.0.0.0</version>
+	<version>2.0.0.1</version>
 </versions>
 <features>
 	<feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
@@ -49,6 +49,20 @@ korge {
 #if ($feature_swf)
 	supportSwf()
 #end
+// To enable all targets at once
+
+	//targetAll()
+
+// To enable targets based on properties/environment variables
+	//targetDefault()
+
+// To selectively enable targets
+	
+	targetJvm()
+	targetJs()
+	targetDesktop()
+	targetIos()
+	targetAndroidIndirect() // targetAndroidDirect()
 }
 
 ]]></file>
