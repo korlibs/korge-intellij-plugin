@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.editor.tiled
 
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.tiled.dialog.*
 import com.soywiz.korge.intellij.editor.tiled.editor.*
@@ -12,16 +13,21 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korge.tiled.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
 
 fun Styled<out Container>.createTileMapEditor(
-	tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() },
-	history: HistoryManager = HistoryManager(),
+	tilemap: TiledMap? = null,
+	history: HistoryManager? = null,
 	registerHistoryShortcuts: Boolean = true,
 	projectContext: ProjectContext? = null
 ) {
+    com.soywiz.korge.intellij.components.initializeIdeaComponentFactory()
+    var tilemap: TiledMap = if (tilemap == null) runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() } else tilemap
+    val history = if (history == null) HistoryManager() else history
+
 	val ctx = MapContext(
 		tilemap = tilemap,
 		projectContext = projectContext,
