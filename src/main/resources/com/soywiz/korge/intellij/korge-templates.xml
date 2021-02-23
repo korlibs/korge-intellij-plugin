@@ -74,7 +74,7 @@ enableFeaturePreview("GRADLE_METADATA")
 ]]></file>
 
         <file path="gradle.properties"><![CDATA[
-korgePluginVersion=2.0.0.1
+korgePluginVersion=${korgeVersion}
 org.gradle.jvmargs=-Xmx2g
 kotlin.mpp.stability.nowarn=true
 ]]></file>
