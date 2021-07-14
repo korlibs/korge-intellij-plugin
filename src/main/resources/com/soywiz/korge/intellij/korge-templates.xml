@@ -1,6 +1,6 @@
 <korge-templates version="5">
     <versions>
-        <version>2.2.0.1</version>
+        <version>2.2.1.0</version>
     </versions>
     <features>
         <feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
@@ -73,6 +73,7 @@ korge {
 ]]></file>
 
         <file path="gradle.properties"><![CDATA[
+# https://github.com/korlibs/korge-plugins/releases
 korgePluginVersion=${korgeVersion}
 org.gradle.jvmargs=-Xmx4g
 kotlin.mpp.stability.nowarn=true
