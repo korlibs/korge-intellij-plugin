@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij.module
 
 import com.soywiz.korge.intellij.config.*
+import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.serialization.xml.*
 import org.intellij.lang.annotations.*
 
@@ -88,10 +89,7 @@ open class KorgeProjectTemplate {
 		}
 
 		fun fromEmbeddedResource(): KorgeProjectTemplate =
-			fromXml(
-				KorgeProjectTemplate::class.java.getResource("/com/soywiz/korge/intellij/korge-templates.xml")?.readText()
-					?: error("Can't find ¡korge-templates.xml' from esources")
-			)
+			fromXml(getResourceText("/com/soywiz/korge/intellij/korge-templates.xml"))
 
 		fun fromUpToDateTemplate(): KorgeProjectTemplate = fromXml(korgeGlobalSettings.getCachedTemplate())
 

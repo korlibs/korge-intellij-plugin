@@ -31,33 +31,41 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 
     var myPolicy: FileEditorPolicy = FileEditorPolicy.PLACE_BEFORE_DEFAULT_EDITOR
 
-    override fun accept(
-        project: com.intellij.openapi.project.Project,
-        virtualFile: com.intellij.openapi.vfs.VirtualFile
-    ): Boolean {
+    enum class AcceptKind(val hasTree: Boolean, val hasProperties: Boolean) {
+        TREE_AND_PROPERTIES(true, true),
+        PROPERTIES(false, true),
+        NO_RIGHT_PANEL(false, false)
+    }
+
+    fun accept(virtualFile: com.intellij.openapi.vfs.VirtualFile): AcceptKind? {
         val name = virtualFile.name
         return when {
             ////////
-            name.endsWith(".svg", ignoreCase = true) -> true
-            name.endsWith(".pex", ignoreCase = true) -> true
-            name.endsWith(".ktree", ignoreCase = true) -> true
-            name.endsWith(".scml", ignoreCase = true) -> true
-            name.endsWith("_ske.json", ignoreCase = true) -> true
+            name.endsWith(".svg", ignoreCase = true) -> AcceptKind.NO_RIGHT_PANEL
+            name.endsWith(".pex", ignoreCase = true) -> AcceptKind.PROPERTIES
+            name.endsWith(".ktree", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".scml", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith("_ske.json", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
             ////////
-            name.endsWith(".swf", ignoreCase = true) -> true
-            name.endsWith(".ani", ignoreCase = true) -> true
-            name.endsWith(".voice.wav", ignoreCase = true) -> true
-            name.endsWith(".voice.mp3", ignoreCase = true) -> true
-            name.endsWith(".voice.ogg", ignoreCase = true) -> true
-            name.endsWith(".voice.lipsync", ignoreCase = true) -> true
-            name.endsWith(".wav", ignoreCase = true) -> true
-            name.endsWith(".mp3", ignoreCase = true) -> true
-            name.endsWith(".ogg", ignoreCase = true) -> true
-            name.endsWith(".dbbin", ignoreCase = true) -> true
-            name.endsWith(".skel", ignoreCase = true) -> true
-            else -> false
+            name.endsWith(".swf", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".ani", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".voice.wav", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".voice.mp3", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".voice.ogg", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".voice.lipsync", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".wav", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".mp3", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".ogg", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".dbbin", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            name.endsWith(".skel", ignoreCase = true) -> AcceptKind.TREE_AND_PROPERTIES
+            else -> null
         }
     }
+
+    override fun accept(
+        project: com.intellij.openapi.project.Project,
+        virtualFile: com.intellij.openapi.vfs.VirtualFile
+    ): Boolean = accept(virtualFile) != null
 
     override fun getPolicy(): FileEditorPolicy = myPolicy
 
@@ -66,7 +74,9 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 		virtualFile: com.intellij.openapi.vfs.VirtualFile
 	): com.intellij.openapi.fileEditor.FileEditor {
         val fileToEdit = KorgeFileToEdit(virtualFile, project)
-		return KorgeBaseKorgeFileEditor(project, fileToEdit, createModule(fileToEdit), "Preview")
+        val acceptKind = accept(virtualFile)
+        virtualFile.name.endsWith(".pex", ignoreCase = true)
+		return KorgeBaseKorgeFileEditor(project, fileToEdit, createModule(fileToEdit), "Preview", acceptKind?.hasTree == true)
 	}
 
     open fun createModule(fileToEdit: KorgeFileToEdit): Module {

@@ -5,6 +5,7 @@ import com.intellij.framework.addSupport.*
 import com.intellij.ide.util.frameworkSupport.*
 import com.intellij.openapi.module.*
 import com.intellij.openapi.roots.*
+import com.intellij.testIntegration.*
 import javax.swing.*
 
 /*

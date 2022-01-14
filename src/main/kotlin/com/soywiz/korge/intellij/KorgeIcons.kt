@@ -3,6 +3,7 @@ package com.soywiz.korge.intellij
 import com.intellij.openapi.util.IconLoader
 import javax.swing.*
 
+// https://jetbrains.design/intellij/resources/icons_list/
 object KorgeIcons {
     val KTREE by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
 	val PARTICLE by lazy { getIcon("/com/soywiz/korge/intellij/icon/particle.png") }
@@ -11,12 +12,15 @@ object KorgeIcons {
 	val SWF by lazy { getIcon("/com/soywiz/korge/intellij/icon/swf.png") }
 	val TILED by lazy { getIcon("/com/soywiz/korge/intellij/icon/tiled.png") }
 	val KORGE by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
+	val SPONSOR by lazy { getIcon("/com/soywiz/korge/intellij/icon/sponsor.png") }
 	val VOICE by lazy { getIcon("/com/soywiz/korge/intellij/icon/lips.png") }
 	val SPRITER by lazy { getIcon("/com/soywiz/korge/intellij/icon/spriter.png") }
 	val SOUND by lazy { getIcon("/com/soywiz/korge/intellij/icon/sound.png") }
 	val ATLAS by lazy { getIcon("/com/soywiz/korge/intellij/icon/atlas.png") }
     val SPINE by lazy { getIcon("/com/soywiz/korge/intellij/icon/spine.png") }
     val DRAGONBONES by lazy { getIcon("/com/soywiz/korge/intellij/icon/dragonbones.png") }
+
+	val USER_UNKNOWN_BYTES by lazy { KorgeIcons::class.java.classLoader.getResourceAsStream("/com/soywiz/korge/intellij/image/user_unknown.png")?.readBytes() }
 
     private fun getIcon(path: String): Icon = IconLoader.getIcon(path, KorgeIcons::class.java)
 }

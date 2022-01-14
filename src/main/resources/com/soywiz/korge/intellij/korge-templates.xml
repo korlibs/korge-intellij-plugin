@@ -1,6 +1,6 @@
-<korge-templates version="5">
+<korge-templates version="6">
     <versions>
-        <version>2.4.6</version>
+        <version>2.4.10</version>
     </versions>
     <features>
         <feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
@@ -82,7 +82,7 @@ androidBuildGradleVersion=7.0.3
         <file path="gradle/wrapper/gradle-wrapper.properties"><![CDATA[
 distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
-distributionUrl=https\://services.gradle.org/distributions/gradle-7.2-all.zip
+distributionUrl=https\://services.gradle.org/distributions/gradle-7.3.3-all.zip
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists
 ]]></file>

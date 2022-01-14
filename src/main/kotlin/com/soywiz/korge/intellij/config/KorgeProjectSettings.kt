@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.config
 
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.*
 import com.intellij.util.xmlb.*
@@ -14,6 +15,7 @@ open class KorgeProjectSettings : PersistentStateComponent<KorgeProjectSettings>
 
 	init {
 		println("KorgeProjectSettings.init")
+		//ActionManager.getInstance().group
 	}
 
 	override fun getState() = this

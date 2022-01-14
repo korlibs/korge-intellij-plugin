@@ -25,8 +25,8 @@ class TableBuilder {
 	var maxWidth: Int? = null
 	var maxHeight: Int? = null
 
-	val nrows get() = items.values.map { it.second.row + it.second.rowSpan }.max() ?: 0
-	val ncols get() = items.values.map { it.second.column + it.second.colSpan }.max() ?: 0
+	val nrows get() = items.values.map { it.second.row + it.second.rowSpan }.maxOrNull() ?: 0
+	val ncols get() = items.values.map { it.second.column + it.second.colSpan }.maxOrNull() ?: 0
 }
 
 fun table(callback: TableBuilder.() -> Unit): JPanel {

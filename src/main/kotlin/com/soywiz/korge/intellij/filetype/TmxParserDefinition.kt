@@ -13,7 +13,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.xml.XmlFileImpl
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import com.intellij.psi.xml.XmlFile
+import com.intellij.psi.xml.*
 
 class TmxParserDefinition : ParserDefinition {
 
@@ -54,9 +54,14 @@ class TmxParserDefinition : ParserDefinition {
     override fun spaceExistenceTypeBetweenTokens(
         left: ASTNode,
         right: ASTNode
-    ): SpaceRequirements {
-        val lexer = createLexer(left.psi.project)
-        return XMLParserDefinition.canStickTokensTogetherByLexerInXml(left, right, lexer, 0)
+    ): SpaceRequirements = canStickTokensTogether(left, right)
+
+    private fun canStickTokensTogether(left: ASTNode, right: ASTNode): SpaceRequirements = when {
+        left.elementType === XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN || right.elementType === XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN -> SpaceRequirements.MUST_NOT
+        left.elementType === XmlTokenType.XML_ATTRIBUTE_VALUE_END_DELIMITER && right.elementType === XmlTokenType.XML_NAME -> SpaceRequirements.MUST
+        left.elementType === XmlTokenType.XML_NAME && right.elementType === XmlTokenType.XML_NAME -> SpaceRequirements.MUST
+        left.elementType === XmlTokenType.XML_TAG_NAME && right.elementType === XmlTokenType.XML_NAME -> SpaceRequirements.MUST
+        else -> SpaceRequirements.MAY
     }
 
     override fun createElement(node: ASTNode): PsiElement {

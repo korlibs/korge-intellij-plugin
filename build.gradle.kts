@@ -1,117 +1,112 @@
 buildscript {
-	val kotlinVersion: String by project
+    val kotlinVersion: String by project
 
-	repositories {
-		mavenLocal()
-		mavenCentral()
-		jcenter()
-		maven { url = uri("https://plugins.gradle.org/m2/") }
-		//maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
-	}
-	dependencies {
-		classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
-		classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
-		classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.16")
-	}
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url = uri("https://plugins.gradle.org/m2/") }
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
+    }
 }
 
 plugins {
-	java
-	idea
+    java
+    idea
+    id("org.jetbrains.intellij") version "1.3.0"
+    id("com.gradle.plugin-publish") version "0.19.0"
 }
 
 apply(plugin = "kotlin")
-apply(plugin = "org.jetbrains.intellij")
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-	sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-	targetCompatibility = JavaVersion.VERSION_1_8.toString()
-	kotlinOptions {
-		freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
-		apiVersion = "1.3"
-		languageVersion = "1.3"
-		jvmTarget = "1.8"
-	}
+    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+    targetCompatibility = JavaVersion.VERSION_1_8.toString()
+    kotlinOptions {
+        freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
+        jvmTarget = "1.8"
+    }
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 sourceSets {
     this.maybeCreate("main").apply {
         java {
-            srcDirs("src/main/kotlin")
+            //srcDirs("korge-intellij-plugin/src/main/kotlin")
+            //srcDirs("src/main/kotlin")
         }
         resources {
-            srcDirs("src/main/resources")
-            srcDirs("src/main/resources2")
+            //srcDirs("korge-intellij-plugin/src/main/resources")
+            //srcDirs("src/main/resources")
         }
     }
 }
 
 repositories {
-	mavenLocal()
-	maven { url = uri("https://dl.bintray.com/korlibs/korlibs") }
-	jcenter()
-	google()
-	maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+    mavenLocal()
+    mavenCentral()
+    google()
 }
 
+val kbox2dVersion: String by project
 val korgeVersion: String by project
 val kotlinVersion: String by project
 
 dependencies {
-	implementation("com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion")
-	implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-	//implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
-	//implementation("javax.xml.bind:jaxb-api:2.3.1")
-	//implementation("com.sun.xml.bind:jaxb-impl:2.3.1")
-	//implementation("net.sourceforge.mydoggy:mydoggy:1.4.2")
-	//implementation("net.sourceforge.mydoggy:mydoggy-plaf:1.4.2")
-	//implementation("net.sourceforge.mydoggy:mydoggy-api:1.4.2")
-	//implementation("net.sourceforge.mydoggy:mydoggy-res:1.4.2")
-	//implementation(project(":korge-build"))
+    //implementation("com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion")
+    implementation("com.soywiz.korlibs.korge2:korge-jvm:$korgeVersion")
+    implementation("com.soywiz.korlibs.korge2:korge-dragonbones-jvm:$korgeVersion")
+    implementation("com.soywiz.korlibs.korge2:korge-spine-jvm:$korgeVersion")
+    implementation("com.soywiz.korlibs.korge2:korge-swf-jvm:$korgeVersion")
+    implementation("com.soywiz.korlibs.kbox2d:kbox2d:$kbox2dVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    //implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
+    //implementation("javax.xml.bind:jaxb-api:2.3.1")
+    //implementation("com.sun.xml.bind:jaxb-impl:2.3.1")
+    //implementation("net.sourceforge.mydoggy:mydoggy:1.4.2")
+    //implementation("net.sourceforge.mydoggy:mydoggy-plaf:1.4.2")
+    //implementation("net.sourceforge.mydoggy:mydoggy-api:1.4.2")
+    //implementation("net.sourceforge.mydoggy:mydoggy-res:1.4.2")
+    //implementation(project(":korge-build"))
 }
 
 val globalProps = properties
 
-extensions.getByType<org.jetbrains.intellij.IntelliJPluginExtension>().apply {
-	version = "IC-2019.3"; setPlugins("gradle", "java")
+intellij {
+    // IntelliJ IDEA dependency
+    version.set("IC-2021.2.2")
+    // Bundled plugin dependencies
+    plugins.addAll(
+        "gradle", "java", "platform-images", "Kotlin", "gradle-java"
+    )
 
-	//version = "IC-2019.3"; setPlugins("gradle")
-	//version = "IC-2019.3"; setPlugins("gradle", "java", "Kotlin")
-	//version = "IC-2018.3.5"
-	//version = "IC-2018.3.4"; setPlugins("gradle", "maven")
+    pluginName.set("KorgePlugin")
+    updateSinceUntilBuild.set(false)
 
-	updateSinceUntilBuild = false
+    downloadSources.set(true)
 
-	pluginName = "KorgePlugin"
-	downloadSources = true
+    //sandboxDir.set(layout.projectDirectory.dir(".sandbox").toString())
 }
 
 tasks {
-	val runIde by existing(org.jetbrains.intellij.tasks.RunIdeTask::class) {
-		maxHeapSize = "2g"
-	}
-	val runDebugTilemap by creating(JavaExec::class) {
-		//classpath = sourceSets.main.runtimeClasspath
-		classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
+    val runIde by existing(org.jetbrains.intellij.tasks.RunIdeTask::class) {
+        maxHeapSize = "4g"
+    }
+    val runDebugTilemap by creating(JavaExec::class) {
+        //classpath = sourceSets.main.runtimeClasspath
+        classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
 
-		main = "com.soywiz.korge.intellij.editor.tile.MyTileMapEditorFrame"
-	}
-	val runUISample by creating(JavaExec::class) {
-		//classpath = sourceSets.main.runtimeClasspath
-		classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
+        main = "com.soywiz.korge.intellij.editor.tile.MyTileMapEditorFrame"
+    }
+    val runUISample by creating(JavaExec::class) {
+        //classpath = sourceSets.main.runtimeClasspath
+        classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
 
-		main = "com.soywiz.korge.intellij.ui.UIBuilderSample"
-	}
-	val publishPlugin by existing(org.jetbrains.intellij.tasks.PublishTask::class) {
-		if (findProperty("jetbrainsUsername") != null) {
-			setUsername(findProperty("jetbrainsUsername"))
-			setPassword(findProperty("jetbrainsPassword"))
-		}
-
-	}
+        main = "com.soywiz.korge.intellij.ui.UIBuilderSample"
+    }
 }

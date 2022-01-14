@@ -1,9 +1,7 @@
 package com.soywiz.korge.intellij.editor
 
-import com.intellij.codeInsight.editorActions.*
-import com.intellij.ide.actions.*
-import com.intellij.openapi.ide.*
 import com.intellij.openapi.ui.*
+import com.soywiz.klogger.*
 import com.soywiz.korgw.awt.*
 import javax.swing.*
 

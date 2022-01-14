@@ -15,14 +15,25 @@ import com.intellij.psi.xml.XmlFile
 import com.intellij.psi.impl.source.xml.XmlFileImpl
 import com.intellij.psi.tree.*
 
-
 open class XmlBaseType(
-    val _icon: Icon,
-    val _name: String,
-    val _extension: String,
-    val _description: String,
-    val lang: XMLLanguage
+	val _icon: Icon,
+	val _name: String,
+	val _extension: String,
+	val _description: String,
+	val lang: XMLLanguage
 ) : XmlLikeFileType(lang) {
+	override fun getIcon(): Icon? = _icon
+	override fun getName(): String = _name
+	override fun getDefaultExtension(): String = _extension
+	override fun getDescription(): String = _description
+}
+
+open class BaseKorgeBinaryFile(
+	val _icon: Icon,
+	val _name: String,
+	val _extension: String,
+	val _description: String,
+) : UserBinaryFileType() {
 	override fun getIcon(): Icon? = _icon
 	override fun getName(): String = _name
 	override fun getDefaultExtension(): String = _extension
@@ -46,18 +57,18 @@ open class PEXLanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANC
 }
 
 class KtreeFile internal constructor(viewProvider: FileViewProvider) : XmlFileImpl(viewProvider, KTREE_FILE_ELEMENT_TYPE), XmlFile {
-    override fun toString(): String = "KtreeFile:$name"
+	override fun toString(): String = "KtreeFile:$name"
 
-    companion object {
-        val KTREE_FILE_ELEMENT_TYPE = IFileElementType("KORGE_KTREE_ELEMENT_TYPE", KTREELanguage.INSTANCE)
-    }
+	companion object {
+		val KTREE_FILE_ELEMENT_TYPE = IFileElementType("KORGE_KTREE_ELEMENT_TYPE", KTREELanguage.INSTANCE)
+	}
 }
 
 open class KTREELanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANCE, "KORGE_KTREE", "text/ktree") {
 
-    companion object {
-        @JvmField val INSTANCE = KTREELanguage()
-    }
+	companion object {
+		@JvmField val INSTANCE = KTREELanguage()
+	}
 }
 open class SCMLLanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANCE, "KORGE_SCML", "text/scml") {
 	companion object {
@@ -75,18 +86,16 @@ open class FNTLanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANC
 	}
 }
 
-open class KorgeAniFileType : UserBinaryFileType() {
+open class KorgeAniFileType : BaseKorgeBinaryFile(KorgeIcons.KORGE, "KORGE_ANI", "ani", "Korge animation files") {
 	companion object {
 		@JvmField val INSTANCE = KorgeAniFileType()
 	}
-	override fun getName(): String = "KORGE_ANI"
 }
 
-open class KorgeAudioFileType : UserBinaryFileType() {
+open class KorgeAudioFileType : BaseKorgeBinaryFile(KorgeIcons.SOUND, "KORGE_AUDIO", "kaudio", "Korge audio files") {
 	companion object {
 		@JvmField val INSTANCE = KorgeAudioFileType()
 	}
-	override fun getName(): String = "KORGE_AUDIO"
 }
 
 open class TmxFileType : XmlBaseType(KorgeIcons.TILED, "KORGE_TMX", "tmx", "Tiled Map Files", TMXLanguage.INSTANCE) {
@@ -105,9 +114,9 @@ open class PexFileType : XmlBaseType(KorgeIcons.PARTICLE, "KORGE_PEX", "pex", "P
 	}
 }
 open class KTreeFileType : XmlBaseType(KorgeIcons.KTREE, "KORGE_KTREE", "ktree", "Korge Tree", KTREELanguage.INSTANCE) {
-    companion object {
-        @JvmField val INSTANCE = KTreeFileType()
-    }
+	companion object {
+		@JvmField val INSTANCE = KTreeFileType()
+	}
 }
 open class ScmlFileType : XmlBaseType(KorgeIcons.SPRITER, "KORGE_SCML", "scml", "Spriter Text File", SCMLLanguage.INSTANCE) {
 	companion object {
@@ -137,21 +146,21 @@ open class KraFileType : UserBinaryFileType() {
 }
 
 open class SpineSkeletonFileType : UserBinaryFileType() {
-    companion object {
-        @JvmField val INSTANCE = SpineSkeletonFileType()
-    }
-    override fun getName(): String = "SKEL"
-    override fun getDescription(): String = "Spine Skeleton File"
+	companion object {
+		@JvmField val INSTANCE = SpineSkeletonFileType()
+	}
+	override fun getName(): String = "SKEL"
+	override fun getDescription(): String = "Spine Skeleton File"
 
-    override fun getIcon(): Icon? = KorgeIcons.SPINE
+	override fun getIcon(): Icon? = KorgeIcons.SPINE
 }
 
 open class DragonbonesSkeletonFileType : UserBinaryFileType() {
-    companion object {
-        @JvmField val INSTANCE = DragonbonesSkeletonFileType()
-    }
-    override fun getName(): String = "DBBIN"
-    override fun getDescription(): String = "Dragonbones Skeleton File"
+	companion object {
+		@JvmField val INSTANCE = DragonbonesSkeletonFileType()
+	}
+	override fun getName(): String = "DBBIN"
+	override fun getDescription(): String = "Dragonbones Skeleton File"
 
-    override fun getIcon(): Icon? = KorgeIcons.DRAGONBONES
+	override fun getIcon(): Icon? = KorgeIcons.DRAGONBONES
 }

@@ -6,6 +6,7 @@ import com.intellij.util.xmlb.*
 import com.soywiz.klock.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.module.*
+import com.soywiz.korge.intellij.util.*
 import java.net.*
 
 @State(
@@ -41,7 +42,7 @@ open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings>, 
 		val now = System.currentTimeMillis()
 		val elapsedTimeSinceLastCheck = (now - cachedTemplateLastRefreshTime).milliseconds
 
-		val resource = runCatching { KorgeProjectTemplate::class.java.getResource("/com/soywiz/korge/intellij/korge-templates.xml")?.readText() }.getOrNull()
+		val resource = getResourceText("/com/soywiz/korge/intellij/korge-templates.xml")
 
 		if (cachedTemplateString == null || elapsedTimeSinceLastCheck >= 1.days) {
 			cachedTemplateLastRefreshTime = now
@@ -75,3 +76,4 @@ open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings>, 
 }
 
 val korgeGlobalSettings: KorgeGlobalSettings get() = getService()
+val KorgeProjectExt.globalSettings get() = korgeGlobalSettings

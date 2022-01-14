@@ -18,6 +18,7 @@ import com.intellij.openapi.ide.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
+import com.soywiz.kgl.*
 import com.soywiz.klock.hr.*
 import com.soywiz.klock.milliseconds
 import com.soywiz.korag.*
@@ -48,12 +49,14 @@ import java.beans.*
 import javax.swing.*
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.input.*
+import java.awt.Graphics
 
 open class KorgeBaseKorgeFileEditor(
     val project: Project,
     val fileToEdit: KorgeFileToEdit,
     val module: Module,
-    val _name: String
+    val _name: String,
+    val hasTree: Boolean = true
 //) : com.intellij.diff.util.FileEditorBase(), com.intellij.openapi.project.DumbAware, DataProvider by FakeCopyAndPasteProvider, CopyProvider by FakeCopyAndPasteProvider, PasteProvider by FakeCopyAndPasteProvider {
 ) : com.intellij.diff.util.FileEditorBase() {
 
@@ -62,7 +65,6 @@ open class KorgeBaseKorgeFileEditor(
 	}
 
 	var disposed = false
-	var ag: AG? = null
 	var views: Views? = null
     var gameWindow: GameWindow? = null
     var canvas: GLCanvas? = null
@@ -91,6 +93,7 @@ open class KorgeBaseKorgeFileEditor(
 		val panel = JPanel()
 		panel.layout = GridLayout(1, 1)
         canvas = GLCanvas(checkGl = true)
+        //canvas = GLCanvas(checkGl = false)
         val canvas = canvas!!
         canvas.minimumSize = Dimension(64, 64)
         panel.add(canvas)
@@ -122,13 +125,14 @@ open class KorgeBaseKorgeFileEditor(
                     bgcolor = controlRgba,
                     debug = false
                 ) {
+                    this@KorgeBaseKorgeFileEditor.views = views
                     views.completedEditing {
                         println("!! completedEditing")
                         executePendingWriteActions()
                     }
                     views.registerIdeaStuff(project)
                     val app = IdeaUiApplication(project, views)
-                    viewsDebuggerComponent = ViewsDebuggerComponent(views, app, actions = MyViewsDebuggerActions(views)).also {
+                    viewsDebuggerComponent = ViewsDebuggerComponent(views, app, actions = MyViewsDebuggerActions(views), displayTree = hasTree).also {
                         it.styled.fill()
                     }
                     views.ideaComponent = viewsDebuggerComponent
@@ -258,6 +262,11 @@ open class KorgeBaseKorgeFileEditor(
                                 }
                             }
                         }
+                        toolbarButton("Context Loss") {
+                            click {
+                                gameWindow?.ag?.contextLost()
+                            }
+                        }
                     }
                     add(editor.styled {
                         fill()
@@ -291,8 +300,7 @@ open class KorgeBaseKorgeFileEditor(
 		views?.dispose()
 		views = null
 		//if (ag?.glcanvas != null) component.remove(ag?.glcanvas)
-		ag?.dispose()
-		ag = null
+        gameWindow?.ag?.dispose()
 		disposed = true
         fileToEdit?.dispose()
         gameWindow?.close()
@@ -313,4 +321,5 @@ open class KorgeBaseKorgeFileEditor(
 	override fun deselectNotify() = Unit
 	override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? = null
 	override fun isValid(): Boolean = true
+    override fun getFile(): VirtualFile = fileToEdit.originalFile
 }

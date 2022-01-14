@@ -5,6 +5,7 @@ import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
 import com.soywiz.krypto.encoding.*
+import javax.swing.text.html.*
 
 class KorgeModuleConfig {
 	var artifactGroup = "com.example"
@@ -30,7 +31,7 @@ class KorgeModuleConfig {
 			"features" to featuresToInstall.toSet()
 		) + featuresToInstall.associate { "feature_${it.id}" to true }
 
-		fun getFileFromGenerator(path: String): ByteArray = KorgeResources.getBytes("/com/soywiz/korge/intellij/generator/$path")
+		fun getFileFromGenerator(path: String): ByteArray = getResourceBytes("/com/soywiz/korge/intellij/generator/$path")
 
 		println(templateContext)
 

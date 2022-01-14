@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.*
 import com.intellij.openapi.actionSystem.impl.*
 import com.intellij.ui.components.*
+import com.intellij.util.ui.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korim.color.*
 import java.awt.*
@@ -44,17 +45,26 @@ class MyToolbarButton(text: String) : JButton() {
     override fun paintComponent(g: Graphics) {
         val look = ActionButtonLook.SYSTEM_LOOK
 
-        look.paintBackground(g, this, when {
+        //g.clearRect(0, 0, bounds.width, bounds.height)
+        val g = g as Graphics2D
+        val oldColor = g.color
+        g.color = JBUI.CurrentTheme.ToolWindow.headerBackground()
+        g.fillRect(0, 0, bounds.width, bounds.height)
+        g.color = oldColor
+        val state = when {
             down -> ActionButtonComponent.PUSHED
             this.isSelected -> ActionButtonComponent.SELECTED
             over -> ActionButtonComponent.POPPED
             else -> ActionButtonComponent.NORMAL
-        })
-        val g = g as Graphics2D
+        }
+        //look.paintBorder(g, this, state)
+        look.paintBackground(g, this, state)
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         val bounds = g.font.getStringBounds(this.text, g.fontRenderContext)
         //println(bounds)
         g.drawString(this.text, ((width / 2 - bounds.width / 2) -bounds.x).toInt(), ((height / 2 - bounds.height / 2) -bounds.y).toInt())
+
+
 
         /*
         //val backgroundColor = JBUI.CurrentTheme.ActionButton.pressedBackground()

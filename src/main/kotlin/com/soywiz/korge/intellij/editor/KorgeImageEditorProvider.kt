@@ -41,6 +41,8 @@ class KorgeImageEditorProvider : FileEditorProvider, DumbAware {
 
 	override fun createEditor(project: Project, file: VirtualFile): FileEditor {
 		return object : FileEditorBase() {
+			override fun getFile(): VirtualFile = file
+
 			override fun getComponent(): JComponent {
 				val image = JLabel()
 				runBlocking {

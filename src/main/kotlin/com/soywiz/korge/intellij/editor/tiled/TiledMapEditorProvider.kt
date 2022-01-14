@@ -54,6 +54,7 @@ class TiledMapEditorProvider : FileEditorProvider, DumbAware {
             )
 			override fun isModified(): Boolean = panel.history.isModified
 			override fun getName(): String = "Editor"
+			override fun getFile(): VirtualFile = file
 			override fun setState(state: FileEditorState) = Unit
 			override fun getComponent(): JComponent = panel
 			override fun getPreferredFocusedComponent(): JComponent? = null
