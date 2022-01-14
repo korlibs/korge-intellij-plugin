@@ -6,7 +6,11 @@ import com.soywiz.korgw.awt.*
 import javax.swing.*
 
 class GLCanvasGameWindowIJ(canvas: GLCanvas) : GLCanvasGameWindow(canvas) {
-    override fun showContextMenu(items: List<MenuItem?>) {
+    init {
+        exitProcessOnExit = false
+    }
+
+    override fun showContextMenu(items: List<MenuItem>) {
         val popupMenu = JBPopupMenu()
         for (item in items) {
             if (item?.text == null) {

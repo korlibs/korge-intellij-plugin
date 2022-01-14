@@ -8,6 +8,7 @@ import com.soywiz.korge.ext.swf.*
 import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.ktree.*
 
 fun Views.registerIdeaStuff(project: Project) {
     views.registerSwf()

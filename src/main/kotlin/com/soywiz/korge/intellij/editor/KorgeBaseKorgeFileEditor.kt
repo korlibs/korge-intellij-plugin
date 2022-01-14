@@ -145,8 +145,10 @@ open class KorgeBaseKorgeFileEditor(
                     injector.mapInstance<ViewsDebuggerComponent>(viewsDebuggerComponent!!)
                     val container = sceneContainer(views)
                     views.setVirtualSize(panel.width, panel.height)
-                    views.stage.keys.down(com.soywiz.korev.Key.F8) {
-                        canvas.logGl = !canvas.logGl
+                    views.stage.keys {
+                        down(com.soywiz.korev.Key.F8) {
+                            canvas.logGl = !canvas.logGl
+                        }
                     }
                     module.apply {
                         injector.configure()

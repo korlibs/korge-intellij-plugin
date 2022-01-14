@@ -82,7 +82,9 @@ data class MovieClipEditorRenderer(val ktClass: KtClass): GutterIconRenderer() {
                 val canvas = GLCanvas()
                 canvas.background = bgcolor.toAwt()
                 dialogPanel.add(canvas)
-                val gameWindow = GLCanvasGameWindow(canvas)
+                val gameWindow = GLCanvasGameWindow(canvas).apply {
+                    exitProcessOnExit = false
+                }
 
                 Thread {
                     runBlocking {
