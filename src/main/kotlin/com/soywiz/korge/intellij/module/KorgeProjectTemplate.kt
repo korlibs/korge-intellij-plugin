@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.module
 
+import com.intellij.openapi.project.*
 import com.soywiz.korge.intellij.config.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.serialization.xml.*
@@ -61,8 +62,8 @@ open class KorgeProjectTemplate {
 	}
 
 	interface Provider {
-		fun invalidate()
-		val template: KorgeProjectTemplate
+		fun invalidate(project: Project?)
+		fun template(project: Project?): KorgeProjectTemplate
 	}
 
 	companion object {
@@ -91,17 +92,17 @@ open class KorgeProjectTemplate {
 		fun fromEmbeddedResource(): KorgeProjectTemplate =
 			fromXml(getResourceText("/com/soywiz/korge/intellij/korge-templates.xml"))
 
-		fun fromUpToDateTemplate(): KorgeProjectTemplate = fromXml(korgeGlobalSettings.getCachedTemplate())
+		fun fromUpToDateTemplate(project: Project?): KorgeProjectTemplate = fromXml(korgeGlobalSettings(project).getCachedTemplate())
 
 		fun provider() = object : Provider {
-			override fun invalidate() {
-				korgeGlobalSettings.invalidateCache()
+			override fun invalidate(project: Project?) {
+                korgeGlobalSettings(project).invalidateCache()
 				_template = null
 			}
 			private var _template: KorgeProjectTemplate? = null
-			override val template: KorgeProjectTemplate get() {
+			override fun template(project: Project?): KorgeProjectTemplate {
 				if (_template == null) {
-					_template = fromUpToDateTemplate()
+					_template = fromUpToDateTemplate(project)
 				}
 				return _template!!
 			}

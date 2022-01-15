@@ -79,7 +79,7 @@ val globalProps = properties
 
 intellij {
     // IntelliJ IDEA dependency
-    version.set("IC-2021.2.2")
+    version.set("IC-2021.3.1")
     // Bundled plugin dependencies
     plugins.addAll(
         "gradle", "java", "platform-images", "Kotlin", "gradle-java"

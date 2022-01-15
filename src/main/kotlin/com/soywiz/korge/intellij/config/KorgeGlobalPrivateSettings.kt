@@ -36,9 +36,6 @@ import javax.swing.*
 import kotlin.coroutines.EmptyCoroutineContext
 import com.intellij.ide.projectView.ProjectView
 
-
-
-
 @State(
 	name = "KorgeGlobalPrivateSettings",
 	storages = [Storage("korge-private.xml")]

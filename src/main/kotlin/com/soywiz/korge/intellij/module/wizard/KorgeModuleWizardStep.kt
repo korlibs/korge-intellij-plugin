@@ -1,11 +1,13 @@
 package com.soywiz.korge.intellij.module.wizard
 
 import com.intellij.ide.util.projectWizard.*
+import com.intellij.openapi.project.*
 import com.intellij.openapi.ui.*
 import com.intellij.ui.*
 import com.intellij.util.ui.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.module.*
+import com.soywiz.korge.intellij.module.ProjectType
 import com.soywiz.korge.intellij.util.*
 import java.awt.*
 import java.net.*
@@ -15,7 +17,10 @@ import javax.swing.tree.*
 typealias Feature = KorgeProjectTemplate.Features.Feature
 typealias FeatureSet = KorgeProjectTemplate.Features.FeatureSet
 
-class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTemplate.Provider, val config: KorgeModuleConfig) : ModuleWizardStep() {
+class KorgeModuleWizardStep(
+    val korgeProjectTemplateProvider: KorgeProjectTemplate.Provider,
+    val config: KorgeModuleConfig
+) : ModuleWizardStep() {
 	override fun updateDataModel() {
 		config.projectType = projectTypeCB.selectedItem as ProjectType
 		config.featuresToInstall = featuresToCheckbox.keys.filter { it.selected }
@@ -105,7 +110,10 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 		}
 	}
 
-	fun refresh(invalidate: Boolean = false) {
+    // @TODO: Can we get the project from somewhere here? By being a module wizard, we don't have the project?
+    val project: Project? get() = null
+
+    fun refresh(invalidate: Boolean = false) {
 		fun toggleEnabled(enabled: Boolean) {
 			projectTypeCB.isEnabled = enabled
 			wrapperCheckBox.isEnabled = enabled
@@ -122,13 +130,13 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 		runBackgroundTaskGlobal {
 			// Required since this is blocking
 			if (invalidate) {
-				korgeProjectTemplateProvider.invalidate()
+				korgeProjectTemplateProvider.invalidate(project)
 			}
-			val korgeProjectTemplate = korgeProjectTemplateProvider.template
+			val korgeProjectTemplate = korgeProjectTemplateProvider.template(project)
 
 			runInUiThread {
 				versionCB.model = DefaultComboBoxModel(korgeProjectTemplate.versions.versions.toTypedArray())
-				featureList.features = korgeProjectTemplateProvider.template.features.features.toList()
+				featureList.features = korgeProjectTemplateProvider.template(project).features.features.toList()
 				toggleEnabled(true)
 			}
 		}
@@ -152,7 +160,7 @@ class KorgeModuleWizardStep(val korgeProjectTemplateProvider: KorgeProjectTempla
 	//    }
 
 	fun updateTransitive() {
-		val features = korgeProjectTemplateProvider.template.features
+		val features = korgeProjectTemplateProvider.template(project).features
 		val allFeatures = features.features.toList()
 		val featureSet = FeatureSet(allFeatures.filter { it.selected }, features.allFeatures)
 

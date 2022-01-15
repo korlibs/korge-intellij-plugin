@@ -75,5 +75,6 @@ open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings>, 
 	}
 }
 
-val korgeGlobalSettings: KorgeGlobalSettings get() = getService()
-val KorgeProjectExt.globalSettings get() = korgeGlobalSettings
+fun korgeGlobalSettings(project: Project?): KorgeGlobalSettings {
+    return project?.getService() ?: getService()
+}

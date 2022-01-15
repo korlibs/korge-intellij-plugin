@@ -44,7 +44,7 @@ class KorgeModuleBuilder() : JavaModuleBuilder() {
 			val info = config
 
 			runBlocking {
-				for ((fileName, fileContent) in config.generate(korgeProjectTemplateProvider.template)) {
+				for ((fileName, fileContent) in config.generate(korgeProjectTemplateProvider.template(project))) {
 					root.createFile(fileName, fileContent, FileMode("0777"))
 				}
 			}

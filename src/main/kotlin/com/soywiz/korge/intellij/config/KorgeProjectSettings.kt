@@ -1,6 +1,5 @@
 package com.soywiz.korge.intellij.config
 
-import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.*
 import com.intellij.util.xmlb.*
@@ -25,4 +24,4 @@ open class KorgeProjectSettings : PersistentStateComponent<KorgeProjectSettings>
 	}
 }
 
-val Project.korgeProjecSettings: KorgeProjectSettings get() = getService()
+val Project.korgeProjectSettings: KorgeProjectSettings get() = getService()
