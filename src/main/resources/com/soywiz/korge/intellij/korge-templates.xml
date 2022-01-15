@@ -3,11 +3,11 @@
         <version>2.4.10</version>
     </versions>
     <features>
-        <feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
-        <feature id="f3d" dependencies="core" name="3D Support" description="Korge 3D Support" documentation="https://korlibs.soywiz.com/korge/3d/" />
-        <feature id="box2d" dependencies="core" name="Box-2D Support" description="Adds support for Box-2D" documentation="https://korlibs.soywiz.com/korge/physics/box2d/" />
-        <feature id="dragonbones" dependencies="core" name="DragonBones Support" description="Adds support for DragonBones" documentation="https://korlibs.soywiz.com/korge/skeleton/dragonbones/" />
-        <feature id="swf" dependencies="core" name="SWF Support" description="Adds support for Adobe Flash/Animate SWF files" documentation="https://korlibs.soywiz.com/korge/animation/swf/" />
+        <feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://docs.korge.org/korge/" />
+        <feature id="f3d" dependencies="core" name="3D Support" description="Korge 3D Support" documentation="https://docs.korge.org/korge/reference/3d/" />
+        <feature id="box2d" dependencies="core" name="Box-2D Support" description="Adds support for Box-2D" documentation="https://docs.korge.org/korge/reference/physics/#box2d" />
+        <feature id="dragonbones" dependencies="core" name="DragonBones Support" description="Adds support for DragonBones" documentation="https://docs.korge.org/korge/reference/skeleton" />
+        <feature id="swf" dependencies="core" name="SWF Support" description="Adds support for Adobe Flash/Animate SWF files" documentation="https://docs.korge.org/korge/reference/swf/" />
     </features>
     <files>
 
