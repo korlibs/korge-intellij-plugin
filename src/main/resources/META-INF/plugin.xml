@@ -1,7 +1,7 @@
 <idea-plugin require-restart="false">
     <!-- https://plugins.jetbrains.com/plugin/9676-korge-intellij-plugin -->
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="202.6397" />
+    <idea-version since-build="213.6461" />
     <!--
     <idea-version since-build="203.7148" />
     -->

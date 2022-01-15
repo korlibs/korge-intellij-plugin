@@ -132,18 +132,15 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 		userUuid = null
 		nullifyProps()
 
-		Notification(
-			"korge",
-			KorgeIcons.KORGE,
-			"KorGE Successful logout",
-			null,
-			"Goodbye $oldUserLogin",
-			NotificationType.INFORMATION,
-			null
-		).notify(project)
+        notifyMessage(project, NotificationType.INFORMATION, "KorGE Successful logout", "Goodbye $oldUserLogin")
 
 		reloadAnnotators(project)
 	}
+
+    fun notifyMessage(project: Project?, type: NotificationType, title: String, message: String) {
+        Notification("korge", title, type).notify(project)
+        //Notification("korge", KorgeIcons.KORGE, title, null, message, type, null).notify(project)
+    }
 
 	suspend fun updateUserInformation(project: Project?): Boolean {
 		if (korgeGlobalPrivateSettings.userUuid == null) return false
@@ -220,15 +217,12 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 		}
 
 		if (korgeGlobalPrivateSettings.userLogin != null) {
-			Notification(
-				"korge",
-				KorgeIcons.KORGE,
-				"KorGE Successful login",
-				null,
-				"Welcome ${korgeGlobalPrivateSettings.userLogin}",
-				NotificationType.INFORMATION,
-				null
-			).notify(project)
+            notifyMessage(
+                project,
+                NotificationType.INFORMATION,
+                "KorGE Successful login",
+                "Welcome ${korgeGlobalPrivateSettings.userLogin}"
+            )
 			reloadAnnotators(project)
 		}
 	}
