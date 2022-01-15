@@ -234,10 +234,9 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
             //val ctx = it.debugLineRenderContext
         }
 
-        views.onAfterRender {
-            val ctx = it.debugLineRenderContext
+        views.onAfterRender { rctx ->
+            val ctx = rctx.debugLineRenderContext
             val mat = camera.content.globalMatrix
-            val identity = Matrix()
             ctx.draw(mat) {
                 val transform = camera.content.globalMatrix.toTransform()
                 val dx = transform.scaleX * grid.width
@@ -249,7 +248,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 if (!smallX && !smallY) {
                     ctx.draw(camera.content.globalMatrix) {
                         if (gridShowing) {
-                            grid.draw(ctx.ctx, root.width, root.height, identity)
+                            grid.draw(rctx, root.width, root.height, mat)
                         }
                     }
                 }
