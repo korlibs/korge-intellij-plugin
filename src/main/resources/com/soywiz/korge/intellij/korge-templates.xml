@@ -1,6 +1,6 @@
 <korge-templates version="6">
     <versions>
-        <version>2.4.10</version>
+        <version>2.7.0</version>
     </versions>
     <features>
         <feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://docs.korge.org/korge/" />
