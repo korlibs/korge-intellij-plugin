@@ -11,10 +11,10 @@ import com.intellij.psi.util.*
 import com.intellij.ui.*
 import com.intellij.util.ui.*
 import com.soywiz.kds.*
+import com.soywiz.korge.intellij.resolver.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.color.Colors
-import org.jetbrains.kotlin.idea.base.utils.fqname.*
 import org.jetbrains.kotlin.psi.*
 import java.awt.*
 import javax.swing.*
@@ -48,41 +48,48 @@ class ColorAnnotator: Annotator {
                 .create()
         }
 
-        //val context by lazy { element.analyze(BodyResolveMode.PARTIAL) }
+        val context by lazy { KorgeTypeResolver(element) }
 
-        val annotationSessions = holder.currentAnnotationSession
+        //val annotationSessions = holder.currentAnnotationSession
 
         when (element) {
             is KtDotQualifiedExpression -> {
                 val receiverExpression = element.receiverExpression
                 val selectorExpression = element.selectorExpression
-                val typeSelector by lazy { selectorExpression?.getKotlinFqName()?.asString() }
-                val typeReceiver by lazy { receiverExpression.getKotlinFqName()?.asString() }
+                val typeSelector by lazy { context.getFqName(selectorExpression) }
+                val typeReceiver by lazy { context.getFqName(receiverExpression) }
 
                 if (typeReceiver == Colors::class.java.name && typeSelector == RGBA::class.java.name) {
                     if (selectorExpression is KtNameReferenceExpression) {
                         try {
                             gutter(Colors[selectorExpression.getReferencedName()])
                         } catch (e: Throwable) {
+                            e.printStackTrace()
                         }
                     }
                 }
             }
             is KtArrayAccessExpression -> {
+                println("KtArrayAccessExpression[0]")
                 if (element.indexExpressions.size == 1) {
+                    println("KtArrayAccessExpression[1]")
                     val indexExpression = element.indexExpressions.firstOrNull()
                     if (indexExpression is KtStringTemplateExpression && !indexExpression.hasInterpolation()) {
+                        println("KtArrayAccessExpression[2]")
                         val indexEntries = indexExpression.entries
                         if (indexEntries.size == 1 && indexEntries[0] is KtLiteralStringTemplateEntry) {
+                            println("KtArrayAccessExpression[3]")
                             val indexEntry = indexEntries[0] as KtLiteralStringTemplateEntry
                             val indexText = indexEntry.text
                             val arrayExpression = element.arrayExpression
-                            val typeArray = arrayExpression?.getKotlinFqName()?.asString()
+                            val typeArray = context.getFqName(arrayExpression)
+                            println("KtArrayAccessExpression[4]: $typeArray")
                             if (typeArray == Colors::class.java.name) {
+                                println("KtArrayAccessExpression[5]")
                                 try {
                                     gutter(Colors[indexText])
                                 } catch (e: Throwable) {
-
+                                    e.printStackTrace()
                                 }
                             }
                         }

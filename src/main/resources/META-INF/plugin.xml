@@ -18,8 +18,10 @@
     <change-notes><!-- language: HTML --><![CDATA[
         <h3>2.7.0</h3>
 		<ul>
+		    <li>Supports intelliJ IDEA 2022.1</li>
 		    <li>Fixes broken login window</li>
-		    <li>Integrates with the new project wizard</li>
+		    <li>Fixes broken project wizard</li>
+		    <li>Updates KorGE to 2.7.0</li>
         </ul>
         <h3>2.4.10</h3>
 		<ul>

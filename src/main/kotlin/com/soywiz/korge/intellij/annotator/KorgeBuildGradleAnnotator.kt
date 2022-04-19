@@ -9,11 +9,9 @@ import com.intellij.openapi.editor.markup.*
 import com.intellij.openapi.project.*
 import com.intellij.psi.*
 import com.soywiz.korge.intellij.actions.*
-import org.jetbrains.kotlin.idea.base.utils.fqname.*
-import org.jetbrains.kotlin.idea.caches.resolve.*
+import com.soywiz.korge.intellij.resolver.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.debugText.*
-import org.jetbrains.kotlin.resolve.lazy.*
 import javax.swing.*
 
 class KorgeBuildGradleAnnotator : Annotator {
@@ -24,8 +22,8 @@ class KorgeBuildGradleAnnotator : Annotator {
         val ref = element.calleeExpression as? KtReferenceExpression ?: return
         val text = ref.getDebugText()
         if (text != "korge") return
-        val context by lazy { element.analyze(BodyResolveMode.PARTIAL) }
-        val expressionType = element.getKotlinFqName()?.asString()
+        val context by lazy { KorgeTypeResolver(element) }
+        val expressionType = context.getFqName(element)
         if (expressionType != "com.soywiz.korge.gradle.KorgeExtension") return
 
         holder.newAnnotation(HighlightSeverity.INFORMATION, "Korge store")
