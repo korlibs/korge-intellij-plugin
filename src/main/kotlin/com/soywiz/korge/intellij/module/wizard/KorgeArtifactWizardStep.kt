@@ -6,7 +6,10 @@ import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.util.*
 import javax.swing.*
 
-class KorgeArtifactWizardStep(val korgeProjectTemplateProvider: KorgeProjectTemplate.Provider, val config: KorgeModuleConfig) : ModuleWizardStep() {
+class KorgeArtifactWizardStep(
+    val korgeProjectTemplateProvider: KorgeProjectTemplate.Provider,
+    val config: KorgeModuleConfig
+) : ModuleWizardStep() {
 	val groupId: JTextField
 	val artifactId: JTextField
 	val version: JTextField

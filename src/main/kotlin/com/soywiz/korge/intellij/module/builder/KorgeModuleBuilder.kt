@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij.module
+package com.soywiz.korge.intellij.module.builder
 
 import com.intellij.ide.util.projectWizard.*
 import com.intellij.openapi.*
@@ -9,6 +9,7 @@ import com.intellij.openapi.roots.ui.configuration.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.util.io.*
 import com.intellij.openapi.vfs.*
+import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.module.wizard.*
 import com.soywiz.korge.intellij.util.*
 import kotlinx.coroutines.*
@@ -23,7 +24,7 @@ class KorgeModuleBuilder() : JavaModuleBuilder() {
 	override fun getNodeIcon() = KorgeModuleType.ICON
 	override fun getGroupName() = KorgeModuleType.NAME
 	override fun getWeight() = BUILD_SYSTEM_WEIGHT - 1
-	override fun getBuilderId() = "KORGE_MODULE"
+	override fun getBuilderId() = "korge.module.builder"
 	override fun isSuitableSdkType(sdk: SdkTypeId?) = sdk === JavaSdk.getInstance()
 
 	val korgeProjectTemplateProvider = KorgeProjectTemplate.provider()
@@ -82,7 +83,9 @@ class KorgeModuleBuilder() : JavaModuleBuilder() {
 
 	override fun getParentGroup() = KorgeModuleType.NAME
 
-	// 1st screen
+    //override fun modifySettingsStep(settingsStep: SettingsStep): ModuleWizardStep? = KorgeModuleWizardStep(korgeProjectTemplateProvider, config)
+
+    // 1st screen
 	override fun getCustomOptionsStep(context: WizardContext, parentDisposable: Disposable?) =
 		KorgeModuleWizardStep(korgeProjectTemplateProvider, config)
 

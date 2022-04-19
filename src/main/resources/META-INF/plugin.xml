@@ -16,6 +16,11 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
+        <h3>2.7.0</h3>
+		<ul>
+		    <li>Fixes broken login window</li>
+		    <li>Integrates with the new project wizard</li>
+        </ul>
         <h3>2.4.10</h3>
 		<ul>
 		    <li>Fixes compatibility with IntelliJ IDEA 2021.3</li>
@@ -312,9 +317,16 @@
         <runConfigurationProducer implementation="com.soywiz.korge.intellij.execution.KorgeRunConfigurationProducer" />
 
         <!--
+        <moduleBuilder builderClass="com.soywiz.korge.intellij.module.builder.KorgeModuleBuilder"/>
+        -->
+        <moduleBuilder builderClass="com.soywiz.korge.intellij.module.builder.NewKorgeModuleBuilder"/>
+
+        <!--
+        -->
+
+        <!--
         <navbar implementation="com.soywiz.korge.intellij.navbar.KorgeNavBarModelExtension" />
         -->
-        nav
 
     </extensions>
 

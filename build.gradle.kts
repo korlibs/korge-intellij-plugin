@@ -14,11 +14,28 @@ buildscript {
 plugins {
     java
     idea
-    id("org.jetbrains.intellij") version "1.5.3"
-    id("com.gradle.plugin-publish") version "1.0.0-rc-1"
+    //id("org.jetbrains.intellij") version "1.5.3" //
+    id("org.jetbrains.intellij") version "1.5.2" //
+    //id("org.jetbrains.intellij") version "1.4.0"
 }
 
 apply(plugin = "kotlin")
+
+val jvmVersion = JavaLanguageVersion.of(11)
+
+val compiler = javaToolchains.compilerFor {
+    languageVersion.set(jvmVersion)
+}
+
+project.tasks
+    .withType<org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain>()
+    .configureEach {
+        kotlinJavaToolchain.jdk.use(
+            compiler.get().metadata.installationPath.asFile.absolutePath,
+            jvmVersion
+        )
+    }
+
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     sourceCompatibility = JavaVersion.VERSION_1_8.toString()
@@ -65,6 +82,7 @@ dependencies {
     implementation("com.soywiz.korlibs.korge2:korge-swf-jvm:$korgeVersion")
     implementation("com.soywiz.korlibs.kbox2d:kbox2d:$kbox2dVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     //implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
     //implementation("javax.xml.bind:jaxb-api:2.3.1")
     //implementation("com.sun.xml.bind:jaxb-impl:2.3.1")
@@ -74,8 +92,6 @@ dependencies {
     //implementation("net.sourceforge.mydoggy:mydoggy-res:1.4.2")
     //implementation(project(":korge-build"))
 }
-
-val globalProps = properties
 
 intellij {
     // IntelliJ IDEA dependency

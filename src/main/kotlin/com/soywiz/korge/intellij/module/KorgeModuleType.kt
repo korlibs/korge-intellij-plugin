@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.module
 
 import com.intellij.openapi.module.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.module.builder.*
 import javax.swing.*
 
 //open class KorgeModuleType : JpsJavaModuleType("korge") {

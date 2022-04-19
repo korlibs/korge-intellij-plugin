@@ -9,6 +9,11 @@ import org.junit.*
 import java.io.*
 
 class DebugExtTest {
+    @Test
+    fun test2() {
+        kotlin.test.assertEquals(1, 1)
+    }
+    /*
 	@Test
 	fun test() {
 		val manager: VirtualMachineManager = Bootstrap.virtualMachineManager()
@@ -146,5 +151,5 @@ class DebugExtTest {
 		return out
 		//println(string)
 	}
-
+*/
 }
