@@ -9,7 +9,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      submodules: recursive
+      with:
+        submodules: recursive
     - uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
