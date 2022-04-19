@@ -5,7 +5,6 @@ import com.intellij.openapi.command.undo.*
 import com.intellij.openapi.editor.event.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.vfs.*
-import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.editor.formats.*
 import com.soywiz.korge.intellij.util.*

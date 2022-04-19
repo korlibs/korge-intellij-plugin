@@ -11,8 +11,6 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.command.*
 import com.intellij.openapi.command.undo.*
 import com.intellij.openapi.editor.actions.*
-import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.ide.*
 import com.intellij.openapi.project.*
@@ -47,10 +45,8 @@ import java.awt.datatransfer.*
 import java.awt.event.*
 import java.beans.*
 import javax.swing.*
-import com.soywiz.korev.dispatch
 import com.soywiz.korge.input.*
 import com.soywiz.korge.intellij.editor.formats.*
-import java.awt.Graphics
 
 open class KorgeBaseKorgeFileEditor(
     val project: Project,
