@@ -316,10 +316,7 @@
         -->
         <runConfigurationProducer implementation="com.soywiz.korge.intellij.execution.KorgeRunConfigurationProducer" />
 
-        <!--
         <moduleBuilder builderClass="com.soywiz.korge.intellij.module.builder.KorgeModuleBuilder"/>
-        -->
-        <moduleBuilder builderClass="com.soywiz.korge.intellij.module.builder.NewKorgeModuleBuilder"/>
 
         <!--
         -->

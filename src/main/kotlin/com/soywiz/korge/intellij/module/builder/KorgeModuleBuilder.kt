@@ -6,7 +6,6 @@ import com.intellij.openapi.module.*
 import com.intellij.openapi.projectRoots.*
 import com.intellij.openapi.roots.*
 import com.intellij.openapi.roots.ui.configuration.*
-import com.intellij.openapi.util.*
 import com.intellij.openapi.util.io.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korge.intellij.module.*
@@ -16,21 +15,23 @@ import kotlinx.coroutines.*
 import org.jetbrains.plugins.gradle.service.project.*
 import org.jetbrains.plugins.gradle.service.project.open.*
 import java.io.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
 
-class KorgeModuleBuilder() : JavaModuleBuilder() {
+class KorgeModuleBuilder() : ModuleBuilder() {
 	val SILENT_GRADLE_IMPORT = false
 
+    override fun getModuleType(): ModuleType<*> = KorgeModuleType.INSTANCE
 	override fun getPresentableName() = KorgeModuleType.NAME
 	override fun getNodeIcon() = KorgeModuleType.ICON
 	override fun getGroupName() = KorgeModuleType.NAME
-	override fun getWeight() = BUILD_SYSTEM_WEIGHT - 1
+	//override fun getWeight() = BUILD_SYSTEM_WEIGHT - 1
 	override fun getBuilderId() = "korge.module.builder"
 	override fun isSuitableSdkType(sdk: SdkTypeId?) = sdk === JavaSdk.getInstance()
 
 	val korgeProjectTemplateProvider = KorgeProjectTemplate.provider()
 	var config = KorgeModuleConfig()
-
-	override fun getModuleType(): ModuleType<*> = KorgeModuleType.INSTANCE
 
 	override fun setupRootModel(rootModel: ModifiableRootModel) {
 		super.setupRootModel(rootModel)
@@ -93,8 +94,4 @@ class KorgeModuleBuilder() : JavaModuleBuilder() {
 	override fun createWizardSteps(wizardContext: WizardContext, modulesProvider: ModulesProvider) = arrayOf(
 		KorgeArtifactWizardStep(korgeProjectTemplateProvider, config)
 	)
-
-	override fun getSourcePaths(): MutableList<Pair<String, String>> {
-		return super.getSourcePaths()
-	}
 }

@@ -12,6 +12,7 @@ import com.soywiz.korge.intellij.util.*
 import java.awt.*
 import java.net.*
 import javax.swing.*
+import javax.swing.border.*
 import javax.swing.tree.*
 
 typealias Feature = KorgeProjectTemplate.Features.Feature
@@ -45,9 +46,11 @@ class KorgeModuleWizardStep(
 	val panel by lazy {
 		println("Created KorgeModuleWizardStep.panel")
 		JPanel().apply {
-			val description = JPanel().apply {
+            border = IdeBorderFactory.createEmptyBorder(Insets(28, 20, 28, 20))
+
+            val description = JPanel().apply {
 				layout = BoxLayout(this, BoxLayout.Y_AXIS)
-				border = IdeBorderFactory.createBorder()
+                border = IdeBorderFactory.createBorder()
 			}
 
 			fun showFeatureDocumentation(feature: Feature?) {
