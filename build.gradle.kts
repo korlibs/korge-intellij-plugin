@@ -21,7 +21,7 @@ plugins {
 
 apply(plugin = "kotlin")
 
-val jvmVersion = JavaLanguageVersion.of(11)
+val jvmVersion = JavaLanguageVersion.of(8)
 
 val compiler = javaToolchains.compilerFor {
     languageVersion.set(jvmVersion)
@@ -76,11 +76,14 @@ val kotlinVersion: String by project
 
 dependencies {
     //implementation("com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion")
+
+    // @TODO: Dependency substitution: https://docs.gradle.org/current/userguide/composite_builds.html
+
     implementation("com.soywiz.korlibs.korge2:korge-jvm:$korgeVersion")
     implementation("com.soywiz.korlibs.korge2:korge-dragonbones-jvm:$korgeVersion")
     implementation("com.soywiz.korlibs.korge2:korge-spine-jvm:$korgeVersion")
     implementation("com.soywiz.korlibs.korge2:korge-swf-jvm:$korgeVersion")
-    implementation("com.soywiz.korlibs.kbox2d:kbox2d:$kbox2dVersion")
+    implementation("com.soywiz.korlibs.kbox2d:kbox2d-jvm:$kbox2dVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     //implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
@@ -113,6 +116,8 @@ intellij {
 tasks {
     val runIde by existing(org.jetbrains.intellij.tasks.RunIdeTask::class) {
         maxHeapSize = "4g"
+        //dependsOn(":korge-next:publishJvmPublicationToMavenLocal")
+        dependsOn(gradle.includedBuild("korge-next").task(":publishJvmPublicationToMavenLocal"))
     }
     val runDebugTilemap by creating(JavaExec::class) {
         //classpath = sourceSets.main.runtimeClasspath
@@ -127,3 +132,5 @@ tasks {
         main = "com.soywiz.korge.intellij.ui.UIBuilderSample"
     }
 }
+
+//println(gradle.includedBuilds)

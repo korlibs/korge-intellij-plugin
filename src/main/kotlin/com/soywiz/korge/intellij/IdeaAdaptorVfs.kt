@@ -31,7 +31,7 @@ fun VirtualFile.toTextualVfs(): VfsFile {
     val documentFile = (object : Vfs() {
         override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
             if (mode.write) error("Unsupported")
-            return (ref.document?.text ?: "").toByteArray(Charsets.UTF_8).openAsync()
+            return runReadAction { (ref.document?.text ?: "").toByteArray(Charsets.UTF_8).openAsync() }
         }
 
         override suspend fun put(path: String, content: AsyncInputStream, attributes: List<Attribute>): Long {

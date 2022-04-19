@@ -19,6 +19,7 @@
 		    <li>Fixes broken login window</li>
 		    <li>Fixes broken project wizard</li>
 		    <li>Updates KorGE to 2.7.0</li>
+		    <li>Disable tilemap editor/viewer for now since it was causing some issues</li>
         </ul>
         <h3>2.4.10</h3>
 		<ul>
@@ -208,15 +209,17 @@
 
         <group id="KorgeNew">
             <!--
-            <add-to-group group-id="NewGroup" anchor="last"/>
-            -->
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewGroup1"/>
+            -->
+            <add-to-group group-id="NewGroup" anchor="last"/>
 
 
             <separator/>
 
             <action id="Korge.NewFile.KorgeScene" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
+            <!--
             <action id="Korge.NewFile.TiledMap" class="com.soywiz.korge.intellij.createnew.NewTiledMap"/>
+            -->
             <action id="Korge.NewFile.ParticleEmitter" class="com.soywiz.korge.intellij.createnew.NewParticleEmitter"/>
             <action id="Korge.NewFile.KTree" class="com.soywiz.korge.intellij.createnew.KTreeNew"/>
 
@@ -253,7 +256,9 @@
         <!--<iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />-->
         <fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
         <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeFileEditorProvider"/>
+        <!--
         <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.tiled.TiledMapEditorProvider"/>
+        -->
         <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeImageEditorProvider"/>
         <!--
         <fileTypeDetector implementation="com.soywiz.korge.intellij.KorgeFileTypeDetector"></fileTypeDetector>

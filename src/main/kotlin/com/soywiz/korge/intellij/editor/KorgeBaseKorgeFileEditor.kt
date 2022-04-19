@@ -58,7 +58,7 @@ open class KorgeBaseKorgeFileEditor(
     val _name: String,
     val hasTree: Boolean = true
 //) : com.intellij.diff.util.FileEditorBase(), com.intellij.openapi.project.DumbAware, DataProvider by FakeCopyAndPasteProvider, CopyProvider by FakeCopyAndPasteProvider, PasteProvider by FakeCopyAndPasteProvider {
-) : com.intellij.diff.util.FileEditorBase() {
+) : com.intellij.diff.util.FileEditorBase(), com.intellij.openapi.project.DumbAware {
 
     companion object {
 		var componentsCreated = 0

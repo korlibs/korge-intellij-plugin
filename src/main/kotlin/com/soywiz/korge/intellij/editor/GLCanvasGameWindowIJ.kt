@@ -14,7 +14,9 @@ class GLCanvasGameWindowIJ(canvas: GLCanvas) : GLCanvasGameWindow(canvas) {
         val popupMenu = JBPopupMenu()
         for (item in items) {
             if (item?.text == null) {
-                popupMenu.add(JSeparator())
+                //popupMenu.add(JSeparator())
+                //popupMenu.add(JBMenuItem(null as? String?))
+                popupMenu.add(JBMenuItem("-"))
             } else {
                 popupMenu.add(JBMenuItem(item.text).also {
                     it.isEnabled = item.enabled

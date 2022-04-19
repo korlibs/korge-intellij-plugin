@@ -24,6 +24,7 @@ open class IdeaUiApplication(val project: Project, views: Views) : UiApplication
 open class IdeaNativeUiFactory(val project: Project) : BaseAwtUiFactory() {
     override fun createJPopupMenu(): JPopupMenu = JBPopupMenu()
     override fun createJScrollPane(): JScrollPane = JBScrollPane()
+    override fun <T> createComboBox(): AwtComboBox<T> = AwtComboBox<T>(this, ComboBox())
 
     override fun awtOpenFileDialog(component: Component, file: VfsFile?, filter: (VfsFile) -> Boolean): VfsFile? {
         val file = FileChooser.chooseFile(
