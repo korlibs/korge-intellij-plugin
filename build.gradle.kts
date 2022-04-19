@@ -14,8 +14,8 @@ buildscript {
 plugins {
     java
     idea
-    id("org.jetbrains.intellij") version "1.3.0"
-    id("com.gradle.plugin-publish") version "0.19.0"
+    id("org.jetbrains.intellij") version "1.5.3"
+    id("com.gradle.plugin-publish") version "1.0.0-rc-1"
 }
 
 apply(plugin = "kotlin")
@@ -79,7 +79,8 @@ val globalProps = properties
 
 intellij {
     // IntelliJ IDEA dependency
-    version.set("IC-2021.3.1")
+    //version.set("IC-2021.3.1")
+    version.set("IC-2022.1")
     // Bundled plugin dependencies
     plugins.addAll(
         "gradle", "java", "platform-images", "Kotlin", "gradle-java"

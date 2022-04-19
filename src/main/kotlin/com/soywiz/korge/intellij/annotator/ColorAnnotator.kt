@@ -1,6 +1,5 @@
 package com.soywiz.korge.intellij.annotator
 
-import com.intellij.codeInsight.intention.*
 import com.intellij.codeInsight.intention.impl.*
 import com.intellij.lang.annotation.*
 import com.intellij.openapi.actionSystem.*
@@ -15,12 +14,8 @@ import com.soywiz.kds.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.color.Colors
-import org.jetbrains.kotlin.idea.caches.resolve.*
-import org.jetbrains.kotlin.idea.debugger.*
-import org.jetbrains.kotlin.idea.refactoring.fqName.*
+import org.jetbrains.kotlin.idea.base.utils.fqname.*
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.resolve.calls.callUtil.*
-import org.jetbrains.kotlin.resolve.lazy.*
 import java.awt.*
 import javax.swing.*
 
@@ -53,7 +48,7 @@ class ColorAnnotator: Annotator {
                 .create()
         }
 
-        val context by lazy { element.analyze(BodyResolveMode.PARTIAL) }
+        //val context by lazy { element.analyze(BodyResolveMode.PARTIAL) }
 
         val annotationSessions = holder.currentAnnotationSession
 
@@ -61,8 +56,8 @@ class ColorAnnotator: Annotator {
             is KtDotQualifiedExpression -> {
                 val receiverExpression = element.receiverExpression
                 val selectorExpression = element.selectorExpression
-                val typeSelector by lazy { selectorExpression?.getType(context)?.fqName?.asString() }
-                val typeReceiver by lazy { receiverExpression.getType(context)?.fqName?.asString() }
+                val typeSelector by lazy { selectorExpression?.getKotlinFqName()?.asString() }
+                val typeReceiver by lazy { receiverExpression.getKotlinFqName()?.asString() }
 
                 if (typeReceiver == Colors::class.java.name && typeSelector == RGBA::class.java.name) {
                     if (selectorExpression is KtNameReferenceExpression) {
@@ -82,7 +77,7 @@ class ColorAnnotator: Annotator {
                             val indexEntry = indexEntries[0] as KtLiteralStringTemplateEntry
                             val indexText = indexEntry.text
                             val arrayExpression = element.arrayExpression
-                            val typeArray = arrayExpression?.getType(context)?.fqName?.asString()
+                            val typeArray = arrayExpression?.getKotlinFqName()?.asString()
                             if (typeArray == Colors::class.java.name) {
                                 try {
                                     gutter(Colors[indexText])
