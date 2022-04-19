@@ -21,6 +21,6 @@ jobs:
     #- name: Publish custom korge intellij
     #  run: ./gradlew :korge-next:publishJvmPublicationToMavenLocal
     - name: Build with Gradle
-      run: ./gradlew --no-daemon check
+      run: ./gradlew --no-daemon check buildPlugin
     - name: Stop gradle
       run: ./gradlew --stop
