@@ -114,10 +114,15 @@ intellij {
 }
 
 tasks {
+    // @TODO: Dependency substitution: https://docs.gradle.org/current/userguide/composite_builds.html
+
+    val compileKotlin by existing(Task::class) {
+        dependsOn(gradle.includedBuild("korge-next").task(":publishJvmPublicationToMavenLocal"))
+    }
+
     val runIde by existing(org.jetbrains.intellij.tasks.RunIdeTask::class) {
         maxHeapSize = "4g"
         //dependsOn(":korge-next:publishJvmPublicationToMavenLocal")
-        dependsOn(gradle.includedBuild("korge-next").task(":publishJvmPublicationToMavenLocal"))
     }
     val runDebugTilemap by creating(JavaExec::class) {
         //classpath = sourceSets.main.runtimeClasspath
@@ -131,6 +136,10 @@ tasks {
 
         main = "com.soywiz.korge.intellij.ui.UIBuilderSample"
     }
+
+    // ./gradlew runIde --dry-run
+
+    //afterEvaluate { println((runIde.get() as Task).dependsOn.toList()) }
 }
 
 //println(gradle.includedBuilds)
