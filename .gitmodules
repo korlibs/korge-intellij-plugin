@@ -1,0 +1,4 @@
+[submodule "korge-next"]
+	path = korge-next
+	url = git@github.com:korlibs/korge-next.git
+	branch = intelli-plugin-custom-version

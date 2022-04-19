@@ -1,9 +1,11 @@
 package com.soywiz.korge.intellij.module.wizard
 
 import com.intellij.ide.util.projectWizard.*
+import com.intellij.ui.*
 import com.intellij.uiDesigner.core.*
 import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.util.*
+import java.awt.*
 import javax.swing.*
 
 class KorgeArtifactWizardStep(
@@ -16,6 +18,7 @@ class KorgeArtifactWizardStep(
 
 	val panel = JPanel().apply {
 		layout = GridLayoutManager(7, 2)
+        border = IdeBorderFactory.createEmptyBorder(Insets(28, 20, 28, 20))
 
 		fun addLabelText(name: String, value: String, row: Int): JTextField {
 			val tfield = JTextField(value)

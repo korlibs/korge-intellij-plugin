@@ -24,13 +24,14 @@ open class KorgeProjectTemplate {
 		var features = arrayListOf<Feature>()
 		val allFeatures by lazy { AllFeatures(features) }
 
-		data class Feature(
+		data class Feature constructor(
 			val id: String = "",
 			val dependenciesString: String = "",
 			val name: String = "",
 			val description: String = "",
 			val documentation: String = "",
-			val group: String = "Features"
+			val group: String = "Features",
+            val always: Boolean = false,
 		) {
 			val dependenciesList: List<String> get() = dependenciesString.split(" ").filter { it.isNotBlank() }
 		}
@@ -78,7 +79,8 @@ open class KorgeProjectTemplate {
 					name = feature.str("name"),
 					description = feature.str("description"),
 					documentation = feature.str("documentation"),
-					group = feature.str("group", "Features")
+					group = feature.str("group", "Features"),
+                    always = feature.str("always", "false") == "true" || feature.str("id") == "core",
 				))
 			}
 			for (file in root["files"]["file"]) out.files.files.add(Files.TFile(
