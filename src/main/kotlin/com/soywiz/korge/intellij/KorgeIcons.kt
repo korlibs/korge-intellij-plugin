@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.IconLoader
 import javax.swing.*
 
@@ -20,7 +21,20 @@ object KorgeIcons {
     val SPINE by lazy { getIcon("/com/soywiz/korge/intellij/icon/spine.png") }
     val DRAGONBONES by lazy { getIcon("/com/soywiz/korge/intellij/icon/dragonbones.png") }
 
-	val USER_UNKNOWN_BYTES by lazy { KorgeIcons::class.java.classLoader.getResourceAsStream("/com/soywiz/korge/intellij/image/user_unknown.png")?.readBytes() }
+	val USER_UNKNOWN_BYTES by lazy { getResourceBytes("/com/soywiz/korge/intellij/image/user_unknown.png") }
 
-    private fun getIcon(path: String): Icon = IconLoader.getIcon(path, KorgeIcons::class.java)
+    fun getResourceBytes(path: String): ByteArray? =
+        try {
+            KorgeIcons::class.java.classLoader.getResourceAsStream(normalizePath(path))?.readBytes()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            null
+        }
+    fun getIcon(path: String): Icon = try {IconLoader.getIcon(normalizePath(path), KorgeIcons::class.java)
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        AllIcons.Ide.ErrorPoint
+    }
+
+    private fun normalizePath(path: String): String = path.trimStart('/')
 }
