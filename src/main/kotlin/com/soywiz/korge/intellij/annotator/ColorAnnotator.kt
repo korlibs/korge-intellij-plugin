@@ -70,22 +70,22 @@ class ColorAnnotator: Annotator {
                 }
             }
             is KtArrayAccessExpression -> {
-                println("KtArrayAccessExpression[0]")
+                //println("KtArrayAccessExpression[0]")
                 if (element.indexExpressions.size == 1) {
-                    println("KtArrayAccessExpression[1]")
+                    //println("KtArrayAccessExpression[1]")
                     val indexExpression = element.indexExpressions.firstOrNull()
                     if (indexExpression is KtStringTemplateExpression && !indexExpression.hasInterpolation()) {
-                        println("KtArrayAccessExpression[2]")
+                        //println("KtArrayAccessExpression[2]")
                         val indexEntries = indexExpression.entries
                         if (indexEntries.size == 1 && indexEntries[0] is KtLiteralStringTemplateEntry) {
-                            println("KtArrayAccessExpression[3]")
+                            //println("KtArrayAccessExpression[3]")
                             val indexEntry = indexEntries[0] as KtLiteralStringTemplateEntry
                             val indexText = indexEntry.text
                             val arrayExpression = element.arrayExpression
                             val typeArray = context.getFqName(arrayExpression)
-                            println("KtArrayAccessExpression[4]: $typeArray")
+                            //println("KtArrayAccessExpression[4]: $typeArray")
                             if (typeArray == Colors::class.java.name) {
-                                println("KtArrayAccessExpression[5]")
+                                //println("KtArrayAccessExpression[5]")
                                 try {
                                     gutter(Colors[indexText])
                                 } catch (e: Throwable) {
