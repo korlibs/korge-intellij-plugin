@@ -1,8 +1,9 @@
-package com.soywiz.korge.awt
+package com.soywiz.korge.intellij.editor.formats
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.*
@@ -464,8 +465,12 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         stage.addUpdater {
             gameWindow.cursor = when {
                 movingCameraMouse || spaceBarIsBeingPressed() -> GameWindow.Cursor.MOVE
-                else -> com.soywiz.korgw.GameWindow.Cursor.fromAngleResize(getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)?.angle)
-                    ?: GameWindow.Cursor.fromAngleResize(getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)?.angle)?.let { GameWindow.Cursor.CROSSHAIR }
+                else -> com.soywiz.korgw.GameWindow.Cursor.fromAngleResize(getScaleAnchorPoint(actions.selectedView, 10,
+                    AnchorKind.SCALING
+                )?.angle)
+                    ?: GameWindow.Cursor.fromAngleResize(getScaleAnchorPoint(actions.selectedView, 20,
+                        AnchorKind.ROTATING
+                    )?.angle)?.let { GameWindow.Cursor.CROSSHAIR }
                     ?: GameWindow.Cursor.DEFAULT
             }
 

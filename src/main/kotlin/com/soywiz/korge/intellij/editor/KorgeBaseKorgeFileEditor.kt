@@ -49,6 +49,7 @@ import java.beans.*
 import javax.swing.*
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.input.*
+import com.soywiz.korge.intellij.editor.formats.*
 import java.awt.Graphics
 
 open class KorgeBaseKorgeFileEditor(

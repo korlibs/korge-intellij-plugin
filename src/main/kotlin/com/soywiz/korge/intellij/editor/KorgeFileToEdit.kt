@@ -7,6 +7,7 @@ import com.intellij.openapi.project.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.editor.formats.*
 import com.soywiz.korge.intellij.util.*
 
 data class KorgeFileToEdit(val originalFile: VirtualFile, val project: Project) : BaseKorgeFileToEdit(originalFile.toTextualVfs()) {
