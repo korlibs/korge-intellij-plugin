@@ -12,9 +12,20 @@
     <files>
 
         <file path=".gitignore"><![CDATA[
-/.idea
-/.gradle
+## Gradle
+.gradle
+gradle-app.setting
+build/
+
+## IntelliJ, Android Studio:
+.idea/
+*.ipr
+*.iws
 *.iml
+out/
+
+## OS Specific
+.DS_Store
 ]]></file>
 
         <file path="build.gradle.kts"><![CDATA[
