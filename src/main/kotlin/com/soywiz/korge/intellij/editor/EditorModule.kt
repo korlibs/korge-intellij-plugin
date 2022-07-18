@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korinject.*
@@ -24,3 +25,4 @@ class EditorModule(val root: Any? = null, val block: suspend EditorScene.() -> U
         mapInstance(BlockToExecute(block))
     }
 }
+*/

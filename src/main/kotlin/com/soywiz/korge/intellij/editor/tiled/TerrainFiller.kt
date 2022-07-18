@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+/*
 import com.soywiz.korge.tiled.*
 
 object TerrainFiller {
@@ -15,3 +16,5 @@ object TerrainFiller {
 		tileset.data.tiles
 	}
 }
+*/
+

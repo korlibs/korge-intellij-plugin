@@ -7,6 +7,7 @@ import com.intellij.openapi.project.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.config.*
+import com.soywiz.korge.intellij.image.*
 import com.soywiz.korge.intellij.util.*
 import java.awt.*
 import java.awt.AWTEvent
@@ -151,6 +152,7 @@ class KorgeAccountAction : AnAction(), DumbAware {
     }
 
     override fun update(e: AnActionEvent) {
+        KorimImageReaderRegister.initialize
         if (korgeGlobalPrivateSettings.isUserLoggedIn()) {
             e.presentation.text = "${korgeGlobalPrivateSettings.userLogin} (${korgeGlobalPrivateSettings.userRank})"
         } else {

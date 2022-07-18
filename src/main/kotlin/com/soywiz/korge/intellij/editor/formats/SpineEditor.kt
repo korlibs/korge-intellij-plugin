@@ -1,8 +1,10 @@
 package com.soywiz.korge.intellij.editor.formats
 
+/*
 import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.ext.*
 import com.esotericsoftware.spine.korge.*
+import com.intellij.debugger.settings.ViewsGeneralSettings
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.util.*
@@ -45,3 +47,4 @@ suspend fun spineEditor(file: VfsFile): Module {
         views.debugHightlightView(skeletonView)
     }
 }
+*/

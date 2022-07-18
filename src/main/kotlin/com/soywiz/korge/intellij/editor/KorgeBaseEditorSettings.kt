@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.intellij.ui.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.ui.*
@@ -76,3 +77,4 @@ fun showKorgeBaseEditorSettings(settings: KorgeBaseEditorSettings): KorgeBaseEdi
         else -> null
     }
 }
+*/

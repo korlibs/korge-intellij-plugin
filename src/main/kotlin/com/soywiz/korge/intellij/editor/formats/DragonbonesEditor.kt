@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.formats
 
+/*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.intellij.editor.*
@@ -25,3 +26,4 @@ suspend fun dragonBonesEditor(file: VfsFile) : Module {
         views.debugHightlightView(armatureDisplay)
     }
 }
+*/

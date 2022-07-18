@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.components
 
+/*
 import com.esotericsoftware.spine.korge.*
 import com.intellij.openapi.fileChooser.*
 import com.intellij.openapi.project.*
@@ -73,3 +74,4 @@ object IdeaMyComponentFactory : MyComponentFactory() {
 
 var Views.ideaProject: Project? by Extra.PropertyThis<Views, Project?> { null }
 var Views.ideaComponent: Component? by Extra.PropertyThis<Views, Component?> { null }
+*/

@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.intellij.ide.*
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.ide.*
@@ -96,3 +97,4 @@ class RootComponent(val korgeBaseKorgeFileEditor: KorgeBaseKorgeFileEditor) : JP
         korgeBaseKorgeFileEditor.onRepaint()
     }
 }
+*/

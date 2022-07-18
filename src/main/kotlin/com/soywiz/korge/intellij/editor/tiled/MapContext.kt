@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+/*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.tiled.dialog.*
 import com.soywiz.korge.intellij.editor.tiled.editor.*
@@ -19,3 +20,4 @@ data class MapContext(
 	val tilesetsUpdated = Signal<Unit>()
 	val selectedTilesetIndex = ObservableProperty(0)
 }
+*/

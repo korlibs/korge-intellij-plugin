@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+/*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.HistoryManager
 import com.soywiz.korge.intellij.editor.tiled.dialog.ProjectContext
@@ -32,3 +33,4 @@ class TiledMapEditorPanel(
 		}
 	}
 }
+*/

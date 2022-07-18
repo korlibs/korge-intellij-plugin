@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tiled.editor
 
+/*
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.awt.*
@@ -183,3 +184,4 @@ private suspend fun tiledsetFromBitmap(file: VfsFile, tileWidth: Int, tileHeight
         tiles = listOf()
     ).toTiledSet(file.parent)
 }
+*/

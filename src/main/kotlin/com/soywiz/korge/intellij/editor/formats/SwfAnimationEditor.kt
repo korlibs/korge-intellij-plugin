@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.formats
 
+/*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.awt.*
@@ -41,3 +42,4 @@ suspend fun swfAnimationEditor(file: VfsFile): Module {
         container.repositionOnResize(this.views)
     }
 }
+*/

@@ -145,6 +145,17 @@ open class KraFileType : UserBinaryFileType() {
 	override fun getIcon(): Icon? = KorgeIcons.KRITA
 }
 
+open class QoiFileType : UserBinaryFileType() {
+    companion object {
+        @JvmField val INSTANCE = QoiFileType()
+    }
+
+    override fun getName(): String = "QOI"
+    override fun getDescription(): String = "Quite Okay Image Format"
+
+    override fun getIcon(): Icon? = KorgeIcons.QOI
+}
+
 open class SpineSkeletonFileType : UserBinaryFileType() {
 	companion object {
 		@JvmField val INSTANCE = SpineSkeletonFileType()

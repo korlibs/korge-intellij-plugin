@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+/*
 import com.intellij.diff.util.*
 import com.intellij.openapi.command.*
 import com.intellij.openapi.command.undo.*
@@ -86,3 +87,4 @@ class TiledMapEditorProvider : FileEditorProvider, DumbAware {
 		return fileEditor
 	}
 }
+*/

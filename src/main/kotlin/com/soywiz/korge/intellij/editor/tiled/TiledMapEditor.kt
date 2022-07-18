@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+/*
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.awt.*
@@ -447,3 +448,4 @@ fun Styled<out Container>.createTileMapEditor(
 		}
 	}
 }
+*/

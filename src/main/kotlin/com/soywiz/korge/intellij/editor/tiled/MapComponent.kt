@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+/*
 import com.intellij.util.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korim.awt.*
@@ -309,3 +310,4 @@ fun fastBlend(dst: RGBAPremultiplied, src: RGBAPremultiplied): RGBAPremultiplied
 	val ag = (colora and 0xFF00FF00L) + ((alpha * (colorb and 0xFF00FF00L)) ushr 8)
 	return RGBAPremultiplied(((rb and 0xFF00FFL) + (ag and 0xFF00FF00L)).toInt())
 }
+*/

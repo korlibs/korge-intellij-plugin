@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.intellij.openapi.fileEditor.*
 import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.formats.*
@@ -105,3 +106,4 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 }
 
 data class BlockToExecute(val block: suspend EditorScene.() -> Unit)
+*/

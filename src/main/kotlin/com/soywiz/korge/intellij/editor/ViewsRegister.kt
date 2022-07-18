@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.esotericsoftware.spine.korge.*
 import com.intellij.openapi.project.*
 import com.soywiz.korge.box2d.*
@@ -19,3 +20,4 @@ fun Views.registerIdeaStuff(project: Project) {
     views.ideaProject = project
     views.serializer.box2dWorld = views.stage.getOrCreateBox2dWorld()
 }
+*/

@@ -255,11 +255,15 @@
         <stepsBeforeRunProvider implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
         <!--<iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />-->
         <fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
+        <!--
         <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeFileEditorProvider"/>
+        -->
         <!--
         <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.tiled.TiledMapEditorProvider"/>
         -->
+        <!--
         <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeImageEditorProvider"/>
+        -->
         <!--
         <fileTypeDetector implementation="com.soywiz.korge.intellij.KorgeFileTypeDetector"></fileTypeDetector>
         <fileTypeRegistrator implementation="com.soywiz.korge.intellij.KorgeFileTypeRegistrator"></fileTypeRegistrator>
@@ -279,7 +283,22 @@
         <fileType name="KORGE_FNT"   implementationClass="com.soywiz.korge.intellij.filetype.FntFileType"        fieldName="INSTANCE" language="KORGE_FNT"   extensions="fnt"        />
         <fileType name="KORGE_KTREE" implementationClass="com.soywiz.korge.intellij.filetype.KTreeFileType"      fieldName="INSTANCE" language="KORGE_KTREE"   extensions="ktree"        />
 
+        <!--<fileType name="KorimImage" implementationClass="org.intellij.images.fileTypes.impl.ImageFileType" fieldName="INSTANCE" extensions="qoi" />-->
+        <fileType name="Image" extensions="qoi" />
+        <fileType name="Image" extensions="kra" />
+        <fileType name="Image" extensions="psd" />
+        <fileType name="Image" extensions="dds" />
+        <fileType name="Image" extensions="ase" />
+        <applicationService serviceImplementation="com.soywiz.korge.intellij.image.KorimImageReaderRegister" />
+
+        <!--
+        <fileEditorProvider implementation="com.soywiz.korge.intellij.filetype.Qoi"/>
+        -->
+
+        <!--
+        <fileType name="QOI"   implementationClass="com.soywiz.korge.intellij.filetype.QoiFileType"        fieldName="INSTANCE"   extensions="qoi"        />
         <fileType name="KRA"   implementationClass="com.soywiz.korge.intellij.filetype.KraFileType"        fieldName="INSTANCE"   extensions="kra"        />
+        -->
         <fileType name="SKEL"   implementationClass="com.soywiz.korge.intellij.filetype.SpineSkeletonFileType"        fieldName="INSTANCE"   extensions="skel"        />
         <fileType name="DBBIN"   implementationClass="com.soywiz.korge.intellij.filetype.DragonbonesSkeletonFileType"        fieldName="INSTANCE"   extensions="dbbin;_ske.dbbin"        />
 

@@ -12,7 +12,6 @@ import java.awt.event.*
 import java.awt.font.*
 import javax.swing.*
 
-
 class MyToolbarButton(text: String) : JButton() {
     var down = false
     var over = false

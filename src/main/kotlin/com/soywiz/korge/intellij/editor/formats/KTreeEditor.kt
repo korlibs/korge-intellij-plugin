@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.formats
 
+/*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
@@ -482,3 +483,4 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         }
     }
 }
+*/

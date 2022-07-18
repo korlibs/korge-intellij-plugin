@@ -10,6 +10,7 @@ object KorgeIcons {
 	val PARTICLE by lazy { getIcon("/com/soywiz/korge/intellij/icon/particle.png") }
 	val BITMAP_FONT by lazy { getIcon("/com/soywiz/korge/intellij/icon/bitmap_font.png") }
 	val KRITA by lazy { getIcon("/com/soywiz/korge/intellij/icon/krita.png") }
+    val QOI by lazy { getIcon("/com/soywiz/korge/intellij/icon/qoi.png") }
 	val SWF by lazy { getIcon("/com/soywiz/korge/intellij/icon/swf.png") }
 	val TILED by lazy { getIcon("/com/soywiz/korge/intellij/icon/tiled.png") }
 	val KORGE by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }

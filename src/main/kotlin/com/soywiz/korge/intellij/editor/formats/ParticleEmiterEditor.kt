@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.formats
 
+/*
 import com.soywiz.korev.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.component.docking.*
@@ -41,3 +42,4 @@ suspend fun particleEmiterEditor(file: VfsFile): Module {
         views.debugHightlightView(particleEmitterView)
     }
 }
+*/

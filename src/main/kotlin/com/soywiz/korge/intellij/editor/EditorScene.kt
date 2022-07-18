@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
@@ -39,3 +40,4 @@ class EditorScene(
         Unit
     }
 }
+*/

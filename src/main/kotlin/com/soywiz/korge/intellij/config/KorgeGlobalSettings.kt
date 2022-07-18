@@ -5,6 +5,7 @@ import com.intellij.openapi.project.*
 import com.intellij.util.xmlb.*
 import com.soywiz.klock.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.image.*
 import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.util.*
 import java.net.*
@@ -19,6 +20,7 @@ open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings>, 
 
 	init {
 		println("KorgeGlobalSettings.init")
+        KorimImageReaderRegister.initialize
 	}
 
 	companion object {

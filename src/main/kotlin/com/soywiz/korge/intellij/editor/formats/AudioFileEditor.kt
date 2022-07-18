@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.formats
 
+/*
 import com.soywiz.klock.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.*
@@ -103,5 +104,5 @@ suspend fun Scene.audioFileEditor(file: VfsFile) {
             stopSound()
         }
     }
-
 }
+*/

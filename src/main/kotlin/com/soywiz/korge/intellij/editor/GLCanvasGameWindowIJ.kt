@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.intellij.openapi.ui.*
 import com.soywiz.klogger.*
 import com.soywiz.korge.intellij.*
@@ -33,3 +34,4 @@ class GLCanvasGameWindowIJ(canvas: GLCanvas) : GLCanvasGameWindow(canvas) {
         }
     }
 }
+*/

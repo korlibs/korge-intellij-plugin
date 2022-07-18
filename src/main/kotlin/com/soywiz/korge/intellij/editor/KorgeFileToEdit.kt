@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.intellij.openapi.command.*
 import com.intellij.openapi.command.undo.*
 import com.intellij.openapi.editor.event.*
@@ -67,3 +68,4 @@ data class KorgeFileToEdit(val originalFile: VirtualFile, val project: Project) 
         }
     }
 }
+*/

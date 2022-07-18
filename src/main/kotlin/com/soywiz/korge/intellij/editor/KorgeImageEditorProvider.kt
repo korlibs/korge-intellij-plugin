@@ -33,6 +33,7 @@ class KorgeImageEditorProvider : FileEditorProvider, DumbAware {
             name.endsWith(".svg", ignoreCase = true) -> true
             name.endsWith(".ico", ignoreCase = true) -> true
             name.endsWith(".gif", ignoreCase = true) -> true
+            name.endsWith(".qoi", ignoreCase = true) -> true
 			else -> false
 		}
 	}

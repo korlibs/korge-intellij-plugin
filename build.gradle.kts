@@ -14,6 +14,7 @@ buildscript {
 plugins {
     java
     idea
+    //id("org.jetbrains.intellij") version "1.7.0"
     //id("org.jetbrains.intellij") version "1.5.3" //
     id("org.jetbrains.intellij") version "1.5.2" //
     //id("org.jetbrains.intellij") version "1.4.0"
@@ -38,8 +39,8 @@ project.tasks
 
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-    targetCompatibility = JavaVersion.VERSION_1_8.toString()
+    //sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+    //targetCompatibility = JavaVersion.VERSION_1_8.toString()
     kotlinOptions {
         freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
         jvmTarget = "1.8"
@@ -99,7 +100,8 @@ dependencies {
 intellij {
     // IntelliJ IDEA dependency
     //version.set("IC-2021.3.1")
-    version.set("IC-2022.1")
+    //version.set("IC-2022.1")
+    version.set("IC-2022.1.3")
     // Bundled plugin dependencies
     plugins.addAll(
         "gradle", "java", "platform-images", "Kotlin", "gradle-java"
@@ -116,9 +118,9 @@ intellij {
 tasks {
     // @TODO: Dependency substitution: https://docs.gradle.org/current/userguide/composite_builds.html
 
-    val compileKotlin by existing(Task::class) {
-        dependsOn(gradle.includedBuild("korge-next").task(":publishJvmPublicationToMavenLocal"))
-    }
+    //val compileKotlin by existing(Task::class) {
+    //    dependsOn(gradle.includedBuild("korge-next").task(":publishJvmPublicationToMavenLocal"))
+    //}
 
     val runIde by existing(org.jetbrains.intellij.tasks.RunIdeTask::class) {
         maxHeapSize = "4g"

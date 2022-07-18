@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
+/*
 import com.esotericsoftware.spine.korge.*
 import com.intellij.codeHighlighting.*
 import com.intellij.ide.*
@@ -322,3 +323,4 @@ open class KorgeBaseKorgeFileEditor(
 	override fun isValid(): Boolean = true
     override fun getFile(): VirtualFile = fileToEdit.originalFile
 }
+*/
