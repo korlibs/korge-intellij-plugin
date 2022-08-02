@@ -47,7 +47,7 @@ class KorgeImageEditorProvider : FileEditorProvider, DumbAware {
 			override fun getComponent(): JComponent {
 				val image = JLabel()
 				runBlocking {
-					val bmp = File(file.canonicalPath!!).toVfs().readImageData(FORMATS).mainBitmap
+					val bmp = File(file.canonicalPath!!).toVfs().readImageData(FORMATS.toProps()).mainBitmap
 					image.icon = ImageIcon(bmp.toAwt())
 				}
 				return image
