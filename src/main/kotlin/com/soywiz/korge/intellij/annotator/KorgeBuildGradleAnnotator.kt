@@ -15,16 +15,23 @@ import org.jetbrains.kotlin.psi.debugText.*
 import javax.swing.*
 
 class KorgeBuildGradleAnnotator : Annotator {
+    companion object {
+        fun isKorgeBlock(element: PsiElement): Boolean {
+            if (element !is KtElement) return false
+            if (element.containingFile.name != "build.gradle.kts") return false
+            if (element !is KtCallExpression) return false
+            val ref = element.calleeExpression as? KtReferenceExpression ?: return false
+            val text = ref.getDebugText()
+            if (text != "korge") return false
+            val context by lazy { KorgeTypeResolver(element) }
+            val expressionType = context.getFqName(element)
+            if (expressionType != "com.soywiz.korge.gradle.KorgeExtension") return false
+            return true
+        }
+    }
+
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        if (element !is KtElement) return
-        if (element.containingFile.name != "build.gradle.kts") return
-        if (element !is KtCallExpression) return
-        val ref = element.calleeExpression as? KtReferenceExpression ?: return
-        val text = ref.getDebugText()
-        if (text != "korge") return
-        val context by lazy { KorgeTypeResolver(element) }
-        val expressionType = context.getFqName(element)
-        if (expressionType != "com.soywiz.korge.gradle.KorgeExtension") return
+        if (!isKorgeBlock(element)) return
 
         holder.newAnnotation(HighlightSeverity.INFORMATION, "Korge store")
             .withFix(object : BaseIntentionAction() {

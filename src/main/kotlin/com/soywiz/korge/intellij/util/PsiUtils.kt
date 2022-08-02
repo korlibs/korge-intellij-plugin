@@ -3,24 +3,36 @@ package com.soywiz.korge.intellij.util
 import com.intellij.codeInsight.completion.*
 import com.intellij.ide.*
 import com.intellij.openapi.application.*
+import com.intellij.openapi.command.*
 import com.intellij.openapi.editor.*
 import com.intellij.openapi.util.*
 import com.intellij.psi.*
 import com.soywiz.korge.intellij.completion.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.PathInfo
+import org.jetbrains.kotlin.idea.util.*
+import org.jetbrains.kotlin.psi.psiUtil.*
 import kotlin.math.*
 
-fun PsiElement.replace(text: String, context: InsertionContext? = null) {
+fun PsiElement.replace(text: String, context: InsertionContext? = null, reformat: Boolean = false) {
+    val document = this.document ?: return
 	//context?.commitDocument()
 	//document?.replaceString(start, end - 1, text)
-    WriteAction.run<Throwable> {
+    WriteCommandAction.runWriteCommandAction(project) {
         val range = this.textRange
         val start = range.startOffset
         val end = range.endOffset
-        document?.replaceString(start, end, text)
+        document.replaceString(start, end, text)
+        println("PsiElement.replace: Replacing start=$start, end=$end --> ... in document=$document")
     }
-	//context?.commitDocument()
+    //WriteAction.run<Throwable> {
+    //}
+    PsiDocumentManager.getInstance(project).commitDocument(document)
+    if (reformat) {
+        WriteCommandAction.runWriteCommandAction(project) {
+            reformatted(canChangeWhiteSpacesOnly = true)
+        }
+    }
 	//currentCaret?.moveToOffset(start + text.length)
 }
 
@@ -87,6 +99,12 @@ operator fun PsiFileSystemItem.get(path: String): PsiFileSystemItem? {
 		}
 	}
 	return current
+}
+
+inline fun <reified T : PsiElement> PsiElement.findDescendantsOfType(crossinline filter: (T) -> Boolean): List<T> {
+    val out = arrayListOf<T>()
+    forEachDescendantOfType<T> { if (filter(it)) out.add(it) }
+    return out
 }
 
 val PsiElement.document get() = PsiDocumentManager.getInstance(this.project).getDocument(this.containingFile)

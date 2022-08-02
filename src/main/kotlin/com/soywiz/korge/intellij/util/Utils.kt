@@ -27,6 +27,7 @@ import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.intellij.ui.components.labels.*
 import com.intellij.uiDesigner.core.*
+import kotlinx.coroutines.*
 import org.gradle.cache.internal.*
 import java.awt.*
 import java.io.*
@@ -212,6 +213,18 @@ inline fun invokeLater(crossinline func: () -> Unit) {
 	}
 }
 
+suspend fun <T> invokeLaterSuspend(block: () -> T): T {
+    val deferred = CompletableDeferred<T>()
+    invokeLater {
+        try {
+            deferred.complete(block())
+        } catch (e: Throwable) {
+            deferred.completeExceptionally(e)
+        }
+    }
+    return deferred.await()
+}
+
 fun Component.scrollVertical() = ScrollPaneFactory.createScrollPane(
 	this,
 	JBScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -235,3 +248,5 @@ fun Link(text: String, url: URL) = LinkLabel<URL>(text, null, { _, data ->
 		Desktop.getDesktop().browse(data.toURI())
 	}
 }, url)
+
+//fun PsiElement.find

@@ -7,9 +7,12 @@ import com.intellij.icons.*
 import com.intellij.ide.*
 import com.intellij.ide.browsers.*
 import com.intellij.ide.browsers.actions.*
-import com.intellij.openapi.*
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.*
 import com.intellij.openapi.diagnostic.*
+import com.intellij.openapi.externalSystem.importing.*
+import com.intellij.openapi.externalSystem.service.execution.*
+import com.intellij.openapi.externalSystem.util.*
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.fileEditor.impl.*
@@ -21,16 +24,25 @@ import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.intellij.testFramework.*
 import com.intellij.ui.*
-import com.intellij.ui.components.*
 import com.intellij.ui.jcef.*
 import com.intellij.util.*
+import com.intellij.util.io.*
 import com.soywiz.korge.awt.*
+import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.annotator.*
 import com.soywiz.korge.intellij.ui.*
+import com.soywiz.korge.intellij.util.*
+import com.soywiz.korio.lang.*
 import kotlinx.coroutines.*
 import org.cef.browser.*
 import org.cef.handler.*
 import org.cef.network.*
 import org.jetbrains.ide.*
+import org.jetbrains.kotlin.idea.core.util.*
+import org.jetbrains.kotlin.idea.util.*
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.*
+import org.jetbrains.plugins.gradle.util.*
 import java.awt.*
 import java.beans.*
 import java.lang.Runnable
@@ -38,6 +50,7 @@ import javax.swing.*
 import kotlin.Result
 import kotlin.coroutines.*
 import kotlin.reflect.*
+import kotlin.text.Charsets
 
 object KorgeWebPreviewUtils {
     fun open(project: Project, title: String, url: String) {
@@ -95,7 +108,7 @@ data class InstallKorgePluginRequest(
     val parameters: List<String> = emptyList(),
 )
 
-class KorgeWebPreviewFileEditor(project: Project, file: KorgeWebPreviewVirtualFile) : UserDataHolderBase(), FileEditor {
+class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtualFile) : UserDataHolderBase(), FileEditor {
     private val myFile: VirtualFile = file.originalFile
     private val myUrl: String = file.previewUrl.toExternalForm()
     //private val jbApp = JBCefApp.getInstance()
@@ -107,6 +120,10 @@ class KorgeWebPreviewFileEditor(project: Project, file: KorgeWebPreviewVirtualFi
     private var disposables = arrayListOf<Disposable>()
 
     private fun registerInsideKorgeIntellij(browser: CefBrowser = myPanel.cefBrowser) {
+        val buildGradleKfsFile = project.rootManager.contentRoots.mapNotNull { it["build.gradle.kts"] }.filter { it.exists() }.firstOrNull()
+
+        println("buildGradleKfsFile: $buildGradleKfsFile")
+
         browser.executeJavaScript(
             """
                 window.insideKorgeIntellij = true;
@@ -115,10 +132,11 @@ class KorgeWebPreviewFileEditor(project: Project, file: KorgeWebPreviewVirtualFi
         )
         for (disposable in disposables) Disposer.dispose(disposable)
         disposables += browser.registerCallback("installKorgePlugin") { request: InstallKorgePluginRequest ->
-            val deferred = CompletableDeferred<Unit>()
+            val deferred = CompletableDeferred<Boolean>()
             println("installKorgePlugin: $request")
+            val params = LinkedHashMap<String, Styled<JTextField>>()
             ApplicationManager.getApplication().invokeLater {
-                showDialog("Install ${request.title}", preferredSize = Dimension(400, 200)) {
+                val result = showDialog("Install ${request.title}", preferredSize = Dimension(400, 200)) {
                     verticalStack {
                         val LEFT = 120.pt
                         horizontalStack {
@@ -163,21 +181,75 @@ class KorgeWebPreviewFileEditor(project: Project, file: KorgeWebPreviewVirtualFi
                                     height = 32.pt
                                 }
                                 textField("") {
+                                    params[param] = this
                                     width = 270.pt
                                 }
                             }
                         }
                     }
                 }
-                deferred.complete(Unit)
+                if (result) {
+                    FileEditorManager.getInstance(project).openFile(buildGradleKfsFile!!, true)
+                    val psi = buildGradleKfsFile.toPsiFile(project)
+                    val korgeBlock = psi?.findDescendantOfType<KtCallExpression> { KorgeBuildGradleAnnotator.isKorgeBlock(it) }
+                    if (korgeBlock != null) {
+                        println("korge block: $korgeBlock : ${korgeBlock.text}")
+                        val addText = buildList {
+                            add("bundle(${request.url.quoted})")
+                            for ((paramName, paramTextField) in params) {
+                                add("config(${paramName.quoted}, ${paramTextField.component.text.quoted})")
+                            }
+                        }
+
+                        val newText = korgeBlock.text.trim().removeSuffix("}") + "${addText.joinToString("\n")}\n" + "}"
+                        korgeBlock.replace(newText, reformat = true)
+
+                        //val gradleBuildRootsManager = GradleBuildRootsManager.getInstance(project)
+                        //gradleBuildRootsManager!!.reflective()
+                        //.update(KotlinDslGradleBuildSync(ExternalSystemTaskId.getProjectId(project)))
+
+                        project.runReadActionInSmartMode {
+                            ExternalSystemUtil.refreshProject(
+                                buildGradleKfsFile.parent.toNioPath().systemIndependentPath,
+                                ImportSpecBuilder(project, GradleConstants.SYSTEM_ID)
+                                    .usePreviewMode()
+                                    .use(ProgressExecutionMode.MODAL_SYNC)
+                            )
+                        }
+                    }
+                }
+                deferred.complete(result)
             }
-            deferred.await()
-            println("installKorgePlugin DONE: $request")
-            mapOf(1 to 2)
+            val installed = deferred.await()
+            println("installKorgePlugin DONE: $request, installed=$installed")
+            mapOf("installed" to installed)
         }
         disposables += browser.registerCallback("getKorgePlugins") { it: Any? ->
-            //listOf("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
-            listOf<String>()
+            invokeLaterSuspend {
+                val bundleUrls = arrayListOf<String>()
+                //FileEditorManager.getInstance(project).openFile(buildGradleKfsFile!!, true)
+                val buildText = buildGradleKfsFile?.inputStream?.readBytes()?.toString(Charsets.UTF_8)
+                if (buildText != null) {
+                    val regex = Regex("bundle\\(\"(.*)\"\\)")
+                    for (result in regex.findAll(buildText)) {
+                        bundleUrls += result.groupValues[1]
+                    }
+                }
+                /*
+                    val psi = buildGradleKfsFile!!.toPsiFile(project)?.text
+                    val text = psi?.text
+                    val korgeBlock = psi?.findDescendantOfType<KtCallExpression> { KorgeBuildGradleAnnotator.isKorgeBlock(it) }
+                    if (korgeBlock != null) {
+                        val bundles = korgeBlock.findDescendantsOfType<KtCallExpression> { it.originalElement.text == "bundle" }
+                        for (bundle in bundles) {
+                            val element = korgeBlock.findDescendantOfType<PsiElement> { it.elementType == KtTokens.REGULAR_STRING_PART }
+                            element?.text?.let { bundleUrls += it }
+                        }
+                    }
+                    //listOf("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
+                 */
+                bundleUrls
+            }
         }
     }
 
