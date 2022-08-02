@@ -18,8 +18,6 @@ jobs:
         cache: 'gradle'
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Publish custom korge intellij
-      run: ./gradlew --no-daemon :korge-next:publishJvmPublicationToMavenLocal
     - name: Build with Gradle
       run: ./gradlew --no-daemon check buildPlugin
     - name: Stop gradle
