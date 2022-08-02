@@ -70,6 +70,14 @@ korge {
 ]]></file>
 
 <file path="settings.gradle"><![CDATA[
+pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+        gradlePluginPortal()
+    }
+}
 ]]></file>
 
 <file path="gradle.properties"><![CDATA[
