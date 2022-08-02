@@ -40,5 +40,6 @@ class KorgeBuildGradleAnnotator : Annotator {
     data class MyGutterIconRenderer(val action: AnAction, val _icon: Icon) : GutterIconRenderer() {
         override fun getIcon() = _icon
         override fun getClickAction() = action
+        override fun getTooltipText(): String = "Install bundles from store..."
     }
 }

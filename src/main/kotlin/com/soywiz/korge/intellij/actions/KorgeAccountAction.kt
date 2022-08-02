@@ -116,7 +116,9 @@ class KorgeAccountAction : AnAction(), DumbAware {
                         component.icon = AllIcons.General.ContextHelp
                         click {
                             //launchBrowserWithKorgeDocumention()
-                            HTMLEditorProvider.openEditor(project, "KorGE Docs", url = "https://docs.korge.org/")
+                            //HTMLEditorProvider.openEditor(project, "KorGE Docs", url = "https://docs.korge.org/")
+                            KorgeWebPreviewUtils.open(project, "KorGE Docs", "https://docs.korge.org/")
+
                         }
                     }
                     button("Discord") {
