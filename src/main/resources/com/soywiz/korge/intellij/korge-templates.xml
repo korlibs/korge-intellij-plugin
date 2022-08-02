@@ -61,10 +61,10 @@ korge {
 // To selectively enable targets
 
 	targetJvm()
-	targetJs()
-	targetDesktop()
-	targetIos()
-	targetAndroidIndirect() // targetAndroidDirect()
+	//targetJs()
+	//targetDesktop()
+	//targetIos()
+	//targetAndroidIndirect() // targetAndroidDirect()
 }
 
 ]]></file>
@@ -80,10 +80,28 @@ pluginManagement {
 }
 ]]></file>
 
+<file path=".editorconfig"><![CDATA[
+[*]
+charset=utf-8
+end_of_line=lf
+insert_final_newline=true
+indent_style=space
+indent_size=4
+ij_kotlin_name_count_to_use_star_import = 1
+
+[*.json]
+indent_size=2
+
+[*.yml]
+indent_size = 2
+]]></file>
+
 <file path="gradle.properties"><![CDATA[
 org.gradle.jvmargs=-Xmx4g
 kotlin.mpp.stability.nowarn=true
+kotlin.code.style=official
 ]]></file>
+
 
 <file path="gradle/libs.versions.toml"><![CDATA[
 [plugins]
@@ -100,15 +118,15 @@ zipStorePath=wrapper/dists
 ]]></file>
 
 <file path="src/commonMain/kotlin/main.kt"><![CDATA[
-import com.soywiz.klock.seconds
+import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 
 suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"]) {
 	val minDegrees = (-16).degrees
