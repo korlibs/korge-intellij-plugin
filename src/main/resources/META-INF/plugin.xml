@@ -194,6 +194,8 @@
                     icon="AllIcons.General.User"/>
             <action id="KorgeStoreAction" class="com.soywiz.korge.intellij.actions.KorgeStoreAction" text="KorGE _Store"
                     icon="AllIcons.Actions.Install"/>
+            <action id="KorgeFixGradleMavenLocalSourcesAction" class="com.soywiz.korge.intellij.actions.KorgeFixGradleMavenLocalSourcesAction" text="Fix maven local sources"
+                icon="AllIcons.Actions.BuildLoadChanges"/>
         </group>
 
         <!--
