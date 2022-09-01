@@ -3,8 +3,11 @@ package com.soywiz.korge.intellij.actions
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.roots.OrderRootType
+import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
+import com.soywiz.korge.intellij.util.runWriteAction
 
 enum class ArtifactType {
     UNKNOWN,
@@ -46,15 +49,34 @@ sealed class ParsedLibraryName(
     val artifactType get() = if (artifactId.endsWith("-jvm")) ArtifactType.JVM else ArtifactType.UNKNOWN
 }
 
-data class ParsedRoot(
-    val jarUrl: String
+fun ParsedLibraryName.isKorgeLibrary(): Boolean {
+    return groupId.startsWith("com.soywiz.korlibs.")
+}
+
+fun ParsedLibraryName.isKorgeJvmLibrary(): Boolean {
+    return artifactId.endsWith("-jvm")
+}
+
+data class ParsedClassRoot(
+    // E.g: jar://C:/Users/kietm/.m2/repository/com/soywiz/korlibs/klock/klock-jvm/2.0.0.999/klock-jvm-2.0.0.999.jar!/
+    val jarUrl: String,
+    // E.g: C:/Users/kietm/.m2/repository/com/soywiz/korlibs/klock/klock-jvm/2.0.0.999/klock-jvm-2.0.0.999.jar
+    val jarFilePath: String = jarUrl.removePrefix("jar://").removeSuffix("!/"),
+    // E.g: C:/Users/kietm/.m2/repository/com/soywiz/korlibs/klock/klock-jvm/2.0.0.999/klock-jvm-2.0.0.999-sources.jar
+    val predictedSourceFilePath: String = jarFilePath.removeSuffix(".jar") + "-sources.jar",
+    val predictedSourceFile: VirtualFile? = LocalFileSystem.getInstance().findFileByPath(predictedSourceFilePath),
+    val predictedSourceJarFilePath: String = "jar://$predictedSourceFilePath!/"
+)
+
+data class ParsedSourceRoot(
+    val jarUrl: String,
 )
 
 data class ParsedLibrary(
     val name: ParsedLibraryName,
-    val parsedClassRoots: List<ParsedRoot>,
-    val parsedSourceRoots: List<ParsedRoot>,
-
+    val parsedClassRoots: List<ParsedClassRoot>,
+    val parsedSourceRoots: List<ParsedSourceRoot>,
+    val library: Library
 )
 
 class KorgeFixGradleMavenLocalSourcesAction : AnAction() {
@@ -73,7 +95,7 @@ class KorgeFixGradleMavenLocalSourcesAction : AnAction() {
 
         println("libraryTable: $libraryTable")
 
-        val parsedLibaries = mutableListOf<ParsedLibrary>()
+        val parsedLibraries = mutableListOf<ParsedLibrary>()
 
         println("Iterating through all libraries:")
         libraryTable.libraries.forEach { library ->
@@ -123,16 +145,17 @@ class KorgeFixGradleMavenLocalSourcesAction : AnAction() {
             }
 
             val parsedClassRoots = library.getUrls(OrderRootType.CLASSES).map {
-                ParsedRoot(it!!)
+                ParsedClassRoot(it!!)
             }
             val parsedSourceRoots = library.getUrls(OrderRootType.SOURCES).map {
-                ParsedRoot(it!!)
+                ParsedSourceRoot(it!!)
             }
 
-            parsedLibaries.add(ParsedLibrary(
+            parsedLibraries.add(ParsedLibrary(
                 parsedLibraryName,
                 parsedClassRoots,
-                parsedSourceRoots
+                parsedSourceRoots,
+                library
             ))
 
             println(library.rootProvider.getUrls(OrderRootType.CLASSES).toList())
@@ -146,8 +169,52 @@ class KorgeFixGradleMavenLocalSourcesAction : AnAction() {
             println()
         }
 
-        println("Parsed libraries:")
-        println(parsedLibaries.joinToString("\n"))
+//        println("Parsed libraries:")
+//        println(parsedLibaries.joinToString("\n"))
+//        println()
+
+        println("Korge libraries")
+        println(parsedLibraries.filter {
+            it.name.isKorgeLibrary()
+        }.joinToString("\n"))
+        println()
+
+        val korgeLibraries = parsedLibraries.filter { it.name.isKorgeLibrary() }
+
+
+        val korgeJvmLibraries = korgeLibraries.filter {
+            it.name.isKorgeJvmLibrary()
+        }
+
+        println("Korge JVM libraries")
+        println(korgeJvmLibraries.joinToString("\n"))
+
+        val groupIdToJvmLibrary = korgeJvmLibraries.map {
+            it.name.groupId to it
+        }.toMap()
+
+
+        println("Adding JVM source to applicable Korge libraries.")
+        runWriteAction {
+            korgeLibraries.asSequence().forEach {
+                // Already has sources, skip.
+                if (it.parsedSourceRoots.isNotEmpty()) return@forEach
+                // No JVM library found, skip.
+                val jvmLibrary = groupIdToJvmLibrary[it.name.groupId] ?: return@forEach
+                // No JVM root found in library, skip.
+                val root = jvmLibrary.parsedClassRoots.firstOrNull() ?: return@forEach
+                // No JVM source file found for library, skip.
+                root.predictedSourceFile ?: return@forEach
+
+                println("Adding JVM source file for:")
+                println(it)
+                it.library.modifiableModel.apply {
+                    addRoot(root.predictedSourceJarFilePath, OrderRootType.SOURCES)
+                    commit()
+                }
+            }
+        }
+
 
 
     }
