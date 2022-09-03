@@ -1,7 +1,7 @@
 <idea-plugin require-restart="false">
     <!-- https://plugins.jetbrains.com/plugin/9676-korge-intellij-plugin -->
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="222.3345" />
+    <idea-version since-build="222.3345"/>
     <id>com.soywiz.korge.korge-intellij-plugin</id>
 
     <name>Korge</name>
@@ -181,17 +181,18 @@
 
     <actions>
 
-        <group id="KorgeTest" >
+        <group id="KorgeTest">
             <add-to-group group-id="NavBarToolBar" anchor="last"/>
-            <separator />
+            <separator/>
             <!--
             <reference ref="KorgeAccountAction" />
             <action id="KorgeKorgeAction" class="com.soywiz.korge.intellij.actions.KorgeKorgeAction" text="_Korge"
                     icon="/com/soywiz/korge/intellij/icon/korge.png"
             />
             -->
-            <action id="KorgeAccountAction" class="com.soywiz.korge.intellij.actions.KorgeAccountAction" text="_Account"
-                    icon="AllIcons.General.User"/>
+            <action id="KorgeAccountAction"
+                class="com.soywiz.korge.intellij.actions.KorgeAccountAction" text="_Account"
+                icon="AllIcons.General.User"/>
             <action
                 id="KorgeStoreAction"
                 class="com.soywiz.korge.intellij.actions.KorgeStoreAction"
@@ -200,7 +201,8 @@
             <action
                 id="KorgeFixGradleMavenLocalSourcesAction"
                 class="com.soywiz.korge.intellij.actions.KorgeFixGradleMavenLocalSourcesAction"
-                text="Fix maven local sources"
+                text="Fix Maven Local Sources"
+                description="Try clicking this if you're not seeing sources for maven local build of Korge. "
                 icon="AllIcons.Actions.BuildLoadChanges"/>
         </group>
 
@@ -233,11 +235,13 @@
 
             <separator/>
 
-            <action id="Korge.NewFile.KorgeScene" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
+            <action id="Korge.NewFile.KorgeScene"
+                class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
             <!--
             <action id="Korge.NewFile.TiledMap" class="com.soywiz.korge.intellij.createnew.NewTiledMap"/>
             -->
-            <action id="Korge.NewFile.ParticleEmitter" class="com.soywiz.korge.intellij.createnew.NewParticleEmitter"/>
+            <action id="Korge.NewFile.ParticleEmitter"
+                class="com.soywiz.korge.intellij.createnew.NewParticleEmitter"/>
             <action id="Korge.NewFile.KTree" class="com.soywiz.korge.intellij.createnew.KTreeNew"/>
 
             <separator/>
@@ -260,18 +264,23 @@
 
 
     <extensions defaultExtensionNs="com.intellij">
-        <fileEditorProvider implementation="com.soywiz.korge.intellij.actions.KorgeWebPreviewEditorProvider"/>
+        <fileEditorProvider
+            implementation="com.soywiz.korge.intellij.actions.KorgeWebPreviewEditorProvider"/>
 
-        <annotator language="kotlin" implementationClass="com.soywiz.korge.intellij.annotator.KorgeBuildGradleAnnotator" />
-        <annotator language="kotlin" implementationClass="com.soywiz.korge.intellij.annotator.ColorAnnotator" />
-        <annotator language="kotlin" implementationClass="com.soywiz.korge.intellij.annotator.MovieClipAnnotator" />
+        <annotator language="kotlin"
+            implementationClass="com.soywiz.korge.intellij.annotator.KorgeBuildGradleAnnotator"/>
+        <annotator language="kotlin"
+            implementationClass="com.soywiz.korge.intellij.annotator.ColorAnnotator"/>
+        <annotator language="kotlin"
+            implementationClass="com.soywiz.korge.intellij.annotator.MovieClipAnnotator"/>
         <!--
         <annotator language="kotlin" implementationClass="com.soywiz.korge.intellij.annotator.KorgeRunAnnotator" />
         -->
 
 
         <!-- Add your extensions here -->
-        <stepsBeforeRunProvider implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
+        <stepsBeforeRunProvider
+            implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
         <!--<iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />-->
         <fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
         <!--
@@ -289,26 +298,43 @@
         <fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"/>
         -->
 
-        <fileType name="KORGE_ANI"   implementationClass="com.soywiz.korge.intellij.filetype.KorgeAniFileType"   fieldName="INSTANCE" language="KORGE_ANI"   extensions="swf;ani"    />
-        <fileType name="KORGE_AUDIO" implementationClass="com.soywiz.korge.intellij.filetype.KorgeAudioFileType" fieldName="INSTANCE" language="KORGE_AUDIO" extensions="wav;mp3;ogg"/>
+        <fileType name="KORGE_ANI"
+            implementationClass="com.soywiz.korge.intellij.filetype.KorgeAniFileType"
+            fieldName="INSTANCE" language="KORGE_ANI" extensions="swf;ani"/>
+        <fileType name="KORGE_AUDIO"
+            implementationClass="com.soywiz.korge.intellij.filetype.KorgeAudioFileType"
+            fieldName="INSTANCE" language="KORGE_AUDIO" extensions="wav;mp3;ogg"/>
         <!-- PROBLEMS WITH STACK OVERFLOW WHEN A TMX WAS LEFT OPENED -->
         <!--
         <fileType name="KORGE_TMX"   implementationClass="com.soywiz.korge.intellij.filetype.TmxFileType"        fieldName="INSTANCE" language="KORGE_TMX"   extensions="tmx"        />
         -->
-        <fileType name="KORGE_TSX"   implementationClass="com.soywiz.korge.intellij.filetype.TsxFileType"        fieldName="INSTANCE" language="KORGE_TSX"   extensions="tsx"        />
-        <fileType name="KORGE_PEX"   implementationClass="com.soywiz.korge.intellij.filetype.PexFileType"        fieldName="INSTANCE" language="KORGE_PEX"   extensions="pex"        />
-        <fileType name="KORGE_SCML"  implementationClass="com.soywiz.korge.intellij.filetype.ScmlFileType"       fieldName="INSTANCE" language="KORGE_SCML"  extensions="scml"       />
-        <fileType name="KORGE_SCON"  implementationClass="com.soywiz.korge.intellij.filetype.SconFileType"       fieldName="INSTANCE" language="KORGE_SCON"  extensions="scon"       />
-        <fileType name="KORGE_FNT"   implementationClass="com.soywiz.korge.intellij.filetype.FntFileType"        fieldName="INSTANCE" language="KORGE_FNT"   extensions="fnt"        />
-        <fileType name="KORGE_KTREE" implementationClass="com.soywiz.korge.intellij.filetype.KTreeFileType"      fieldName="INSTANCE" language="KORGE_KTREE"   extensions="ktree"        />
+        <fileType name="KORGE_TSX"
+            implementationClass="com.soywiz.korge.intellij.filetype.TsxFileType"
+            fieldName="INSTANCE" language="KORGE_TSX" extensions="tsx"/>
+        <fileType name="KORGE_PEX"
+            implementationClass="com.soywiz.korge.intellij.filetype.PexFileType"
+            fieldName="INSTANCE" language="KORGE_PEX" extensions="pex"/>
+        <fileType name="KORGE_SCML"
+            implementationClass="com.soywiz.korge.intellij.filetype.ScmlFileType"
+            fieldName="INSTANCE" language="KORGE_SCML" extensions="scml"/>
+        <fileType name="KORGE_SCON"
+            implementationClass="com.soywiz.korge.intellij.filetype.SconFileType"
+            fieldName="INSTANCE" language="KORGE_SCON" extensions="scon"/>
+        <fileType name="KORGE_FNT"
+            implementationClass="com.soywiz.korge.intellij.filetype.FntFileType"
+            fieldName="INSTANCE" language="KORGE_FNT" extensions="fnt"/>
+        <fileType name="KORGE_KTREE"
+            implementationClass="com.soywiz.korge.intellij.filetype.KTreeFileType"
+            fieldName="INSTANCE" language="KORGE_KTREE" extensions="ktree"/>
 
         <!--<fileType name="KorimImage" implementationClass="org.intellij.images.fileTypes.impl.ImageFileType" fieldName="INSTANCE" extensions="qoi" />-->
-        <fileType name="Image" extensions="qoi" />
-        <fileType name="Image" extensions="kra" />
-        <fileType name="Image" extensions="psd" />
-        <fileType name="Image" extensions="dds" />
-        <fileType name="Image" extensions="ase" />
-        <applicationService serviceImplementation="com.soywiz.korge.intellij.image.KorimImageReaderRegister" />
+        <fileType name="Image" extensions="qoi"/>
+        <fileType name="Image" extensions="kra"/>
+        <fileType name="Image" extensions="psd"/>
+        <fileType name="Image" extensions="dds"/>
+        <fileType name="Image" extensions="ase"/>
+        <applicationService
+            serviceImplementation="com.soywiz.korge.intellij.image.KorimImageReaderRegister"/>
 
         <!--
         <fileEditorProvider implementation="com.soywiz.korge.intellij.filetype.Qoi"/>
@@ -318,27 +344,37 @@
         <fileType name="QOI"   implementationClass="com.soywiz.korge.intellij.filetype.QoiFileType"        fieldName="INSTANCE"   extensions="qoi"        />
         <fileType name="KRA"   implementationClass="com.soywiz.korge.intellij.filetype.KraFileType"        fieldName="INSTANCE"   extensions="kra"        />
         -->
-        <fileType name="SKEL"   implementationClass="com.soywiz.korge.intellij.filetype.SpineSkeletonFileType"        fieldName="INSTANCE"   extensions="skel"        />
-        <fileType name="DBBIN"   implementationClass="com.soywiz.korge.intellij.filetype.DragonbonesSkeletonFileType"        fieldName="INSTANCE"   extensions="dbbin;_ske.dbbin"        />
+        <fileType name="SKEL"
+            implementationClass="com.soywiz.korge.intellij.filetype.SpineSkeletonFileType"
+            fieldName="INSTANCE" extensions="skel"/>
+        <fileType name="DBBIN"
+            implementationClass="com.soywiz.korge.intellij.filetype.DragonbonesSkeletonFileType"
+            fieldName="INSTANCE" extensions="dbbin;_ske.dbbin"/>
 
 
         <!--
         <lang.parserDefinition implementationClass="com.soywiz.korge.intellij.filetype.TmxParserDefinition" language="KORGE_TMX" />
         -->
-        <lang.parserDefinition implementationClass="com.soywiz.korge.intellij.filetype.KTreeParserDefinition" language="KORGE_KTREE" />
+        <lang.parserDefinition
+            implementationClass="com.soywiz.korge.intellij.filetype.KTreeParserDefinition"
+            language="KORGE_KTREE"/>
 
         <!-- Completions -->
-        <completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
+        <completion.contributor language="XML"
+            implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
 
         <!--
         <framework.type implementation="com.soywiz.korge.intellij.KorgeFramework" />
         -->
-        <moduleType id="korge" implementationClass="com.soywiz.korge.intellij.module.KorgeModuleType" />
+        <moduleType id="korge"
+            implementationClass="com.soywiz.korge.intellij.module.KorgeModuleType"/>
 
         <internalFileTemplate name="KorgeScene"/>
 
-        <applicationService serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalSettings" />
-        <applicationService serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalPrivateSettings" />
+        <applicationService
+            serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalSettings"/>
+        <applicationService
+            serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalPrivateSettings"/>
 
         <!-- TODO: Disable temporarily as we were getting errors about not finding the com.sun.jdi package -->
         <!--
@@ -348,15 +384,17 @@
         <debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimKorgeViewImageDebugNodeRenderer" />
         -->
 
-        <referenceInjector implementation="com.soywiz.korge.intellij.references.ResourceReferenceInjector" />
+        <referenceInjector
+            implementation="com.soywiz.korge.intellij.references.ResourceReferenceInjector"/>
 
         <runLineMarkerContributor language="kotlin"
-                                  implementationClass="com.soywiz.korge.intellij.execution.KorgeRunLineMarkerContributor"/>
+            implementationClass="com.soywiz.korge.intellij.execution.KorgeRunLineMarkerContributor"/>
         <!--
         <runConfigurationProducer implementation="com.soywiz.korge.intellij.execution.JsKorgeRunConfigurationProducer" />
         <runConfigurationProducer implementation="com.soywiz.korge.intellij.execution.JvmKorgeRunConfigurationProducer" />
         -->
-        <runConfigurationProducer implementation="com.soywiz.korge.intellij.execution.KorgeRunConfigurationProducer" />
+        <runConfigurationProducer
+            implementation="com.soywiz.korge.intellij.execution.KorgeRunConfigurationProducer"/>
 
         <moduleBuilder builderClass="com.soywiz.korge.intellij.module.builder.KorgeModuleBuilder"/>
 
