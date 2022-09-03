@@ -192,9 +192,15 @@
             -->
             <action id="KorgeAccountAction" class="com.soywiz.korge.intellij.actions.KorgeAccountAction" text="_Account"
                     icon="AllIcons.General.User"/>
-            <action id="KorgeStoreAction" class="com.soywiz.korge.intellij.actions.KorgeStoreAction" text="KorGE _Store"
-                    icon="AllIcons.Actions.Install"/>
-            <action id="KorgeFixGradleMavenLocalSourcesAction" class="com.soywiz.korge.intellij.actions.KorgeFixGradleMavenLocalSourcesAction" text="Fix maven local sources"
+            <action
+                id="KorgeStoreAction"
+                class="com.soywiz.korge.intellij.actions.KorgeStoreAction"
+                text="KorGE _Store"
+                icon="AllIcons.Actions.Install"/>
+            <action
+                id="KorgeFixGradleMavenLocalSourcesAction"
+                class="com.soywiz.korge.intellij.actions.KorgeFixGradleMavenLocalSourcesAction"
+                text="Fix maven local sources"
                 icon="AllIcons.Actions.BuildLoadChanges"/>
         </group>
 
@@ -363,5 +369,9 @@
 
     </extensions>
 
-
+    <projectListeners>
+        <listener
+            class="com.soywiz.korge.intellij.listeners.KorgeModuleRootListener"
+            topic="com.intellij.openapi.roots.ModuleRootListener"/>
+    </projectListeners>
 </idea-plugin>
