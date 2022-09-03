@@ -13,13 +13,15 @@ class KorgeModuleRootListener : ModuleRootListener {
     }
 
     override fun rootsChanged(event: ModuleRootEvent) {
-        println("Running KorgeGradleSyncListener")
-        if (updateInProgress.get()) {
-            println("Update currently in progress... Quick returning.")
-            return
+        application.invokeLater {
+            println("Running KorgeGradleSyncListener")
+            if (updateInProgress.get()) {
+                println("Update currently in progress... Quick returning.")
+                return
+            }
+            updateInProgress.set(true)
+            fixLibraries(event.project)
+            updateInProgress.set(false)
         }
-        updateInProgress.set(true)
-        fixLibraries(event.project)
-        updateInProgress.set(false)
     }
 }
