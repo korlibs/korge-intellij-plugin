@@ -407,9 +407,9 @@
 
     </extensions>
 
-    <projectListeners>
-        <listener
-            class="com.soywiz.korge.intellij.listeners.KorgeModuleRootListener"
-            topic="com.intellij.openapi.roots.ModuleRootListener"/>
-    </projectListeners>
+<!--    <projectListeners>-->
+<!--        <listener-->
+<!--            class="com.soywiz.korge.intellij.listeners.KorgeModuleRootListener"-->
+<!--            topic="com.intellij.openapi.roots.ModuleRootListener"/>-->
+<!--    </projectListeners>-->
 </idea-plugin>

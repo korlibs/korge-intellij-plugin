@@ -3,6 +3,7 @@ package com.soywiz.korge.intellij.listeners
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
 import com.soywiz.korge.intellij.util.fixLibraries
+import com.soywiz.korge.intellij.util.invokeLater
 import java.util.concurrent.atomic.AtomicBoolean
 
 class KorgeModuleRootListener : ModuleRootListener {
@@ -13,15 +14,18 @@ class KorgeModuleRootListener : ModuleRootListener {
     }
 
     override fun rootsChanged(event: ModuleRootEvent) {
-        application.invokeLater {
+        invokeLater {
             println("Running KorgeGradleSyncListener")
             if (updateInProgress.get()) {
                 println("Update currently in progress... Quick returning.")
-                return
+                return@invokeLater
             }
             updateInProgress.set(true)
-            fixLibraries(event.project)
-            updateInProgress.set(false)
+            try {
+                fixLibraries(event.project)
+            } finally {
+                updateInProgress.set(false)
+            }
         }
     }
 }

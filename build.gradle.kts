@@ -14,7 +14,8 @@ buildscript {
 plugins {
     java
     idea
-    id("org.jetbrains.intellij") version "1.8.1"
+    id("org.jetbrains.intellij") version "1.9.0"
+//    id("org.jetbrains.intellij") version "1.8.1"
 //    id("org.jetbrains.intellij") version "1.7.0"
     //id("org.jetbrains.intellij") version "1.5.3" //
     //id("org.jetbrains.intellij") version "1.5.2" //
@@ -102,7 +103,7 @@ intellij {
     // IntelliJ IDEA dependency
     //version.set("IC-2021.3.1")
     //version.set("IC-2022.1")
-    version.set("IC-2022.2")
+    version.set("IC-2022.2.1")
     // Bundled plugin dependencies
     plugins.addAll(
         "gradle", "java", "platform-images", "Kotlin", "gradle-java"
