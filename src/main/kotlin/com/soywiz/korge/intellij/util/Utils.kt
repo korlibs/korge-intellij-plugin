@@ -21,17 +21,12 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.*
 import com.intellij.openapi.progress.*
 import com.intellij.openapi.project.*
-import com.intellij.openapi.roots.OrderRootType
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
-import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.intellij.ui.components.labels.*
 import com.intellij.uiDesigner.core.*
-import com.soywiz.korge.intellij.actions.*
 import kotlinx.coroutines.*
-import org.gradle.cache.internal.*
 import java.awt.*
 import java.io.*
 import java.net.*
@@ -251,132 +246,5 @@ fun Link(text: String, url: URL) = LinkLabel<URL>(text, null, { _, data ->
 		Desktop.getDesktop().browse(data.toURI())
 	}
 }, url)
-
-fun fixLibraries(
-    project: Project?,
-): Unit {
-    if (project == null) return
-    println(project)
-
-    val instance = LibraryTablesRegistrar.getInstance()
-
-    val libraryTable = instance.getLibraryTable(project)
-
-    val parsedLibraries = mutableListOf<ParsedLibrary>()
-
-    println("Iterating through all libraries:")
-    val gradleLibraries = libraryTable.libraries.filter { library ->
-        val libraryName = library.name ?: return@filter false
-        if (!libraryName.startsWith("Gradle: ")) return@filter false
-        true
-    }
-
-    gradleLibraries.forEach { library ->
-        val libraryName = library.name!!
-        println("Parsing library: $libraryName")
-        val gradleParsed = libraryName.removePrefix("Gradle: ").split(":")
-        val parsedLibraryName = when (gradleParsed.size) {
-            2 -> {
-                ParsedLibraryName.Double(
-                    gradleParsed[0],
-                    gradleParsed[1],
-                )
-            }
-
-            3 -> {
-                ParsedLibraryName.Triple(
-                    gradleParsed[0],
-                    gradleParsed[1],
-                    gradleParsed[2],
-                )
-            }
-
-            4 -> {
-                ParsedLibraryName.Quad(
-                    gradleParsed[0],
-                    gradleParsed[1],
-                    gradleParsed[2],
-                    gradleParsed[3],
-                )
-            }
-
-            5 -> {
-                ParsedLibraryName.Penta(
-                    gradleParsed[0],
-                    gradleParsed[1],
-                    gradleParsed[2],
-                    gradleParsed[3],
-                    gradleParsed[4],
-                )
-            }
-
-            else -> {
-                println("Unsupported name: $gradleParsed")
-                return@forEach
-            }
-        }
-
-        val parsedClassRoots = library.getUrls(OrderRootType.CLASSES).map {
-            ParsedClassRoot(it!!)
-        }
-        val parsedSourceRoots = library.getUrls(OrderRootType.SOURCES).map {
-            ParsedSourceRoot(it!!)
-        }
-
-        parsedLibraries.add(
-            ParsedLibrary(
-                parsedLibraryName,
-                parsedClassRoots,
-                parsedSourceRoots,
-                library
-            )
-        )
-
-        //            println(library.rootProvider.getUrls(OrderRootType.CLASSES).toList())
-        //            println(library.rootProvider.getUrls(OrderRootType.SOURCES).toList())
-        //            println(library.getFiles(OrderRootType.CLASSES).toList())
-        //            println()
-    }
-
-    //        println("Parsed libraries:")
-    //        println(parsedLibaries.joinToString("\n"))
-    //        println()
-
-    val korgeLibraries = parsedLibraries.filter { it.name.isKorgeLibrary() }
-
-    val korgeJvmLibraries = korgeLibraries.filter {
-        it.name.isKorgeJvmLibrary()
-    }
-
-//    println("Korge JVM libraries")
-//    println(korgeJvmLibraries.joinToString("\n"))
-
-    val groupIdToJvmLibrary = korgeJvmLibraries.associateBy {
-        it.name.groupId
-    }
-
-    println("Adding JVM source to applicable Korge libraries.")
-    var numUpdated = 0
-    runWriteAction {
-        korgeLibraries.asSequence().forEach {
-            // Already has sources, skip.
-            if (it.parsedSourceRoots.isNotEmpty()) return@forEach
-            // No JVM library found, skip.
-            val jvmLibrary = groupIdToJvmLibrary[it.name.groupId] ?: return@forEach
-            // No JVM root found in library, skip.
-            val root = jvmLibrary.parsedClassRoots.firstOrNull() ?: return@forEach
-            // No JVM source file found for library, skip.
-            root.predictedSourceFile ?: return@forEach
-
-            println("Adding JVM source file for: ${it.name}")
-            it.library.modifiableModel.apply {
-                addRoot(root.predictedSourceJarFilePath, OrderRootType.SOURCES)
-                commit()
-            }
-            numUpdated++
-        }
-    }
-    println("$numUpdated libraries updated. Done.")
-}
 
 //fun PsiElement.find
