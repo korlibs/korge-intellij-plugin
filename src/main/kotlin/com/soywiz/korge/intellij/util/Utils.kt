@@ -356,6 +356,7 @@ fun fixLibraries(
     }
 
     println("Adding JVM source to applicable Korge libraries.")
+    var numUpdated = 0
     runWriteAction {
         korgeLibraries.asSequence().forEach {
             // Already has sources, skip.
@@ -372,8 +373,10 @@ fun fixLibraries(
                 addRoot(root.predictedSourceJarFilePath, OrderRootType.SOURCES)
                 commit()
             }
+            numUpdated++
         }
     }
+    println("$numUpdated libraries updated. Done.")
 }
 
 //fun PsiElement.find
