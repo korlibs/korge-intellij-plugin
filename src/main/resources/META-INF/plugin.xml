@@ -405,11 +405,12 @@
         <navbar implementation="com.soywiz.korge.intellij.navbar.KorgeNavBarModelExtension" />
         -->
 
+        <notificationGroup id="Korge Plugin: Maven Local Source Fixer" displayType="BALLOON"/>
     </extensions>
 
-<!--    <projectListeners>-->
-<!--        <listener-->
-<!--            class="com.soywiz.korge.intellij.listeners.KorgeModuleRootListener"-->
-<!--            topic="com.intellij.openapi.roots.ModuleRootListener"/>-->
-<!--    </projectListeners>-->
+    <projectListeners>
+        <listener
+            class="com.soywiz.korge.intellij.listeners.KorgeModuleRootListener"
+            topic="com.intellij.openapi.roots.ModuleRootListener"/>
+    </projectListeners>
 </idea-plugin>
