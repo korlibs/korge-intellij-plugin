@@ -14,7 +14,9 @@ buildscript {
 plugins {
     java
     idea
-    id("org.jetbrains.intellij") version "1.7.0"
+    id("org.jetbrains.intellij") version "1.9.0"
+//    id("org.jetbrains.intellij") version "1.8.1"
+//    id("org.jetbrains.intellij") version "1.7.0"
     //id("org.jetbrains.intellij") version "1.5.3" //
     //id("org.jetbrains.intellij") version "1.5.2" //
     //id("org.jetbrains.intellij") version "1.4.0"
@@ -22,35 +24,35 @@ plugins {
 
 apply(plugin = "kotlin")
 
-val jvmVersion = JavaLanguageVersion.of(8)
+//val jvmVersion = JavaLanguageVersion.of(8)
+//
+//val compiler = javaToolchains.compilerFor {
+//    languageVersion.set(jvmVersion)
+//}
 
-val compiler = javaToolchains.compilerFor {
-    languageVersion.set(jvmVersion)
-}
-
-project.tasks
-    .withType<org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain>()
-    .configureEach {
-        kotlinJavaToolchain.jdk.use(
-            compiler.get().metadata.installationPath.asFile.absolutePath,
-            jvmVersion
-        )
-    }
+//project.tasks
+//    .withType<org.jetbrains.kotlin.gradle.tasks.UsesKotlinJavaToolchain>()
+//    .configureEach {
+//        kotlinJavaToolchain.jdk.use(
+//            compiler.get().metadata.installationPath.asFile.absolutePath,
+//            jvmVersion
+//        )
+//    }
 
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     //sourceCompatibility = JavaVersion.VERSION_1_8.toString()
     //targetCompatibility = JavaVersion.VERSION_1_8.toString()
-    kotlinOptions {
-        freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
-        jvmTarget = "1.8"
-    }
+//    kotlinOptions {
+//        freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
+//        jvmTarget = "1.8"
+//    }
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
+//java {
+//    sourceCompatibility = JavaVersion.VERSION_1_8
+//    targetCompatibility = JavaVersion.VERSION_1_8
+//}
 
 sourceSets {
     this.maybeCreate("main").apply {
@@ -101,7 +103,7 @@ intellij {
     // IntelliJ IDEA dependency
     //version.set("IC-2021.3.1")
     //version.set("IC-2022.1")
-    version.set("IC-2022.2")
+    version.set("IC-2022.2.1")
     // Bundled plugin dependencies
     plugins.addAll(
         "gradle", "java", "platform-images", "Kotlin", "gradle-java"
@@ -126,18 +128,18 @@ tasks {
         maxHeapSize = "4g"
         //dependsOn(":korge-next:publishJvmPublicationToMavenLocal")
     }
-    val runDebugTilemap by creating(JavaExec::class) {
-        //classpath = sourceSets.main.runtimeClasspath
-        classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
-
-        main = "com.soywiz.korge.intellij.editor.tile.MyTileMapEditorFrame"
-    }
-    val runUISample by creating(JavaExec::class) {
-        //classpath = sourceSets.main.runtimeClasspath
-        classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
-
-        main = "com.soywiz.korge.intellij.ui.UIBuilderSample"
-    }
+//    val runDebugTilemap by creating(JavaExec::class) {
+//        //classpath = sourceSets.main.runtimeClasspath
+//        classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
+//
+//        main = "com.soywiz.korge.intellij.editor.tile.MyTileMapEditorFrame"
+//    }
+//    val runUISample by creating(JavaExec::class) {
+//        //classpath = sourceSets.main.runtimeClasspath
+//        classpath = sourceSets["main"].runtimeClasspath + configurations["idea"]
+//
+//        main = "com.soywiz.korge.intellij.ui.UIBuilderSample"
+//    }
 
     // ./gradlew runIde --dry-run
 
