@@ -181,8 +181,10 @@
 
     <actions>
 
-        <group id="KorgeTest">
-            <add-to-group group-id="NavBarToolBar" anchor="last"/>
+        <group id="KorgeActions">
+            <!--<add-to-group group-id="NavBarToolBar" anchor="last"/>-->
+            <add-to-group group-id="NavBarToolBarOthers" anchor="last"/>
+            <!--<add-to-group group-id="NavBarVcsGroup" anchor="last"/>-->
             <separator/>
             <!--
             <reference ref="KorgeAccountAction" />
@@ -198,12 +200,16 @@
                 class="com.soywiz.korge.intellij.actions.KorgeStoreAction"
                 text="KorGE _Store"
                 icon="AllIcons.Actions.Install"/>
+            <!--
             <action
                 id="KorgeFixGradleMavenLocalSourcesAction"
                 class="com.soywiz.korge.intellij.actions.KorgeFixGradleMavenLocalSourcesAction"
                 text="Fix Maven Local Sources"
-                description="Try clicking this if you're not seeing sources for maven local build of Korge. "
-                icon="AllIcons.Actions.BuildLoadChanges"/>
+                description="Try clicking this if you're not seeing sources for maven local build of Korge."
+                icon="AllIcons.Actions.BuildLoadChanges"
+            />
+            -->
+            <separator/>
         </group>
 
         <!--
