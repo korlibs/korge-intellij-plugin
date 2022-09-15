@@ -10,6 +10,7 @@ import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.*
 import java.io.*
 
 fun VirtualFile.toVfs(): VfsFile {
@@ -100,7 +101,7 @@ class IdeaAdaptorVfs(val file: VirtualFile) : Vfs() {
 
 	override fun getAbsolutePath(path: String): String = accessSure(path).toString()
 
-	override suspend fun listSimple(path: String): List<VfsFile> {
-		return accessSure(path).children.map { VfsFile(this@IdeaAdaptorVfs, "$path/${it.name}") }
-	}
+    override suspend fun listFlow(path: String): Flow<VfsFile> {
+        return accessSure(path).children.map { VfsFile(this@IdeaAdaptorVfs, "$path/${it.name}") }.asFlow()
+    }
 }
