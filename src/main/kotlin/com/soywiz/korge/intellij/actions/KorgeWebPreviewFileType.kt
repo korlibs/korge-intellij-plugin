@@ -357,7 +357,7 @@ inline fun <reified T : Any> CefBrowser.registerCallback(name: String, coroutine
 fun <T : Any> CefBrowser.registerCallback(name: String, clazz: KClass<T>, coroutineContext: CoroutineContext = EmptyCoroutineContext, block: suspend (T) -> Any?): Disposable {
     val cefBrowser = this
     val jbCefBrowser = JBCefBrowser.getJBCefBrowser(cefBrowser) ?: error("Can't get JBCefBrowser")
-    val jsQuery = JBCefJSQuery.create(jbCefBrowser)
+    val jsQuery = JBCefJSQuery.create(jbCefBrowser as JBCefBrowserBase)
     val jcefLastId = "window.jcefLastId"
     val jcefDeferreds = "window.jcefDeferreds"
     val jcefFunctions = "window.jcefFunctions"
