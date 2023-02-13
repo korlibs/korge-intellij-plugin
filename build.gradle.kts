@@ -41,18 +41,21 @@ apply(plugin = "kotlin")
 
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-    //sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-    //targetCompatibility = JavaVersion.VERSION_1_8.toString()
+    kotlinOptions {
+        this.jvmTarget = "17"
+    }
+    //sourceCompatibility = JavaVersion.VERSION_17.toString()
+    //targetCompatibility = JavaVersion.VERSION_17.toString()
 //    kotlinOptions {
 //        freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
 //        jvmTarget = "1.8"
 //    }
 }
 
-//java {
-//    sourceCompatibility = JavaVersion.VERSION_1_8
-//    targetCompatibility = JavaVersion.VERSION_1_8
-//}
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 sourceSets {
     this.maybeCreate("main").apply {
