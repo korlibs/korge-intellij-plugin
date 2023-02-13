@@ -35,7 +35,7 @@ class ShowKorimBitmapAction : XDebuggerTreeActionBase(), DumbAware {
 		val javaValue = (node.valueContainer as JavaValue)
 		val descriptor = javaValue.descriptor
 		val value = descriptor.value
-		val type = value.type()
+		val type = value.typeExt()
 		if (type.isKorimBitmapOrDrawable()) {
 			val thread = javaValue.evaluationContext.suspendContext.thread?.threadReference
 			val value = descriptor.value as ObjectReference
@@ -61,7 +61,7 @@ class ShowKorimBitmapAction : XDebuggerTreeActionBase(), DumbAware {
 			values.size >= 1 -> {
 				val javaValue = values[0]
 				val value = javaValue.descriptor.value
-				value.type().isKorimBitmapOrDrawable()
+				value.typeExt().isKorimBitmapOrDrawable()
 			}
 			else -> {
 				false

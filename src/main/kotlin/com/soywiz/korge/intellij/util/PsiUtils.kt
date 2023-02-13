@@ -7,9 +7,11 @@ import com.intellij.openapi.command.*
 import com.intellij.openapi.editor.*
 import com.intellij.openapi.util.*
 import com.intellij.psi.*
+import com.intellij.psi.codeStyle.*
 import com.soywiz.korge.intellij.completion.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.PathInfo
+import org.jetbrains.kotlin.idea.base.util.*
 import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.psi.psiUtil.*
 import kotlin.math.*
@@ -30,7 +32,7 @@ fun PsiElement.replace(text: String, context: InsertionContext? = null, reformat
     PsiDocumentManager.getInstance(project).commitDocument(document)
     if (reformat) {
         WriteCommandAction.runWriteCommandAction(project) {
-            reformatted(canChangeWhiteSpacesOnly = true)
+            CodeStyleManager.getInstance(project).reformat(this, /*canChangeWhiteSpacesOnly = */true)
         }
     }
 	//currentCaret?.moveToOffset(start + text.length)

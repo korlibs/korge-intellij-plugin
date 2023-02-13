@@ -43,7 +43,7 @@ abstract class BaseKorimBitmapDebugNodeRenderer(val applicableClass: KClass<*>) 
         //println("calcValueIcon: $descriptor, $evaluationContext, $listener")
 		try {
 			val value = descriptor.value
-			val type = value.type()
+			val type = value.typeExt()
 			val thread = evaluationContext.suspendContext.thread?.threadReference
 			if (value is ObjectReference) {
 				if (type.isKorimBitmapOrDrawable()) {
@@ -62,7 +62,7 @@ abstract class BaseKorimBitmapDebugNodeRenderer(val applicableClass: KClass<*>) 
 		return object : IconPopupEvaluator("\u2026 Show bitmap", evaluationContext) {
 			override fun getData(): Icon? {
 				val value = valueDescriptor.value
-				val type = value.type()
+				val type = value.typeExt()
 				val thread = evaluationContext.suspendContext.thread?.threadReference
 				if (value is ObjectReference && type.isKorimBitmapOrDrawable()) {
 					val bmp32 = value.readKorimBitmap32(512, 512, thread)

@@ -5,7 +5,7 @@
     <id>com.soywiz.korge.korge-intellij-plugin</id>
 
     <name>Korge</name>
-    <version>3.1.0</version>
+    <version>3.3.0</version>
     <vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
 
     <description><![CDATA[
@@ -13,6 +13,11 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
+        <h3>3.3.0</h3>
+        <ul>
+            <li>Updated KorGE to 3.3.0</li>
+            <li>Fixed compatibility with IntelliJ IDEA 2022.3.2</li>
+        </ul>
         <h3>3.1.0</h3>
         <ul>
             <li>Updated KorGE to 3.1.0</li>
