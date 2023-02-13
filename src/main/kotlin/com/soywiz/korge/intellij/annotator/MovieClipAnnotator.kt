@@ -62,7 +62,7 @@ data class MovieClipEditorRenderer(val ktClass: KtClass): GutterIconRenderer() {
 
     fun editMovieClip() {
         for (prop in ktClass.body!!.properties) {
-            println("PROP: ${prop.name} : ${prop.type()}: ${prop.isViewProp()}, ${prop.isStateProp()}")
+            println("PROP: ${prop.name} : ${prop.typeExt()}: ${prop.isViewProp()}, ${prop.isStateProp()}")
             if (prop.name == "rect1") {
                 val viewProp = ViewProperty(prop.initializer, prop)
                 viewProp.setProp("width", "120")
@@ -140,7 +140,7 @@ data class MovieClipEditorRenderer(val ktClass: KtClass): GutterIconRenderer() {
     }
 
     fun KtProperty.isViewProp(): Boolean {
-        return this.type()?.isView() == true
+        return this.typeExt()?.isView() == true
     }
 
     fun KotlinType.isView(): Boolean {

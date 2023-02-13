@@ -9,9 +9,9 @@ import com.intellij.openapi.roots.*
 import com.intellij.openapi.util.*
 
 open class KorgeUpdateResourceBeforeRunProvider : BeforeRunTaskProvider<UpdateResourceBeforeRunTask>() {
-	override fun getDescription(p0: UpdateResourceBeforeRunTask?): String = "KorgeUpdateResourceBeforeRunProvider"
+    override fun getDescription(task: UpdateResourceBeforeRunTask): String = "KorgeUpdateResourceBeforeRunProvider"
 
-	override fun getName(): String = "KorgeUpdateResourceBeforeRunProvider"
+    override fun getName(): String = "KorgeUpdateResourceBeforeRunProvider"
 
 	override fun createTask(runConfiguration: RunConfiguration) = when (runConfiguration) {
 		is CommonProgramRunConfigurationParameters -> UpdateResourceBeforeRunTask(runConfiguration)

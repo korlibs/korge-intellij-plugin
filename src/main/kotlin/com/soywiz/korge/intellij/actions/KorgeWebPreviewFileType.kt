@@ -38,6 +38,7 @@ import org.cef.browser.*
 import org.cef.handler.*
 import org.cef.network.*
 import org.jetbrains.ide.*
+import org.jetbrains.kotlin.idea.base.util.*
 import org.jetbrains.kotlin.idea.core.util.*
 import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.psi.*
@@ -55,7 +56,6 @@ import kotlin.text.Charsets
 object KorgeWebPreviewUtils {
     fun open(project: Project, title: String, url: String) {
         val file = LightVirtualFile(title, KorgeWebPreviewFileType.INSTANCE, "")
-        file.putUserData(HTMLEditorProvider.AFFINITY_KEY, url)
         val url = Urls.newFromEncoded(url)
         FileEditorManager.getInstance(project).openFile(KorgeWebPreviewVirtualFile(file, url), true)
     }
@@ -208,7 +208,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                         //gradleBuildRootsManager!!.reflective()
                         //.update(KotlinDslGradleBuildSync(ExternalSystemTaskId.getProjectId(project)))
 
-                        project.runReadActionInSmartMode {
+                        project.runReadActionInSmartModeExt {
                             ExternalSystemUtil.refreshProject(
                                 buildGradleKfsFile.parent.toNioPath().systemIndependentPath,
                                 ImportSpecBuilder(project, GradleConstants.SYSTEM_ID)
@@ -383,8 +383,8 @@ fun <T : Any> CefBrowser.registerCallback(name: String, clazz: KClass<T>, corout
 
                         jbCefBrowser.executeJavaScriptAsync(
                             """
-                        $jcefDeferreds[$callbackId].$func($json);
-                    """.trimIndent()
+                                $jcefDeferreds[$callbackId].$func($json);
+                            """.trimIndent()
                         )
                     } catch (e: Throwable) {
                         e.printStackTrace()

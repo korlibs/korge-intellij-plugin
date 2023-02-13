@@ -140,7 +140,7 @@ class DebugExtTest {
 	fun ArrayReference.readBytesArray3(thread: ThreadReference): ByteArray? {
 		// java.lang.String(byteArrayOf(1, 2, 3, 4), 0).getBytes(0, 4, ByteArray(4), 0)
 		val vm = virtualMachine()
-		val type = this.type()
+		val type = this.typeExt()
 		if (type.signature() != "[B") return null
 		val StringClass = this.virtualMachine().classesByName("java.lang.String").firstOrNull() as? ClassType? ?: error("Can't get java.lang.String")
 		val constructor = StringClass.methodsByName("<init>", "([BI)V").firstOrNull() ?: error("Can't get java.lang.String(byte[], int) constructor")
