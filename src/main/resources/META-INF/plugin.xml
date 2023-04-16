@@ -206,6 +206,11 @@
                 class="com.soywiz.korge.intellij.actions.KorgeAccountAction" text="_Account"
                 icon="AllIcons.General.User"/>
             <action
+                id="JittoAssistantAction"
+                class="com.soywiz.korge.intellij.actions.KorgeJittoAssistantAction"
+                text="KorGE _Jitto"
+                icon="com.soywiz.korge.intellij.KorgeIcons.JITTO"/>
+            <action
                 id="KorgeStoreAction"
                 class="com.soywiz.korge.intellij.actions.KorgeStoreAction"
                 text="KorGE _Store"

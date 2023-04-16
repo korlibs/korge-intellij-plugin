@@ -6,21 +6,22 @@ import javax.swing.*
 
 // https://jetbrains.design/intellij/resources/icons_list/
 object KorgeIcons {
-    val KTREE by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
-	val PARTICLE by lazy { getIcon("/com/soywiz/korge/intellij/icon/particle.png") }
-	val BITMAP_FONT by lazy { getIcon("/com/soywiz/korge/intellij/icon/bitmap_font.png") }
-	val KRITA by lazy { getIcon("/com/soywiz/korge/intellij/icon/krita.png") }
-    val QOI by lazy { getIcon("/com/soywiz/korge/intellij/icon/qoi.png") }
-	val SWF by lazy { getIcon("/com/soywiz/korge/intellij/icon/swf.png") }
-	val TILED by lazy { getIcon("/com/soywiz/korge/intellij/icon/tiled.png") }
-	val KORGE by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
-	val SPONSOR by lazy { getIcon("/com/soywiz/korge/intellij/icon/sponsor.png") }
-	val VOICE by lazy { getIcon("/com/soywiz/korge/intellij/icon/lips.png") }
-	val SPRITER by lazy { getIcon("/com/soywiz/korge/intellij/icon/spriter.png") }
-	val SOUND by lazy { getIcon("/com/soywiz/korge/intellij/icon/sound.png") }
-	val ATLAS by lazy { getIcon("/com/soywiz/korge/intellij/icon/atlas.png") }
-    val SPINE by lazy { getIcon("/com/soywiz/korge/intellij/icon/spine.png") }
-    val DRAGONBONES by lazy { getIcon("/com/soywiz/korge/intellij/icon/dragonbones.png") }
+    @JvmStatic val KTREE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
+    @JvmStatic val JITTO: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
+	@JvmStatic val PARTICLE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/particle.png") }
+	@JvmStatic val BITMAP_FONT: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/bitmap_font.png") }
+	@JvmStatic val KRITA: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/krita.png") }
+    @JvmStatic val QOI: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/qoi.png") }
+	@JvmStatic val SWF: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/swf.png") }
+	@JvmStatic val TILED: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/tiled.png") }
+	@JvmStatic val KORGE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
+	@JvmStatic val SPONSOR: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/sponsor.png") }
+	@JvmStatic val VOICE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/lips.png") }
+	@JvmStatic val SPRITER: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/spriter.png") }
+	@JvmStatic val SOUND: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/sound.png") }
+	@JvmStatic val ATLAS: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/atlas.png") }
+    @JvmStatic val SPINE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/spine.png") }
+    @JvmStatic val DRAGONBONES: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/dragonbones.png") }
 
 	val USER_UNKNOWN_BYTES by lazy { getResourceBytes("/com/soywiz/korge/intellij/image/user_unknown.png") }
 

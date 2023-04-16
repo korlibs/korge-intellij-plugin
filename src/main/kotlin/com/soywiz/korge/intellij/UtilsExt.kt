@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.facet.*
+import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.ide.util.*
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.*
@@ -34,6 +35,7 @@ inline fun <T> UserDataHolder.getOrPutUserData(key: Key<T>, gen: (key: Key<T>) -
 
 val DataContext.project: Project? get() = getData(CommonDataKeys.PROJECT)
 val Project.rootManager get() = ProjectRootManager.getInstance(this)
+val Project.passwordSafe: PasswordSafe get() = application.getService(PasswordSafe::class.java)
 val Project.moduleManager get() = com.intellij.openapi.module.ModuleManager.getInstance(this)
 
 val Module.rootManager get() = com.intellij.openapi.roots.ModuleRootManager.getInstance(this)

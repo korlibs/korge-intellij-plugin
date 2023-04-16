@@ -92,6 +92,10 @@ dependencies {
     implementation("com.soywiz.korlibs.kbox2d:kbox2d-jvm:$kbox2dVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    //implementation("com.cjcrafter:openai:1.3.0")
+    //implementation("pw.mihou:Dotenv:1.0.1")
+    //implementation("com.squareup.okhttp3:okhttp:4.9.2")
+
     //implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
     //implementation("javax.xml.bind:jaxb-api:2.3.1")
     //implementation("com.sun.xml.bind:jaxb-impl:2.3.1")

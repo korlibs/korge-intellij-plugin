@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij.util
 
 import com.intellij.openapi.application.*
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.caches.resolve.*
@@ -36,3 +37,5 @@ fun KtDeclaration.typeExt() =
 
 fun KtReferenceExpression.resolveExt() =
     mainReference.resolve()
+
+val Project.fileEditorManager: FileEditorManager get() = FileEditorManager.getInstance(this)
