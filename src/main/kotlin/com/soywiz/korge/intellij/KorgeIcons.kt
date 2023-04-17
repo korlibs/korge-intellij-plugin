@@ -7,7 +7,7 @@ import javax.swing.*
 // https://jetbrains.design/intellij/resources/icons_list/
 object KorgeIcons {
     @JvmStatic val KTREE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
-    @JvmStatic val JITTO: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
+    @JvmField val JITTO: Icon = getIcon("/com/soywiz/korge/intellij/icon/jitto.png")
 	@JvmStatic val PARTICLE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/particle.png") }
 	@JvmStatic val BITMAP_FONT: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/bitmap_font.png") }
 	@JvmStatic val KRITA: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/krita.png") }
