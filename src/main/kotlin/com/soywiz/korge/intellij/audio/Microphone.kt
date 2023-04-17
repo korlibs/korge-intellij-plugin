@@ -25,18 +25,23 @@ object Microphone {
             val bytesRead = targetDataLine.read(buffer, 0, buffer.size)
             //println("bytesRead=${bytesRead}")
             if (bytesRead > 0) {
-                outputStream.write(buffer, 0, bytesRead)
-
                 val level = buffer.map { it.toInt().absoluteValue }.average()
-                if (level < 32) {
+                //println("level=$level")
+                val chunkIsSilenced = level < 32
+                if (chunkIsSilenced) {
                     silentSamples += bytesRead
                     //println("silentSamples:$silentSamples >= threshold:$threshold :: level=$level")
-                    if (recordedSomething && silentSamples >= threshold) break
                 } else {
                     recordedSomething = true
                     //println(" --> level=$level")
                     silentSamples = 0
                 }
+
+                if (recordedSomething) {
+                    outputStream.write(buffer, 0, bytesRead)
+                }
+
+                if (chunkIsSilenced && recordedSomething && silentSamples >= threshold) break
             }
         }
 

@@ -15,7 +15,8 @@ object AudioConverter {
 
     fun wav2mp3(file: File, out: File = File(file.parentFile, "${file.nameWithoutExtension}.mp3")): File {
         val process = ProcessBuilder()
-            .inheritIO()
+            //.inheritIO()
+            .redirectError(ProcessBuilder.Redirect.INHERIT)
             .command("ffmpeg", "-y", "-i", file.absolutePath, out.absolutePath)
             .start()
         process.waitFor()
