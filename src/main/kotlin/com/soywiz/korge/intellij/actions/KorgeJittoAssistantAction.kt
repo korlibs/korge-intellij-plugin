@@ -83,7 +83,7 @@ class KorgeJittoAssistantAction : AnAction() {
                     indicator.text = "Transcoding..."
                     val transcode = openai.transcode(mp3Data, language = "en").trim()
                     if (indicator.isCanceled) break
-                    if (transccd -ode.isNullOrBlank()) continue
+                    if (transcode.isNullOrBlank()) continue
 
                     indicator.text = "Generating code..."
 
