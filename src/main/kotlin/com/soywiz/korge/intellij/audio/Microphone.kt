@@ -6,7 +6,7 @@ import javax.sound.sampled.*
 import kotlin.math.absoluteValue
 
 object Microphone {
-    fun recordWavUntilSilence(secondsOfSilence: Double = 1.0): ByteArray {
+    fun recordWavUntilSilence(secondsOfSilence: Double = 1.5): ByteArray {
         val audioFormat = AudioFormat(44100f, 16, 1, true, false)
         val info = DataLine.Info(TargetDataLine::class.java, audioFormat)
         val targetDataLine = AudioSystem.getLine(info) as TargetDataLine
@@ -27,7 +27,7 @@ object Microphone {
             if (bytesRead > 0) {
                 val level = buffer.map { it.toInt().absoluteValue }.average()
                 //println("level=$level")
-                val chunkIsSilenced = level < 32
+                val chunkIsSilenced = level < 34
                 if (chunkIsSilenced) {
                     silentSamples += bytesRead
                     //println("silentSamples:$silentSamples >= threshold:$threshold :: level=$level")

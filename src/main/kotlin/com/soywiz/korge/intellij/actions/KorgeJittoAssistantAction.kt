@@ -38,25 +38,7 @@ class KorgeJittoAssistantAction : AnAction() {
             .system("""
                 Your are a Kotlin programmer, using the KorGE game engine. 
                 Only write code without explaining it. 
-                Try to be as concise as possible. Use the template provided by the user and do not change it
-                even if it looks wrong, since a new KorGE version has been released with some changes.
-            """.trimIndent())
-            .user("""
-                Use these imports:
-                
-                ```kotlin
-                import korlibs.time.*
-                import korlibs.korge.*
-                import korlibs.korge.scene.*
-                import korlibs.korge.tween.*
-                import korlibs.korge.view.*
-                import korlibs.image.color.*
-                import korlibs.image.format.*
-                import korlibs.io.file.std.*
-                import korlibs.math.geom.*
-                import korlibs.math.interpolation.*
-                import korlibs.korge.view.align.*
-                ```
+                Try to be as concise as possible.
             """.trimIndent())
             .user("""
                 Always use this code as base:
@@ -99,9 +81,9 @@ class KorgeJittoAssistantAction : AnAction() {
                     val mp3Data = AudioConverter.wav2mp3(wavData)
                     if (indicator.isCanceled) break
                     indicator.text = "Transcoding..."
-                    val transcode = openai.transcode(mp3Data).trim()
+                    val transcode = openai.transcode(mp3Data, language = "en").trim()
                     if (indicator.isCanceled) break
-                    if (transcode.isNullOrBlank()) continue
+                    if (transccd -ode.isNullOrBlank()) continue
 
                     indicator.text = "Generating code..."
 
@@ -119,6 +101,11 @@ class KorgeJittoAssistantAction : AnAction() {
                     //val text = response.trim().removePrefix("```kotlin").removeSuffix("```").trim()
                     val text =
                         (Regex("```kotlin(.*)```", RegexOption.DOT_MATCHES_ALL).find(response)?.groupValues?.get(1)?.trim() ?: error("Culdn't find kotlin code"))
+                            .replace("com.soywiz.klock.", "korlibs.time.")
+                            .replace("com.soywiz.korge.", "korlibs.korge.")
+                            .replace("com.soywiz.korim.", "korlibs.image.")
+                            .replace("com.soywiz.korio.", "korlibs.io.")
+                            .replace("com.soywiz.korma.", "korlibs.math.")
                             .replace("override suspend fun Container.sceneMain()", "override suspend fun SContainer.sceneMain()")
                             .replace("override suspend fun Container.sceneInit()", "override suspend fun SContainer.sceneMain()")
                             .replace("sceneContainer().changeTo<MyScene>()", "sceneContainer().changeTo({ MyScene() })")
@@ -127,7 +114,7 @@ class KorgeJittoAssistantAction : AnAction() {
                             .replace(Regex("\\bstage\\b"), "stage!!")
                             .replace(Regex("\\bseconds\\((.*?)\\)\\b")) { "${it.groupValues[1]}.seconds()" }
 
-
+                    chat.filterEntries { it.role != OpenAI.Role.ASSISTANT || it == chat.lastEntry }
 
                     runWriteAction {
                         val document = e.project!!.fileEditorManager.selectedTextEditor!!.document

@@ -13,18 +13,28 @@ object SimpleHttpClient {
         write(str.toByteArray())
     }
 
+    fun post(
+        url: URL,
+        body: HttpRequest.BodyPublisher,
+        headers: Map<String, String> = mapOf(),
+    ): HttpResponse<ByteArray> {
+        val response = HttpClient.newBuilder().build().send(HttpRequest.newBuilder()
+            .uri(url.toURI())
+            .also { for ((k, v) in headers) it.header(k, v) }
+            .POST(body)
+            .build(), HttpResponse.BodyHandlers.ofByteArray())
+        if (response.statusCode() >= 400) {
+            error("Error calling $url : ${response.statusCode()} : ${response.body().toString(Charsets.UTF_8)}")
+        }
+        return response
+    }
+
     fun postJson(
         url: URL,
         body: String,
         headers: Map<String, String> = mapOf(),
-    ): HttpResponse<ByteArray> {
-        return HttpClient.newBuilder().build().send(HttpRequest.newBuilder()
-            .uri(url.toURI())
-            .also { for ((k, v) in headers) it.header(k, v) }
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(body))
-            .build(), HttpResponse.BodyHandlers.ofByteArray())
-    }
+    ): HttpResponse<ByteArray> =
+        post(url, HttpRequest.BodyPublishers.ofString(body), headers + mapOf("Content-Type" to "application/json"))
 
     fun postMultipart(
         url: URL,
@@ -32,12 +42,11 @@ object SimpleHttpClient {
         headers: Map<String, String> = mapOf(),
     ): HttpResponse<ByteArray> {
         val boundary = "----Boundary" + System.currentTimeMillis()
-        return HttpClient.newBuilder().build().send(HttpRequest.newBuilder()
-            .uri(url.toURI())
-            .also { for ((k, v) in headers) it.header(k, v) }
-            .header("Content-Type", "multipart/form-data; boundary=$boundary")
-            .POST(HttpRequest.BodyPublishers.ofByteArray(createFormData(boundary, *parts)))
-            .build(), HttpResponse.BodyHandlers.ofByteArray())
+        return post(
+            url,
+            HttpRequest.BodyPublishers.ofByteArray(createFormData(boundary, *parts)),
+            headers + mapOf("Content-Type" to "multipart/form-data; boundary=$boundary")
+        )
     }
 
     fun createFormData(boundary: String, vararg parts: Pair<String, Any>): ByteArray {

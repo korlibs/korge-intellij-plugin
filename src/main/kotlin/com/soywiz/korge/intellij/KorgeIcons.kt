@@ -32,6 +32,7 @@ object KorgeIcons {
             e.printStackTrace()
             null
         }
+
     fun getIcon(path: String): Icon = try {IconLoader.getIcon(normalizePath(path), KorgeIcons::class.java)
     } catch (e: Throwable) {
         e.printStackTrace()
