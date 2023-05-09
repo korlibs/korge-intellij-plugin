@@ -1,3 +1,3 @@
 package com.soywiz.korge.intellij.util
 
-var isDevelopmentMode = "true" == System.getProperty("idea.is.internal")
+val isDevelopmentMode: Boolean get() = "true" == System.getProperty("idea.is.internal")
