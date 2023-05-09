@@ -66,6 +66,7 @@ fun VirtualFile?.getOrCreate(path: String?, create: Boolean): VirtualFile? {
 	val lastName = parts.getOrNull(1)
 	val child2 = this.findChild(firstName)
     val child = when {
+        !create -> child2
         child2 == null && lastName != null -> runWriteAction { this.createChildDirectory(null, firstName) }
         child2 == null && lastName == null -> runWriteAction { this.createChildData(null, firstName).also { it.setBinaryContent(byteArrayOf()) } }
         else -> child2
