@@ -185,6 +185,7 @@
     -->
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.platform.images</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
     <!--
     <depends>com.intellij.modules.platform</depends>
     -->
@@ -288,6 +289,8 @@
         <fileEditorProvider
             implementation="com.soywiz.korge.intellij.actions.KorgeWebPreviewEditorProvider"/>
 
+        <annotator language="yaml"
+                   implementationClass="com.soywiz.korge.intellij.annotator.DepsKProjectYmlAnnotator"/>
         <annotator language="kotlin"
             implementationClass="com.soywiz.korge.intellij.annotator.KorgeBuildGradleAnnotator"/>
         <annotator language="kotlin"

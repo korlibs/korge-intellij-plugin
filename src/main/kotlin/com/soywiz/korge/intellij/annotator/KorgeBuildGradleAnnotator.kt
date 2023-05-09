@@ -25,23 +25,14 @@ class KorgeBuildGradleAnnotator : Annotator {
             if (text != "korge") return false
             val context by lazy { KorgeTypeResolver(element) }
             val expressionType = context.getFqName(element)
-            if (expressionType != "com.soywiz.korge.gradle.KorgeExtension") return false
-            return true
+            return !(expressionType != "com.soywiz.korge.gradle.KorgeExtension"
+                && expressionType != "korlibs.korge.gradle.KorgeExtension")
         }
     }
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (!isKorgeBlock(element)) return
-
-        holder.newAnnotation(HighlightSeverity.INFORMATION, "Korge store")
-            .withFix(object : BaseIntentionAction() {
-                override fun getText(): String = "Install bundles from store..."
-                override fun getFamilyName(): String = text
-                override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean = true
-                override fun invoke(project: Project, editor: Editor?, file: PsiFile?) = KorgeStoreAction.openStore(project)
-            })
-            .gutterIconRenderer(MyGutterIconRenderer(action = KorgeStoreAction(), _icon = AllIcons.Actions.Install))
-            .create()
+        KorgeStoreAnnotation.annotate(element, holder)
     }
 
     data class MyGutterIconRenderer(val action: AnAction, val _icon: Icon) : GutterIconRenderer() {

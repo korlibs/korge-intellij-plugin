@@ -31,8 +31,8 @@ object DepsKProjectYml {
     }
 
     fun addDep(yaml: String, dep: String, removeUrl: String?): String {
-        val info = syaml.load<MutableMap<String, Any?>>(yaml)
-        if ("dependencies" !in info) {
+        val info = syaml.load<MutableMap<String, Any?>?>(yaml) ?: mutableMapOf()
+        if (info["dependencies"] !is MutableList<*>) {
             info["dependencies"] = mutableListOf<String>()
         }
         val deps = (info["dependencies"] as MutableList<String>)

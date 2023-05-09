@@ -28,7 +28,6 @@ import com.intellij.ui.jcef.*
 import com.intellij.util.*
 import com.intellij.util.io.*
 import com.intellij.util.ui.UIUtil
-import com.jetbrains.rd.util.string.print
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.annotator.*
@@ -49,12 +48,16 @@ import org.jetbrains.kotlin.psi.psiUtil.*
 import org.jetbrains.plugins.gradle.util.*
 import java.awt.*
 import java.beans.*
+import java.io.IOException
 import java.lang.Runnable
+import java.net.URI
+import java.net.URISyntaxException
 import javax.swing.*
 import kotlin.Result
 import kotlin.coroutines.*
 import kotlin.reflect.*
 import kotlin.text.Charsets
+
 
 object KorgeWebPreviewUtils {
     fun open(project: Project, title: String, url: String) {
@@ -133,9 +136,18 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
 
         println("buildGradleKfsFile: $buildGradleKfsFile")
 
+        val css = """
+            :root {
+              --bgcolor: ${UIUtil.getPanelBackground().toRgba()};
+              --labelcolor: ${UIUtil.getLabelForeground().toRgba()};
+            }
+        """.trimIndent()
+        browser.executeJavaScript("var style = document.createElement('style');style.innerHTML = `$css`;document.head.appendChild(style);", browser.url, 0);
+
         browser.executeJavaScript(
             """
                 window.insideKorgeIntellij = true;
+                window.insideKorgeIntellijStore = true;
                 window.insideKorgeIntellijVersion = 2;
             """.trimIndent(), null, 0
         )
@@ -229,6 +241,20 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
             mapOf("installed" to installed)
         }
 
+        disposables += browser.registerCallback("openNativeBrowser") { url: String ->
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                try {
+                    Desktop.getDesktop().browse(URI(url))
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } catch (e: URISyntaxException) {
+                    e.printStackTrace()
+                }
+            } else {
+                System.err.println("Desktop browsing is not supported on this platform")
+            }
+        }
+
         disposables += browser.registerCallback("getKorgePlugins") { it: Any? ->
             invokeLaterSuspend {
                 val bundleUrls = arrayListOf<String>()
@@ -270,7 +296,6 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
 
         disposables += browser.registerCallback("getKProjectDependencies") { it: Any? ->
             val depsKProjectYaml = getDepsKProjectYaml() ?: return@registerCallback null
-            delay(1L)
             DepsKProjectYml.extractDeps(depsKProjectYaml.getText())
         }
 
@@ -288,6 +313,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
         val url: String = "id",
         val title: String = "id",
         val author: String = "author",
+        val html: String? = null,
         val icon: String? = null,
         val removeUrl: String? = null,
         val extra: Any? = null
@@ -299,7 +325,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                 val result = showDialog("Install ${title}", preferredSize = Dimension(400, 200)) {
                     val bgColor = UIUtil.getPanelBackground()
                     val textColor = UIUtil.getLabelForeground()
-                    webBrowser("""
+                    webBrowser(html ?: """
                         <html>
                             <head>
                                 <style>
@@ -321,8 +347,8 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                         </html>
                     """.trimIndent()) {
                         this.component.background = bgColor
-                        this.min = MUnit2(240.pt, 240.pt)
-                        this.preferred = MUnit2(240.pt, 240.pt)
+                        //this.min = MUnit2(320.pt, 240.pt)
+                        //this.preferred = MUnit2(320.pt, 240.pt)
                     }
                 }
                 deferred.complete(result)
@@ -341,18 +367,19 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
 
     init {
         myPanel.jbCefClient.setProperty(JBCefClient.Properties.JS_QUERY_POOL_SIZE, 100)
-        //registerInsideKorgeIntellij()
+
         myPanel.jbCefClient.addLifeSpanHandler(object : CefLifeSpanHandlerAdapter() {
             override fun onAfterCreated(browser: CefBrowser) {
                 super.onAfterCreated(browser)
-                registerInsideKorgeIntellij()
+                //registerInsideKorgeIntellij()
             }
         }, myPanel.cefBrowser)
         myPanel.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+
             override fun onLoadingStateChange(browser: CefBrowser, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {
                 println("KorgeWebPreviewFileEditor.onLoadingStateChange! ${browser}, isLoading=$isLoading, canGoBack=$canGoBack, canGoForward=$canGoForward")
                 if (isLoading) {
-                    registerInsideKorgeIntellij()
+                    //registerInsideKorgeIntellij()
                 }
             }
 
@@ -453,11 +480,14 @@ fun <T : Any> CefBrowser.registerCallback(name: String, clazz: KClass<T>, corout
             val (callbackId, json) = param.split("@@@", limit = 2)
             println("CefBrowser.registerCallback['$name'].callbackId=$callbackId, input.json=$json")
             val input = jacksonObjectMapper.readValue(json, clazz.java)
+            //println("!!!! STARTING!")
             block.startCoroutine(input, object : Continuation<Any?> {
                 override val context: CoroutineContext = coroutineContext
 
                 override fun resumeWith(result: Result<Any?>) {
                     try {
+                        //println("!!!! COMPLETED!")
+
                         val func = if (result.isSuccess) "resolve" else "reject"
                         val json = jacksonObjectMapper.writeValueAsString(result.getOrNull() ?: result.exceptionOrNull())
 
@@ -483,22 +513,26 @@ fun <T : Any> CefBrowser.registerCallback(name: String, clazz: KClass<T>, corout
             null
         }
     }
-    @Suppress("JSUnusedLocalSymbols")
-    cefBrowser.executeJavaScript("""
+    val jscode = """
         $jcefLastId = $jcefLastId || 0;
         $jcefDeferreds = $jcefDeferreds || {};
         $jcefFunctions = $jcefFunctions || {};
         $jcefFunctions['$name'] = async function(str) {
             const $callbackId = $jcefLastId++
             const promise = new Promise((resolve, reject) => { $jcefDeferreds[$callbackId] = { resolve, reject }; })
+            //alert(`calling: ` + $callbackId)
             const json = '' + $callbackId + '@@@' + JSON.stringify(str)
             ${jsQuery.inject("json")}
             try {
                 return await promise;
             } finally {
+                //alert(`completed: ` + $callbackId)
                 delete $jcefDeferreds[$callbackId];
             }
         }
-    """.trimIndent(), null, 0)
+    """.trimIndent()
+    @Suppress("JSUnusedLocalSymbols")
+    println("jscode=$jscode")
+    cefBrowser.executeJavaScript(jscode, null, 0)
     return jsQuery
 }
