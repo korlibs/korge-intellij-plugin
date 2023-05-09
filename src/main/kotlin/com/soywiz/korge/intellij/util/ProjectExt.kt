@@ -3,10 +3,15 @@ package com.soywiz.korge.intellij.util
 import com.intellij.openapi.application.*
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.*
+import com.intellij.openapi.vfs.VirtualFile
+import com.soywiz.korge.intellij.rootManager
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.caches.resolve.*
 import org.jetbrains.kotlin.idea.references.*
 import org.jetbrains.kotlin.psi.*
+
+//val Project.rootFile: VirtualFile? get() = if (projectFile?.canonicalPath?.contains(".idea") == true) projectFile?.parent?.parent else projectFile?.parent
+val Project.rootFile: VirtualFile? get() = rootManager.contentRoots.firstOrNull()
 
 fun <T> Project.runReadActionInSmartModeExt(action: () -> T): T {
     if (ApplicationManager.getApplication().isReadAccessAllowed) return action()

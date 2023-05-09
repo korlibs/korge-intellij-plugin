@@ -19,7 +19,11 @@ class KorgeStoreAction : AnAction(), DumbAware {
 
     companion object {
         fun openStore(project: Project) {
-            KorgeWebPreviewUtils.open(project, "KorGE Store", "https://awesome.korge.org/")
+            val medium = "store-action"
+            val campaign = "no-campaign"
+            val utmSuffix = "?utm_source=ide&utm_medium=$medium&utm_campaign=$campaign"
+            //KorgeWebPreviewUtils.open(project, "KorGE Store", "https://store.korge.org/$utmSuffix")
+            KorgeWebPreviewUtils.open(project, "KorGE Store", "http://127.0.0.1:4000/$utmSuffix")
         }
     }
 }

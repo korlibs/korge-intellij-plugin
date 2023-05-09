@@ -27,20 +27,23 @@ import com.intellij.ui.*
 import com.intellij.ui.jcef.*
 import com.intellij.util.*
 import com.intellij.util.io.*
+import com.intellij.util.ui.UIUtil
+import com.jetbrains.rd.util.string.print
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.annotator.*
+import com.soywiz.korge.intellij.deps.DepsKProjectYml
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
+import com.soywiz.korim.color.toRgba
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.htmlspecialchars
 import kotlinx.coroutines.*
 import org.cef.browser.*
 import org.cef.handler.*
 import org.cef.network.*
 import org.jetbrains.ide.*
-import org.jetbrains.kotlin.idea.base.util.*
 import org.jetbrains.kotlin.idea.core.util.*
-import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
 import org.jetbrains.plugins.gradle.util.*
@@ -116,25 +119,31 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
     //    it.setProperty(JBCefClient.Properties.JS_QUERY_POOL_SIZE, RegistryManager.getInstance().intValue("ide.browser.jcef.jsQueryPoolSize"))
     //}
     //private val myPanel: JCEFHtmlPanel = JCEFHtmlPanel(jbClient, "")
-    private val myPanel: JCEFHtmlPanel = JCEFHtmlPanel("")
+    private val myPanel: JCEFHtmlPanel = JCEFHtmlPanel("").also {
+        it.setPageBackgroundColor(UIUtil.getPanelBackground().toRgba().toString())
+    }
     private var disposables = arrayListOf<Disposable>()
 
     private fun registerInsideKorgeIntellij(browser: CefBrowser = myPanel.cefBrowser) {
-        val buildGradleKfsFile = project.rootManager.contentRoots.mapNotNull { it["build.gradle.kts"] }.filter { it.exists() }.firstOrNull()
+        //println("project.projectFilePath: ${project.projectFilePath}")
+        //println("project.projectFile: ${project.projectFile}")
+        println("project.rootFile: ${project.rootFile}")
+        //println("project.roots: ${project.rootManager.contentRoots.toList()}")
+        val buildGradleKfsFile: VirtualFile? = project.rootFile["build.gradle.kts"]
 
         println("buildGradleKfsFile: $buildGradleKfsFile")
 
         browser.executeJavaScript(
             """
                 window.insideKorgeIntellij = true;
-                window.insideKorgeIntellijVersion = 1;
+                window.insideKorgeIntellijVersion = 2;
             """.trimIndent(), null, 0
         )
         for (disposable in disposables) Disposer.dispose(disposable)
         disposables += browser.registerCallback("installKorgePlugin") { request: InstallKorgePluginRequest ->
-            val deferred = CompletableDeferred<Boolean>()
             println("installKorgePlugin: $request")
             val params = LinkedHashMap<String, Styled<JTextField>>()
+            val deferred = CompletableDeferred<Boolean>()
             ApplicationManager.getApplication().invokeLater {
                 val result = showDialog("Install ${request.title}", preferredSize = Dimension(400, 200)) {
                     verticalStack {
@@ -209,12 +218,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                         //.update(KotlinDslGradleBuildSync(ExternalSystemTaskId.getProjectId(project)))
 
                         project.runReadActionInSmartModeExt {
-                            ExternalSystemUtil.refreshProject(
-                                buildGradleKfsFile.parent.toNioPath().systemIndependentPath,
-                                ImportSpecBuilder(project, GradleConstants.SYSTEM_ID)
-                                    .usePreviewMode()
-                                    .use(ProgressExecutionMode.MODAL_SYNC)
-                            )
+                            refreshGradleProject(project)
                         }
                     }
                 }
@@ -224,6 +228,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
             println("installKorgePlugin DONE: $request, installed=$installed")
             mapOf("installed" to installed)
         }
+
         disposables += browser.registerCallback("getKorgePlugins") { it: Any? ->
             invokeLaterSuspend {
                 val bundleUrls = arrayListOf<String>()
@@ -251,7 +256,88 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                 bundleUrls
             }
         }
+
+
+        // NEW KPROJECT
+
+        fun getDepsKProjectYaml(): VirtualFile? {
+            return buildGradleKfsFile?.parent?.create("deps.kproject.yml")?.also {
+                if (it.contentsToByteArray().isEmpty()) {
+                    it.setText(DepsKProjectYml.createEmpty())
+                }
+            }
+        }
+
+        disposables += browser.registerCallback("getKProjectDependencies") { it: Any? ->
+            val depsKProjectYaml = getDepsKProjectYaml() ?: return@registerCallback null
+            delay(1L)
+            DepsKProjectYml.extractDeps(depsKProjectYaml.getText())
+        }
+
+        disposables += browser.registerCallback("installKProjectDependency") { it: InstallKProjectDependencyRequest ->
+            val depsKProjectYaml = getDepsKProjectYaml() ?: return@registerCallback null
+            val toInstall = it.askForPermissions(project)
+            if (toInstall) {
+                depsKProjectYaml.setText(DepsKProjectYml.addDep(depsKProjectYaml.getText(), it.url, it.removeUrl))
+            }
+            mapOf("installed" to toInstall)
+        }
     }
+
+    data class InstallKProjectDependencyRequest(
+        val url: String = "id",
+        val title: String = "id",
+        val author: String = "author",
+        val icon: String? = null,
+        val removeUrl: String? = null,
+        val extra: Any? = null
+    ) {
+        suspend fun askForPermissions(project: Project): Boolean {
+            val deferred = CompletableDeferred<Boolean>()
+
+            ApplicationManager.getApplication().invokeLater {
+                val result = showDialog("Install ${title}", preferredSize = Dimension(400, 200)) {
+                    val bgColor = UIUtil.getPanelBackground()
+                    val textColor = UIUtil.getLabelForeground()
+                    webBrowser("""
+                        <html>
+                            <head>
+                                <style>
+                                body {
+                                    background: ${bgColor.toRgba()};
+                                    font: 14px Arial;
+                                    color: ${textColor.toRgba()};
+                                }
+                                p {
+                                    margin: 0; padding: 0;
+                                }
+                                </style>
+                            </head>
+                            <body>
+                                <p><strong>Title:</strong> ${title.htmlspecialchars()}</p>
+                                <p><strong>Author:</strong> ${author.htmlspecialchars()}</p>
+                                <img src="${icon?.htmlspecialchars()}" style="max-height:calc(100vh - 4em);">
+                            </body>
+                        </html>
+                    """.trimIndent()) {
+                        this.component.background = bgColor
+                        this.min = MUnit2(240.pt, 240.pt)
+                        this.preferred = MUnit2(240.pt, 240.pt)
+                    }
+                }
+                deferred.complete(result)
+                if (result) {
+                    try {
+                        refreshGradleProject(project)
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+            return deferred.await()
+        }
+    }
+
 
     init {
         myPanel.jbCefClient.setProperty(JBCefClient.Properties.JS_QUERY_POOL_SIZE, 100)

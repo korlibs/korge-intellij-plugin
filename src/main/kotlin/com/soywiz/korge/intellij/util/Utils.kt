@@ -38,12 +38,39 @@ data class FileMode(val mode: Int) {
 }
 
 operator fun VirtualFile?.get(path: String?): VirtualFile? {
+    return getOrCreate(path, create = false)
+}
+
+fun VirtualFile?.create(path: String?): VirtualFile {
+    return getOrCreate(path, create = true)!!
+}
+
+fun VirtualFile.getText(): String {
+    return contentsToByteArray().toString(Charsets.UTF_8)
+}
+
+fun VirtualFile.setText(content: String) {
+    setByteArray(content.toByteArray(Charsets.UTF_8))
+}
+
+fun VirtualFile.setByteArray(content: ByteArray) {
+    runWriteAction {
+        setBinaryContent(content)
+    }
+}
+
+fun VirtualFile?.getOrCreate(path: String?, create: Boolean): VirtualFile? {
 	if (this == null || path == null || path == "" || path == ".") return this
 	val parts = path.split('/', limit = 2)
 	val firstName = parts[0]
 	val lastName = parts.getOrNull(1)
-	val child = this.findChild(firstName)
-	return if (lastName != null) child[lastName] else child
+	val child2 = this.findChild(firstName)
+    val child = when {
+        child2 == null && lastName != null -> runWriteAction { this.createChildDirectory(null, firstName) }
+        child2 == null && lastName == null -> runWriteAction { this.createChildData(null, firstName).also { it.setBinaryContent(byteArrayOf()) } }
+        else -> child2
+    }
+	return if (lastName != null) child.getOrCreate(lastName, create = create) else child
 }
 
 fun VirtualFile.createFile(path: String, data: String, charset: Charset = Charsets.UTF_8, mode: FileMode = FileMode("0644")): VirtualFile =

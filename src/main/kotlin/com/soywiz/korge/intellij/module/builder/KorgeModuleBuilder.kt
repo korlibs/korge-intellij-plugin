@@ -64,7 +64,7 @@ class KorgeModuleBuilder() : ModuleBuilder() {
 								//val projectFilePath = root.canonicalPath + "/build.gradle"
 								val projectFilePath = root.canonicalPath + "/build.gradle.kts"
 								println("projectFilePath: $projectFilePath")
-								linkAndRefreshGradleProject(projectFilePath, project)
+                                linkAndRefreshGradleProject2(projectFilePath, project)
 								//setupGradleSettings(org.jetbrains.plugins.gradle.settings.GradleProjectSettings(), ".", project)
 								println("/GradleProjectOpenProcessor().doOpenProject")
 							} catch (e: Throwable) {

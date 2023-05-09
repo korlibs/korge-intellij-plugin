@@ -85,6 +85,7 @@ dependencies {
 
     // @TODO: Dependency substitution: https://docs.gradle.org/current/userguide/composite_builds.html
 
+    //implementation("com.soywiz.kproject:kproject-common:0.2.6")
     implementation("com.soywiz.korlibs.korge2:korge-jvm:$korgeVersion")
     implementation("com.soywiz.korlibs.korge2:korge-dragonbones-jvm:$korgeVersion")
     implementation("com.soywiz.korlibs.korge2:korge-spine-jvm:$korgeVersion")
@@ -110,7 +111,8 @@ intellij {
     // IntelliJ IDEA dependency
     //version.set("IC-2021.3.1")
     //version.set("IC-2022.1")
-    version.set("IC-2022.3.2")
+    //version.set("IC-2022.3.2")
+    version.set("IC-2023.1")
     // Bundled plugin dependencies
     plugins.addAll(
         "gradle", "java", "platform-images", "Kotlin", "gradle-java"
