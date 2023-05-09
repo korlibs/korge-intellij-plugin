@@ -420,7 +420,8 @@
         <runConfigurationProducer
             implementation="com.soywiz.korge.intellij.execution.KorgeRunConfigurationProducer"/>
 
-        <moduleBuilder builderClass="com.soywiz.korge.intellij.module.builder.KorgeModuleBuilder"/>
+        <!-- This is the KorGE Wizard -->
+        <moduleBuilder builderClass="com.soywiz.korge.intellij.module.builder.KorgeWizardModuleBuilder"/>
 
         <!--
         -->

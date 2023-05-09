@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij.module
 
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.module.wizard.KorgeTemplate
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
@@ -12,6 +13,7 @@ class KorgeModuleConfig {
 	var artifactId = "example"
 	var artifactVersion = "0.0.1"
 	var projectType = ProjectType.Gradle
+    var template: KorgeTemplate? = null
 	var featuresToInstall: List<KorgeProjectTemplate.Features.Feature> = listOf()
 	var korgeVersion = KorgeProjectTemplate.Versions.Version("1.5.0d")
 

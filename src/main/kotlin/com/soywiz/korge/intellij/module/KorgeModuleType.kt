@@ -7,17 +7,17 @@ import javax.swing.*
 
 //open class KorgeModuleType : JpsJavaModuleType("korge") {
 //open class KorgeModuleType : JavaModuleType("korge") {
-open class KorgeModuleType : ModuleType<KorgeModuleBuilder>("korge") {
+open class KorgeModuleType : ModuleType<KorgeWizardModuleBuilder>("korge") {
 	//open class KorgeModuleType : EmptyModuleType("korge") {
 	companion object {
 		val INSTANCE = KorgeModuleType()
-		val NAME = "Korge"
+		val NAME = "KorGE Game"
 		val DESCRIPTION = "KorGE Game Engine"
-		val BIG_ICON = KorgeIcons.KORGE
-		val ICON = KorgeIcons.KORGE
+		val BIG_ICON = KorgeIcons.JITTO
+		val ICON = KorgeIcons.JITTO
 	}
 
-	override fun createModuleBuilder() = KorgeModuleBuilder()
+	override fun createModuleBuilder() = KorgeWizardModuleBuilder()
 	override fun getName(): String = NAME
 	override fun getDescription(): String = DESCRIPTION
 	override fun getIcon(): Icon = BIG_ICON

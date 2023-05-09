@@ -11,7 +11,11 @@ import com.intellij.openapi.vfs.*
 import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.module.wizard.*
 import com.soywiz.korge.intellij.util.*
+import com.soywiz.korio.file.std.ZipVfs
+import com.soywiz.korio.file.std.toVfs
+import com.soywiz.korio.stream.openAsync
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 import org.jetbrains.plugins.gradle.service.project.*
 import org.jetbrains.plugins.gradle.service.project.open.*
 import java.io.*
@@ -19,7 +23,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
 
-class KorgeModuleBuilder() : ModuleBuilder() {
+class KorgeWizardModuleBuilder() : ModuleBuilder() {
 	val SILENT_GRADLE_IMPORT = false
 
     override fun getModuleType(): ModuleType<*> = KorgeModuleType.INSTANCE
@@ -42,13 +46,26 @@ class KorgeModuleBuilder() : ModuleBuilder() {
 		rootModel.addContentEntry(root)
 		if (moduleJdk != null) rootModel.sdk = moduleJdk
 
-		project.backgroundTask("Setting Up Project") {
+		project.backgroundTask("Setting Up Project") { indicator ->
 			val info = config
 
 			runBlocking {
+                val template = config.template ?: error("Template was not selected!")
+                indicator.isIndeterminate = true
+                indicator.text2 = "Downloading ${template.zip}..."
+                val templateZipByteArray = downloadUrlCached(template.zip)
+                indicator.text2 = "Unzipping..."
+                val zip = ZipVfs(templateZipByteArray.openAsync())
+                zip.list().first().copyRecursively(
+                    root.toNioPath().toFile().toVfs()
+                )
+                indicator.text2 = "Loading gradle"
+
+                /*
 				for ((fileName, fileContent) in config.generate(korgeProjectTemplateProvider.template(project))) {
 					root.createFile(fileName, fileContent, FileMode("0777"))
 				}
+                 */
 			}
 
 			when (info.projectType) {
@@ -88,10 +105,11 @@ class KorgeModuleBuilder() : ModuleBuilder() {
 
     // 1st screen
 	override fun getCustomOptionsStep(context: WizardContext, parentDisposable: Disposable?) =
-		KorgeModuleWizardStep(korgeProjectTemplateProvider, config)
+		//KorgeModuleWizardStep(korgeProjectTemplateProvider, config)
+        NewKorgeModuleWizardStep(korgeProjectTemplateProvider, config)
 
 	// 2nd+ screen(s)
-	override fun createWizardSteps(wizardContext: WizardContext, modulesProvider: ModulesProvider) = arrayOf(
-		KorgeArtifactWizardStep(korgeProjectTemplateProvider, config)
-	)
+	//override fun createWizardSteps(wizardContext: WizardContext, modulesProvider: ModulesProvider) = arrayOf(
+	//	KorgeArtifactWizardStep(korgeProjectTemplateProvider, config)
+	//)
 }

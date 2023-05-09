@@ -16,6 +16,9 @@ open class KorgeProjectTemplate {
 		var versions = arrayListOf<Version>()
 
 		data class Version(var text: String = "") {
+            companion object {
+                val LAST_KNOWN = Version("4.0.0")
+            }
 			override fun toString(): String = text
 		}
 	}
