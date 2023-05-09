@@ -80,7 +80,9 @@ class NewKorgeModuleWizardStep(
         for ((category, templates) in list.groupBy { it.category }) {
             out.add(KorgeTemplateRow(category, null))
             for (template in templates) {
-                out.add(KorgeTemplateRow(template.title, template))
+                if (template.enabled) {
+                    out.add(KorgeTemplateRow(template.title, template))
+                }
             }
         }
         return out
