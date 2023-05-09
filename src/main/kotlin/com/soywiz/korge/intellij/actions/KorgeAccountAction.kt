@@ -162,6 +162,7 @@ class KorgeAccountAction : AnAction(), DumbAware {
         }
         super.update(e)
         //e.presentation.isVisible = korgeGlobalPrivateSettings.isUserLoggedIn()
+        e.presentation.isVisible = e.project?.korge?.containsKorge == true
         e.presentation.icon = when {
             korgeGlobalPrivateSettings.isUserLoggedIn() -> korgeGlobalPrivateSettings.getAvatarIcon()
             else -> AllIcons.General.User

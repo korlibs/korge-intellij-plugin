@@ -11,6 +11,7 @@ import com.soywiz.korge.intellij.ai.OpenAI
 import com.soywiz.korge.intellij.audio.AudioConverter
 import com.soywiz.korge.intellij.audio.Microphone
 import com.soywiz.korge.intellij.config.korgeGlobalPrivateSettings
+import com.soywiz.korge.intellij.korge
 import com.soywiz.korge.intellij.passwordSafe
 import com.soywiz.korge.intellij.util.fileEditorManager
 import com.soywiz.korge.intellij.util.runWriteAction
@@ -21,7 +22,7 @@ class KorgeJittoAssistantAction : AnAction() {
 
     override fun update(e: AnActionEvent) {
         val isSoywiz = korgeGlobalPrivateSettings.isUserLoggedIn() && korgeGlobalPrivateSettings.userLogin == "soywiz"
-        e.presentation.isVisible = isSoywiz
+        e.presentation.isVisible = isSoywiz && e.project?.korge?.containsKorge == true
     }
 
     override fun actionPerformed(e: AnActionEvent) {
