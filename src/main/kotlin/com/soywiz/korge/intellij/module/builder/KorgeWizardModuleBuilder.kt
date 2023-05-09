@@ -12,6 +12,7 @@ import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.module.wizard.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.file.std.ZipVfs
+import com.soywiz.korio.file.std.get
 import com.soywiz.korio.file.std.toVfs
 import com.soywiz.korio.stream.openAsync
 import kotlinx.coroutines.*
@@ -53,7 +54,7 @@ class KorgeWizardModuleBuilder() : ModuleBuilder() {
                 val template = config.template ?: error("Template was not selected!")
                 indicator.isIndeterminate = true
                 indicator.text2 = "Downloading ${template.zip}..."
-                val templateZipByteArray = downloadUrlCached(template.zip)
+                val templateZipByteArray = downloadUrlCached(template.zip ?: error("Can't find zip file"))
                 indicator.text2 = "Unzipping..."
                 val zip = ZipVfs(templateZipByteArray.openAsync())
                 val firstFolder = zip.list().first { it.isDirectory() }
@@ -61,17 +62,25 @@ class KorgeWizardModuleBuilder() : ModuleBuilder() {
                 println("Unzipping $firstFolder into $outputFile")
                 firstFolder.copyRecursively(outputFile)
                 println("Unzipping completed")
-                indicator.text2 = "Loading gradle"
+
+                println("Updating permissions")
+
+                root.toNioPath().toFile()["gradlew"].takeIf { it.exists() }?.setExecutable(true)
 
                 println("Refreshing root")
+
                 root.refresh(false, true)
+                LocalFileSystem.getInstance().refreshAndFindFileByPath(root.toNioPath().toFile().canonicalPath)
 
                 /*
 				for ((fileName, fileContent) in config.generate(korgeProjectTemplateProvider.template(project))) {
 					root.createFile(fileName, fileContent, FileMode("0777"))
 				}
                  */
-			}
+
+                indicator.text2 = "Loading gradle"
+
+            }
 
 			when (info.projectType) {
 				ProjectType.Gradle -> {

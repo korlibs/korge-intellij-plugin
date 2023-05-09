@@ -22,16 +22,18 @@ import javax.swing.*
 data class KorgeTemplateRow(val title: String, val template: KorgeTemplate?)
 
 data class KorgeTemplate(
-    val title: String,
+    val title: String?,
     val authors: List<String>?,
-    val category: String,
+    val category: String?,
     val description: String,
     val screenshot: String?,
-    val enabled: Boolean,
-    val zip: String,
+    val enabled: Boolean?,
+    val zip: String?,
 ) {
+    val categorySure = category ?: "Unknown"
+    val titleSure = title ?: "Unknown title"
     val screenshotSure: String get() = screenshot ?: "https://korge.org/assets/images/logo/logo.svg"
-    override fun toString(): String = title
+    override fun toString(): String = titleSure
 }
 
 class NewKorgeModuleWizardStep(
@@ -79,11 +81,11 @@ class NewKorgeModuleWizardStep(
 
     fun createTemplateRows(list: List<KorgeTemplate>): List<KorgeTemplateRow> {
         val out = arrayListOf<KorgeTemplateRow>()
-        for ((category, templates) in list.groupBy { it.category }) {
+        for ((category, templates) in list.groupBy { it.categorySure }) {
             out.add(KorgeTemplateRow(category, null))
             for (template in templates) {
-                if (template.enabled) {
-                    out.add(KorgeTemplateRow(template.title, template))
+                if (template.enabled == true) {
+                    out.add(KorgeTemplateRow(template.titleSure, template))
                 }
             }
         }
