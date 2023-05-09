@@ -115,7 +115,12 @@ intellij {
     version.set("IC-2023.1")
     // Bundled plugin dependencies
     plugins.addAll(
-        "gradle", "java", "platform-images", "Kotlin", "gradle-java", "yaml"
+        "gradle",
+        "java",
+        "platform-images",
+        "Kotlin",
+        "gradle-java",
+        "yaml"
     )
 
     pluginName.set("KorgePlugin")
