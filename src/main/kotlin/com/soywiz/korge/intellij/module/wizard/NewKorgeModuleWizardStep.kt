@@ -23,6 +23,7 @@ data class KorgeTemplateRow(val title: String, val template: KorgeTemplate?)
 
 data class KorgeTemplate(
     val title: String,
+    val authors: List<String>?,
     val category: String,
     val description: String,
     val screenshot: String?,
@@ -46,6 +47,7 @@ class NewKorgeModuleWizardStep(
             [
                 {
                     "title": "Hello World",
+                    "authors": ["korlibs"],
                     "category": "Starter Kits",
                     "repo": "https://github.com/korlibs/korge-hello-world",
                     "zip": "https://github.com/korlibs/korge-hello-world/archive/refs/heads/main.zip",
@@ -117,7 +119,13 @@ class NewKorgeModuleWizardStep(
                             <body style="margin:0;padding:0;font: 14px Arial; color: ${UIUtil.getLabelForeground().toRgba()};">
                             <div style="display: flex;">
                                 <div style="flex: 0 0 100vh;"><img src="${row.template.screenshotSure}" style="max-width:256px;max-height:100vh;margin-right: 8px;margin-left:8px;"></div>
-                                <div style="flex: 1;">${row.template.description}</div>
+                                <div style="flex: 1;">
+                                    <p>
+                                    <strong>Authors:</strong>
+                                    ${(row.template.authors ?: emptyList()).joinToString(", ")}
+                                    </p>
+                                    ${row.template.description}
+                                </div>
                             </div>
                             </body>
                         </html>

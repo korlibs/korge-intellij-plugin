@@ -12,7 +12,7 @@ fun File.ensureParents(): File = this.also { it.parentFile.mkdirs() }
 
 fun getUrlCachedFile(url: String): File {
     val urlHash = MessageDigest.getInstance("SHA256").digest(url.toByteArray(Charsets.UTF_8)).hexLower
-    return File(PathManager.getPluginTempPath())["downloadCache"]["$urlHash.bin"]
+    return File(PathManager.getPluginTempPath())["downloadCache"]["v3-$urlHash.bin"]
 }
 
 fun getUrlCached(url: String): ByteArray? {
