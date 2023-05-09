@@ -137,8 +137,8 @@ class NewKorgeModuleWizardStep(
                     //val doc = row.template.documentation
                     //description.add(Link(doc, URL(doc)))
                 }
-                description.doLayout()
-                description.repaint()
+                //description.doLayout()
+                //description.repaint()
             }
 
             val featureListModel = DefaultListModel<KorgeTemplateRow>()
