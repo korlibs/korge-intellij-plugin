@@ -10,6 +10,7 @@ import com.intellij.openapi.progress.Task
 import com.soywiz.korge.intellij.ai.OpenAI
 import com.soywiz.korge.intellij.audio.AudioConverter
 import com.soywiz.korge.intellij.audio.Microphone
+import com.soywiz.korge.intellij.config.korgeGlobalPrivateSettings
 import com.soywiz.korge.intellij.passwordSafe
 import com.soywiz.korge.intellij.util.fileEditorManager
 import com.soywiz.korge.intellij.util.runWriteAction
@@ -17,6 +18,11 @@ import javax.swing.JOptionPane
 
 class KorgeJittoAssistantAction : AnAction() {
     val OPEN_AI_KEY_CREDS = CredentialAttributes("KorgeJittoOpenAIKey", "OpenAIKey")
+
+    override fun update(e: AnActionEvent) {
+        val isSoywiz = korgeGlobalPrivateSettings.isUserLoggedIn() && korgeGlobalPrivateSettings.userLogin == "soywiz"
+        e.presentation.isVisible = isSoywiz
+    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project!!
