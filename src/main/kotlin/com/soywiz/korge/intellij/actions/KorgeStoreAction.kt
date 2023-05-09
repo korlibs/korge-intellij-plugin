@@ -4,11 +4,17 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.soywiz.korge.intellij.korge
 import com.soywiz.korge.intellij.util.isDevelopmentMode
 
 class KorgeStoreAction : AnAction(), DumbAware {
     override fun actionPerformed(e: AnActionEvent) {
-        openStore(e.project!!)
+        openStore(e.project ?: return)
+    }
+
+    override fun update(e: AnActionEvent) {
+        val project = e.project ?: return
+        e.presentation.isVisible = project.korge.containsKorge
     }
 
     companion object {
