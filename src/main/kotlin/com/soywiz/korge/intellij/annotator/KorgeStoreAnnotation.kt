@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.soywiz.korge.intellij.KorgeIcons
 import com.soywiz.korge.intellij.actions.KorgeStoreAction
 
 object KorgeStoreAnnotation {
@@ -22,7 +23,8 @@ object KorgeStoreAnnotation {
             .gutterIconRenderer(
                 KorgeBuildGradleAnnotator.MyGutterIconRenderer(
                     action = KorgeStoreAction(),
-                    _icon = AllIcons.Actions.Install
+                    //_icon = AllIcons.Actions.Install
+                    _icon = KorgeIcons.JITTO
                 )
             )
             .create()

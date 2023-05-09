@@ -5,7 +5,7 @@
     <id>com.soywiz.korge.korge-intellij-plugin</id>
 
     <name>Korge</name>
-    <version>3.3.0</version>
+    <version>4.0.0</version>
     <vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
 
     <description><![CDATA[
@@ -13,6 +13,13 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
+        <h3>4.0.0</h3>
+        <ul>
+            <li>New project Wizard with templates</li>
+            <li>New KorGE Store</li>
+            <li>Auto-creation on a `runJvmAutoreload` gradle run configuration</li>
+            <li>Removed old editors for now</li>
+        </ul>
         <h3>3.3.0</h3>
         <ul>
             <li>Updated KorGE to 3.3.0</li>
@@ -191,6 +198,9 @@
     -->
 
     <actions>
+        <action id="KorgeCreateGradleRunConfiguration"
+                class="com.soywiz.korge.intellij.actions.KorgeCreateGradleRunConfiguration" text="_KorgeCreateGradleRunConfiguration"
+                />
 
         <group id="KorgeActions">
             <!--<add-to-group group-id="NavBarToolBar" anchor="last"/>-->
@@ -210,12 +220,12 @@
                 id="JittoAssistantAction"
                 class="com.soywiz.korge.intellij.actions.KorgeJittoAssistantAction"
                 text="KorGE _Jitto"
-                icon="com.soywiz.korge.intellij.KorgeIcons.JITTO"/>
+                icon="com.soywiz.korge.intellij.KorgeIcons.PARTICLE"/>
             <action
                 id="KorgeStoreAction"
                 class="com.soywiz.korge.intellij.actions.KorgeStoreAction"
                 text="KorGE _Store"
-                icon="AllIcons.Actions.Install"/>
+                icon="com.soywiz.korge.intellij.KorgeIcons.JITTO"/>
             <!--
             <action
                 id="KorgeFixGradleMavenLocalSourcesAction"

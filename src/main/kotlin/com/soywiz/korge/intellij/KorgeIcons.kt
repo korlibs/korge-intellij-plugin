@@ -6,22 +6,22 @@ import javax.swing.*
 
 // https://jetbrains.design/intellij/resources/icons_list/
 object KorgeIcons {
-    @JvmStatic val KTREE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
+    @JvmField val KTREE: Icon = getIcon("/com/soywiz/korge/intellij/icon/korge.png")
     @JvmField val JITTO: Icon = getIcon("/com/soywiz/korge/intellij/icon/jitto.png")
-	@JvmStatic val PARTICLE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/particle.png") }
-	@JvmStatic val BITMAP_FONT: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/bitmap_font.png") }
-	@JvmStatic val KRITA: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/krita.png") }
-    @JvmStatic val QOI: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/qoi.png") }
-	@JvmStatic val SWF: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/swf.png") }
-	@JvmStatic val TILED: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/tiled.png") }
-	@JvmStatic val KORGE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
-	@JvmStatic val SPONSOR: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/sponsor.png") }
-	@JvmStatic val VOICE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/lips.png") }
-	@JvmStatic val SPRITER: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/spriter.png") }
-	@JvmStatic val SOUND: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/sound.png") }
-	@JvmStatic val ATLAS: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/atlas.png") }
-    @JvmStatic val SPINE: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/spine.png") }
-    @JvmStatic val DRAGONBONES: Icon by lazy { getIcon("/com/soywiz/korge/intellij/icon/dragonbones.png") }
+	@JvmField val PARTICLE: Icon = getIcon("/com/soywiz/korge/intellij/icon/particle.png")
+	@JvmField val BITMAP_FONT: Icon = getIcon("/com/soywiz/korge/intellij/icon/bitmap_font.png")
+	@JvmField val KRITA: Icon = getIcon("/com/soywiz/korge/intellij/icon/krita.png")
+    @JvmField val QOI: Icon = getIcon("/com/soywiz/korge/intellij/icon/qoi.png")
+	@JvmField val SWF: Icon = getIcon("/com/soywiz/korge/intellij/icon/swf.png")
+	@JvmField val TILED: Icon = getIcon("/com/soywiz/korge/intellij/icon/tiled.png")
+	@JvmField val KORGE: Icon = getIcon("/com/soywiz/korge/intellij/icon/korge.png")
+	@JvmField val SPONSOR: Icon = getIcon("/com/soywiz/korge/intellij/icon/sponsor.png")
+	@JvmField val VOICE: Icon = getIcon("/com/soywiz/korge/intellij/icon/lips.png")
+	@JvmField val SPRITER: Icon = getIcon("/com/soywiz/korge/intellij/icon/spriter.png")
+	@JvmField val SOUND: Icon = getIcon("/com/soywiz/korge/intellij/icon/sound.png")
+	@JvmField val ATLAS: Icon = getIcon("/com/soywiz/korge/intellij/icon/atlas.png")
+    @JvmField val SPINE: Icon = getIcon("/com/soywiz/korge/intellij/icon/spine.png")
+    @JvmField val DRAGONBONES: Icon = getIcon("/com/soywiz/korge/intellij/icon/dragonbones.png")
 
 	val USER_UNKNOWN_BYTES by lazy { getResourceBytes("/com/soywiz/korge/intellij/image/user_unknown.png") }
 

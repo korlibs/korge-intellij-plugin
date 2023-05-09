@@ -88,6 +88,11 @@ class KorgeWizardModuleBuilder() : ModuleBuilder() {
 							} catch (e: Throwable) {
 								e.printStackTrace()
 							}
+                            try {
+                                createGradleRunConfiguration(project, "runJvmAutoreload")
+                            } catch (e: Throwable) {
+                                e.printStackTrace()
+                            }
 						}
 					}
 				}

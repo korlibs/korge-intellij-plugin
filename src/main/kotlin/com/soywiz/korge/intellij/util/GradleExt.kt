@@ -1,11 +1,13 @@
 package com.soywiz.korge.intellij.util
 
+import com.intellij.execution.RunManager
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.systemIndependentPath
+import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
+import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import org.jetbrains.plugins.gradle.service.project.open.linkAndRefreshGradleProject
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
@@ -53,4 +55,24 @@ fun refreshGradleProject(project: Project) {
         //connection.close()
     }
      */
+}
+
+fun createGradleRunConfiguration(project: Project, taskName: String) {
+    /*
+    val runManager = RunManager.getInstance(project)
+    val configuration: RunnerAndConfigurationSettings = runManager.createConfiguration("runJvmAutoreload", GradleExternalTaskConfigurationType::class.java)
+    configuration.factory
+    runManager.addConfiguration(configuration)
+
+     */
+
+    val runManager = RunManager.getInstance(project)
+    val factory = GradleExternalTaskConfigurationType.getInstance().configurationFactories[0]
+    val runConfiguration = factory.createConfiguration(taskName, GradleRunConfiguration(project, factory, taskName).also {
+        it.settings.taskNames = listOf(taskName)
+    })
+    val runnerAndConfigurationSettings = runManager.createConfiguration(runConfiguration, factory)
+
+    runManager.addConfiguration(runnerAndConfigurationSettings)
+    runManager.selectedConfiguration = runnerAndConfigurationSettings
 }
