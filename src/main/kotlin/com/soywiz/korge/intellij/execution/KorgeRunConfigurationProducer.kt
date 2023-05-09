@@ -38,7 +38,7 @@ open class KorgeRunConfigurationProducer : LazyRunConfigurationProducer<GradleRu
     }
 
     fun ConfigurationContext.getGradleFullTaskName(): String {
-        val gradlePath = GradleProjectResolverUtil.getGradlePath(module)
+        val gradlePath = GradleProjectResolverUtil.getGradleIdentityPathOrNull(module)
         return "${gradlePath?.trimEnd(':')}:$taskName"
     }
     fun ConfigurationContext.getProjectPath(): String? {
