@@ -60,7 +60,11 @@ class KorgeWizardModuleBuilder() : ModuleBuilder() {
                 val outputFile = root.toNioPath().toFile().toVfs()
                 println("Unzipping $firstFolder into $outputFile")
                 firstFolder.copyRecursively(outputFile)
+                println("Unzipping completed")
                 indicator.text2 = "Loading gradle"
+
+                println("Refreshing root")
+                root.refresh(false, true)
 
                 /*
 				for ((fileName, fileContent) in config.generate(korgeProjectTemplateProvider.template(project))) {
