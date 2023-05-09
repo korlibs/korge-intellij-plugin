@@ -56,9 +56,10 @@ class KorgeWizardModuleBuilder() : ModuleBuilder() {
                 val templateZipByteArray = downloadUrlCached(template.zip)
                 indicator.text2 = "Unzipping..."
                 val zip = ZipVfs(templateZipByteArray.openAsync())
-                zip.list().first().copyRecursively(
-                    root.toNioPath().toFile().toVfs()
-                )
+                val firstFolder = zip.list().first { it.isDirectory() }
+                val outputFile = root.toNioPath().toFile().toVfs()
+                println("Unzipping $firstFolder into $outputFile")
+                firstFolder.copyRecursively(outputFile)
                 indicator.text2 = "Loading gradle"
 
                 /*
