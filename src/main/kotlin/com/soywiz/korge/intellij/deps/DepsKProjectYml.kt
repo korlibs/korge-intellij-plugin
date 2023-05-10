@@ -14,8 +14,8 @@ object DepsKProjectYml {
 
     fun extractDeps(yaml: String): List<String> {
         if (yaml.contains("!!")) error("Can't include '!!' in the file for security reasons")
-        val info = syaml.load<Map<String, Any?>>(yaml)
-        return (info["dependencies"] as? List<String>?)?.map { it.toString() } ?: emptyList()
+        val info = syaml.load<Map<String, Any?>?>(yaml)
+        return (info?.get("dependencies") as? List<String>?)?.map { it.toString() } ?: emptyList()
         //val model = NewKProjectModel.loadFile(MemoryFileRef("deps.kproject.yml", yaml.toByteArray(Charsets.UTF_8)))
         //model.dependencies.map { it.toString() }
         //if (yaml.contains("!!")) error("Can't include '!!' in the file for security reasons")
