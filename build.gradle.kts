@@ -112,7 +112,7 @@ intellij {
     //version.set("IC-2021.3.1")
     //version.set("IC-2022.1")
     //version.set("IC-2022.3.2")
-    version.set("IC-2023.1")
+    version.set("IC-2023.1.1")
     // Bundled plugin dependencies
     plugins.addAll(
         "gradle",

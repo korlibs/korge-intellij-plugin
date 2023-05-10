@@ -295,12 +295,21 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
         }
 
         disposables += browser.registerCallback("getKProjectDependencies") { it: Any? ->
-            val depsKProjectYaml = getDepsKProjectYaml() ?: return@registerCallback null
-            DepsKProjectYml.extractDeps(depsKProjectYaml.getText())
+            val depsKProjectYaml = getDepsKProjectYaml()
+            println("getKProjectDependencies called! project.rootFile=${project.rootFile}, buildGradleKfsFile=$buildGradleKfsFile, depsKProjectYaml=$depsKProjectYaml")
+            if (depsKProjectYaml == null) return@registerCallback null
+            println("getKProjectDependencies depsKProjectYaml: $depsKProjectYaml")
+            val yamlText = depsKProjectYaml.getText()
+            println("getKProjectDependencies yamlText: $yamlText")
+            val result = DepsKProjectYml.extractDeps(yamlText)
+            println("getKProjectDependencies result: $result")
+            result
         }
 
         disposables += browser.registerCallback("installKProjectDependency") { it: InstallKProjectDependencyRequest ->
-            val depsKProjectYaml = getDepsKProjectYaml() ?: return@registerCallback null
+            val depsKProjectYaml = getDepsKProjectYaml()
+            println("installKProjectDependency called! project.rootFile=${project.rootFile}, buildGradleKfsFile=$buildGradleKfsFile, depsKProjectYaml=$depsKProjectYaml")
+            if (depsKProjectYaml == null) return@registerCallback null
             val toInstall = it.askForPermissions(project)
             if (toInstall) {
                 depsKProjectYaml.setText(DepsKProjectYml.addDep(depsKProjectYaml.getText(), it.url, it.removeUrl))
@@ -532,7 +541,7 @@ fun <T : Any> CefBrowser.registerCallback(name: String, clazz: KClass<T>, corout
         }
     """.trimIndent()
     @Suppress("JSUnusedLocalSymbols")
-    println("jscode=$jscode")
+    //println("jscode=$jscode")
     cefBrowser.executeJavaScript(jscode, null, 0)
     return jsQuery
 }

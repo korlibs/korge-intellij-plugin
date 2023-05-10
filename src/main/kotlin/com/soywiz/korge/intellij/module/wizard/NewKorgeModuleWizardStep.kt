@@ -11,6 +11,7 @@ import com.intellij.ui.jcef.JCEFHtmlPanel
 import com.intellij.ui.util.preferredHeight
 import com.intellij.util.ui.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.actions.STORE_PREFIX
 import com.soywiz.korge.intellij.actions.jacksonObjectMapper
 import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.module.ProjectType
@@ -41,10 +42,7 @@ class NewKorgeModuleWizardStep(
     val config: KorgeModuleConfig
 ) : ModuleWizardStep() {
     companion object {
-        val TEMPLATES_URL get() = when {
-            isDevelopmentMode -> "https://store.korge.org/templates.json"
-            else -> "http://127.0.0.1:4000/templates.json"
-        }
+        val TEMPLATES_URL get() = "$STORE_PREFIX/templates.json"
         val TEMPLATES_DEFAULT_CONTENT = """
             [
                 {

@@ -23,10 +23,12 @@ class KorgeStoreAction : AnAction(), DumbAware {
             val campaign = "no-campaign"
             val utmSuffix = "?utm_source=ide&utm_medium=$medium&utm_campaign=$campaign"
 
-            KorgeWebPreviewUtils.open(project, "KorGE Store", when {
-                isDevelopmentMode -> "http://127.0.0.1:4000/$utmSuffix"
-                else -> "https://store.korge.org/$utmSuffix"
-            })
+            KorgeWebPreviewUtils.open(project, "KorGE Store", "$STORE_PREFIX/$utmSuffix")
         }
     }
+}
+
+val STORE_PREFIX get() = when {
+    isDevelopmentMode -> "http://127.0.0.1:4000"
+    else -> "https://store.korge.org"
 }

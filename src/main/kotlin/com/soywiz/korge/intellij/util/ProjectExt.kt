@@ -3,7 +3,9 @@ package com.soywiz.korge.intellij.util
 import com.intellij.openapi.application.*
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.*
+import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.soywiz.korge.intellij.moduleManager
 import com.soywiz.korge.intellij.rootManager
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.caches.resolve.*
@@ -11,7 +13,31 @@ import org.jetbrains.kotlin.idea.references.*
 import org.jetbrains.kotlin.psi.*
 
 //val Project.rootFile: VirtualFile? get() = if (projectFile?.canonicalPath?.contains(".idea") == true) projectFile?.parent?.parent else projectFile?.parent
-val Project.rootFile: VirtualFile? get() = rootManager.contentRoots.firstOrNull()
+val Project.rootFile: VirtualFile? get() {
+    val project = this
+    val projectFile = this.projectFile
+
+    val moduleContentRoots = moduleManager.findModuleByName(project.name)?.let { module -> ModuleRootManager.getInstance(module).contentRoots.toList() }
+    val moduleFirstContentRoot = moduleContentRoots?.firstOrNull()
+    val guessFirstContentRoot = rootManager.contentRoots.firstOrNull()
+
+    //this.rootManager.contentRoots
+    //println("Project.rootFile: rootManager.contentRoots=${rootManager.contentRoots.toList()}")
+    //println("Project.rootFile: moduleContentRoots=${moduleContentRoots.toList()}")
+    //println("Project.rootFile: moduleFirstContentRoot=$moduleFirstContentRoot")
+    //println("Project.rootFile: projectFile=$projectFile, path=${projectFile?.path}, name=${projectFile?.name}")
+    if (projectFile != null) {
+        val rootFile = when {
+            // path/to/project/.idea/misc.xml - for directory-based projects
+            projectFile.path.contains(".idea") -> projectFile.parent.parent
+            // path/to/project/project.ipr - for file-based projects
+            else -> projectFile.parent
+        }
+        //println(" -> $rootFile")
+        return rootFile
+    }
+    return moduleFirstContentRoot ?: guessFirstContentRoot
+}
 
 fun <T> Project.runReadActionInSmartModeExt(action: () -> T): T {
     if (ApplicationManager.getApplication().isReadAccessAllowed) return action()
