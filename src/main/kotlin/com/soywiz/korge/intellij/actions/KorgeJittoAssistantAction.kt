@@ -11,9 +11,11 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.testFramework.utils.editor.getVirtualFile
+import com.intellij.testFramework.utils.editor.saveToDisk
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.KorgeIcons
 import com.soywiz.korge.intellij.ai.OpenAI
@@ -104,12 +106,13 @@ class KorgeJittoAssistantAction : AnAction() {
                                                 val document: Document = project!!.fileEditorManager.selectedTextEditor!!.document
                                                 document.setText(result)
 
-                                                //CodeStyleManager.getInstance(project).reformat(
-                                                //    PsiManager.getInstance(project).findFile(document.getVirtualFile())!!
-                                                //)
-                                                ReformatCodeAction().actionPerformed(actionEvent)
+
+                                                project.codeStyleManager.reformatText(document.psiFile(project), 0, result.length)
+                                                //project.psiDocumentManager.commitDocument(document)
+
+                                                //ReformatCodeAction().actionPerformed(actionEvent)
                                                 //CodeStyleManager.getInstance(project).collapseImports()
-                                                FileDocumentManager.getInstance().saveDocument(document)
+                                                document.saveDocument()
                                             }
                                         } catch (e: Throwable) {
                                             e.printStackTrace()

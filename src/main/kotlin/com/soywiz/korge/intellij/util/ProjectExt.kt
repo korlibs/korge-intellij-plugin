@@ -1,10 +1,16 @@
 package com.soywiz.korge.intellij.util
 
 import com.intellij.openapi.application.*
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.*
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.soywiz.korge.intellij.moduleManager
 import com.soywiz.korge.intellij.rootManager
 import org.jetbrains.kotlin.descriptors.*
@@ -70,3 +76,11 @@ fun KtReferenceExpression.resolveExt() =
     mainReference.resolve()
 
 val Project.fileEditorManager: FileEditorManager get() = FileEditorManager.getInstance(this)
+val Project.codeStyleManager: CodeStyleManager get() = CodeStyleManager.getInstance(this)
+val Project.psiManager: PsiManager get() = PsiManager.getInstance(this)
+val Project.psiDocumentManager: PsiDocumentManager get() = PsiDocumentManager.getInstance(this)
+val Document.virtualFile: VirtualFile? get() = FileDocumentManager.getInstance().getFile(this)
+fun Document.saveDocument() {
+    FileDocumentManager.getInstance().saveDocument(this)
+}
+fun Document.psiFile(project: Project): PsiFile = project.psiManager.findFile(this.virtualFile!!)!!
