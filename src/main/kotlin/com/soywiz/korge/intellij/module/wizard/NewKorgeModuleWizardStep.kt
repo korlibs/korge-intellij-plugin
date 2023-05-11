@@ -196,16 +196,6 @@ class NewKorgeModuleWizardStep(
 
             this.layout = BorderLayout(0, 0)
 
-            add(Splitter(true, 0.7f, 0.2f, 0.8f).apply {
-                this.firstComponent = JPanel().also {
-                    it.layout = BorderLayout(0, 0)
-                    it.add(JLabel("Templates:").also { it.border = JBUI.Borders.emptyBottom(8) }, BorderLayout.NORTH)
-                    //it.add(JLabel("Templates:"), BorderLayout.NORTH)
-                    it.add(featureList.scrollVertical(), BorderLayout.CENTER)
-                }
-                this.secondComponent = description
-            }, BorderLayout.CENTER)
-
             fun updateTemplateRows(templates: List<KorgeTemplate>) {
                 featureListModel.also { it.clear() }.addAll(createTemplateRows(templates))
                 val firstTemplateIndex = featureListModel.toList().indexOfFirst { it.template != null }
@@ -213,11 +203,34 @@ class NewKorgeModuleWizardStep(
                 featureList.selectedIndex = firstTemplateIndex
             }
 
+            fun refreshTemplates() {
+                runBackgroundableTask("Downloading templates") {
+                    updateTemplateRows(parseTemplates(downloadUrlCached(TEMPLATES_URL).toString(Charsets.UTF_8)).toMutableList())
+                }
+            }
+
+            add(Splitter(true, 0.7f, 0.2f, 0.8f).apply {
+                this.firstComponent = JPanel().also {
+                    it.layout = BorderLayout(0, 0)
+                    it.add(JPanel(BorderLayout(0, 0)).also {
+                        it.add(JLabel("Templates:"), BorderLayout.LINE_START)
+                        it.add(JButton("Refresh").also {
+                           it.onClick {
+                               deleteCachedUrl(TEMPLATES_URL)
+                               refreshTemplates()
+                           }
+                        }, BorderLayout.LINE_END)
+                        it.border = JBUI.Borders.emptyBottom(8)
+                    }, BorderLayout.NORTH)
+                    //it.add(JLabel("Templates:"), BorderLayout.NORTH)
+                    it.add(featureList.scrollVertical(), BorderLayout.CENTER)
+                }
+                this.secondComponent = description
+            }, BorderLayout.CENTER)
+
             updateTemplateRows(parseTemplates((getUrlCached(TEMPLATES_URL) ?: TEMPLATES_DEFAULT_CONTENT.toByteArray(Charsets.UTF_8)).toString(Charsets.UTF_8)))
 
-            runBackgroundableTask("Downloading templates") {
-                updateTemplateRows(parseTemplates(downloadUrlCached(TEMPLATES_URL).toString(Charsets.UTF_8)).toMutableList())
-            }
+            refreshTemplates()
         }
     }
 

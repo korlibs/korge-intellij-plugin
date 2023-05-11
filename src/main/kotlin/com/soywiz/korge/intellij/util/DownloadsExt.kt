@@ -20,6 +20,10 @@ fun getUrlCached(url: String): ByteArray? {
     return cacheFile.takeIf { it.exists() }?.readBytes()
 }
 
+fun deleteCachedUrl(url: String) {
+    getUrlCachedFile(url).delete()
+}
+
 fun downloadUrlCached(url: String, cacheForMillis: Long = 24 * 3600 * 1000): ByteArray {
     val cacheFile = getUrlCachedFile(url)
     if (!cacheFile.exists() || (System.currentTimeMillis() - cacheFile.lastModified()) >= cacheForMillis) {
