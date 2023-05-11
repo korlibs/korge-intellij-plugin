@@ -4,6 +4,7 @@ import com.intellij.codeInsight.actions.ReformatCodeAction
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressIndicator
@@ -23,8 +24,10 @@ import com.soywiz.korge.intellij.passwordSafe
 import com.soywiz.korge.intellij.util.*
 import org.jetbrains.kotlin.idea.base.util.onTextChange
 import java.awt.*
+import java.awt.event.AWTEventListener
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
+import java.awt.event.MouseEvent
 import javax.swing.*
 
 class KorgeJittoAssistantAction : AnAction() {
@@ -83,7 +86,10 @@ class KorgeJittoAssistantAction : AnAction() {
                     //component.onTextChange { println(component.text) }
                     component.addKeyListener(object : KeyAdapter() {
                         override fun keyPressed(e: KeyEvent) {
-                            if (e.keyCode == KeyEvent.VK_ENTER) {
+                            if (e.keyCode == KeyEvent.VK_ESCAPE) {
+                                frame.isVisible = false
+                            }
+                            if (e.keyCode == KeyEvent.VK_ENTER && component.text.isNotBlank()) {
                                 val promptText = component.text
                                 label.text = "Processing... '$promptText'"
                                 component.text = ""
@@ -93,7 +99,8 @@ class KorgeJittoAssistantAction : AnAction() {
                                     override fun run(indicator: ProgressIndicator) {
                                         try {
                                             val result = chat.prompt(promptText)
-                                            runWriteAction {
+
+                                            project.runWriteCommandAction {
                                                 val document: Document = project!!.fileEditorManager.selectedTextEditor!!.document
                                                 document.setText(result)
 
@@ -129,7 +136,6 @@ class KorgeJittoAssistantAction : AnAction() {
         //frame.contentPane.add(JButton("HELLO!"))
         frame.pack()
 
-        /*
         SwingUtilities.invokeLater {
             var eventListener: AWTEventListener? = null
 
@@ -142,16 +148,13 @@ class KorgeJittoAssistantAction : AnAction() {
                         SwingUtilities.invokeLater {
                             Toolkit.getDefaultToolkit().removeAWTEventListener(eventListener)
                         }
-                        }
                     }
                 }
             }
 
             Toolkit.getDefaultToolkit().addAWTEventListener(eventListener, AWTEvent.MOUSE_EVENT_MASK)
         }
-
-         */
-    }
+ }
 
     class KorgeAI(val project: Project) {
         companion object {
@@ -181,7 +184,7 @@ class KorgeJittoAssistantAction : AnAction() {
                 Try to be as concise as possible.
             """.trimIndent())
 
-        fun initialCode(code: String = """
+        val IMPORTS = """
             import korlibs.time.*
             import korlibs.korge.*
             import korlibs.korge.scene.*
@@ -189,10 +192,15 @@ class KorgeJittoAssistantAction : AnAction() {
             import korlibs.korge.view.*
             import korlibs.image.color.*
             import korlibs.image.format.*
+            import korlibs.image.text.*
             import korlibs.io.file.std.*
             import korlibs.math.geom.*
             import korlibs.math.interpolation.*
             import korlibs.korge.view.align.*
+        """.trimIndent().trim()
+
+        fun initialCode(code: String = """
+            $IMPORTS
 
             suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors["#2b2b2b"]).start {
                 sceneContainer().changeTo({ MyScene() })
@@ -222,9 +230,14 @@ class KorgeJittoAssistantAction : AnAction() {
                 view.rotation = 90.degrees
                 // To set the anchor point:
                 view.anchor(0.5f, 0.5f)
+                // To create a new text
+                container.text("hello world", textSize = 64f, color = Colors.WHITE)
                 ```
                 
                 When rotating views, typically set the anchor point to the center.
+                
+                For text do not use anchor, but use `text.alignment = TextAlignment.CENTER`.
+                Never use `text.anchor(...)`
             """.trimIndent())
         }
 
@@ -274,17 +287,7 @@ class KorgeJittoAssistantAction : AnAction() {
                         .removeSuffix(suffix) else result).trim()
                 }
                 return """
-                    import korlibs.time.*
-                    import korlibs.korge.*
-                    import korlibs.korge.scene.*
-                    import korlibs.korge.tween.*
-                    import korlibs.korge.view.*
-                    import korlibs.image.color.*
-                    import korlibs.image.format.*
-                    import korlibs.io.file.std.*
-                    import korlibs.math.geom.*
-                    import korlibs.math.interpolation.*
-                    import korlibs.korge.view.align.*
+                    $IMPORTS
         
                     suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors["#2b2b2b"]).start {
                         sceneContainer().changeTo({ MyScene() })

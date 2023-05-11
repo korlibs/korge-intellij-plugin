@@ -19,6 +19,7 @@ package com.soywiz.korge.intellij.util
 
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.*
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.progress.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.vfs.*
@@ -134,6 +135,10 @@ fun Project.backgroundTask(
 			}
 		}
 	})
+}
+
+fun Project.runWriteCommandAction(block: () -> Unit) {
+    return WriteCommandAction.runWriteCommandAction(this, block)
 }
 
 inline fun <T> runWriteAction(crossinline runnable: () -> T): T {
