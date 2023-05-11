@@ -136,24 +136,22 @@ class KorgeJittoAssistantAction : AnAction() {
         //frame.contentPane.add(JButton("HELLO!"))
         frame.pack()
 
-        SwingUtilities.invokeLater {
-            var eventListener: AWTEventListener? = null
-
-            eventListener = AWTEventListener {
-                val mouseEvent = it as MouseEvent
-                if (mouseEvent.id == MouseEvent.MOUSE_RELEASED) {
-                    //if (!mouseEvent.component.hasAncestor(frame)) {
-                    if (true) {
-                        frame.isVisible = false
-                        SwingUtilities.invokeLater {
-                            Toolkit.getDefaultToolkit().removeAWTEventListener(eventListener)
-                        }
-                    }
-                }
-            }
-
-            Toolkit.getDefaultToolkit().addAWTEventListener(eventListener, AWTEvent.MOUSE_EVENT_MASK)
-        }
+        //SwingUtilities.invokeLater {
+        //    var eventListener: AWTEventListener? = null
+        //    eventListener = AWTEventListener {
+        //        val mouseEvent = it as MouseEvent
+        //        if (mouseEvent.id == MouseEvent.MOUSE_RELEASED) {
+        //            //if (!mouseEvent.component.hasAncestor(frame)) {
+        //            if (true) {
+        //                frame.isVisible = false
+        //                SwingUtilities.invokeLater {
+        //                    Toolkit.getDefaultToolkit().removeAWTEventListener(eventListener)
+        //                }
+        //            }
+        //        }
+        //    }
+        //    Toolkit.getDefaultToolkit().addAWTEventListener(eventListener, AWTEvent.MOUSE_EVENT_MASK)
+        //}
  }
 
     class KorgeAI(val project: Project) {
@@ -211,7 +209,7 @@ class KorgeJittoAssistantAction : AnAction() {
                     // Your code here
                 }
             }
-        """.trimIndent()) {
+        """.trimIndent().trim()) {
             chat.user("""
                 Always use this code as base:
                 
@@ -298,7 +296,7 @@ class KorgeJittoAssistantAction : AnAction() {
                     $result
                         }
                     }
-                """.trimIndent()
+                """.trimIndent().trim()
             }
         }
     }
