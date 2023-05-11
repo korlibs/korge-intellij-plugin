@@ -27,7 +27,6 @@ class OpenAI(val apiKey: String) {
         }
     }
 
-
     class ChatStream(val openai: OpenAI, val temperature: Double, val model: String) {
         val entries: MutableList<ChatEntry> = arrayListOf()
 
