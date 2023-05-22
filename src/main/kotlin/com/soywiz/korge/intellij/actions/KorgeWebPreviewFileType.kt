@@ -18,6 +18,7 @@ import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.fileEditor.impl.*
 import com.intellij.openapi.fileTypes.ex.*
 import com.intellij.openapi.options.*
+import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.*
 import com.intellij.openapi.ui.popup.*
 import com.intellij.openapi.util.*
@@ -35,7 +36,11 @@ import com.soywiz.korge.intellij.deps.DepsKProjectYml
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korim.color.toRgba
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.normalize
+import com.soywiz.korio.file.pathInfo
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.net.URL
 import com.soywiz.korio.util.htmlspecialchars
 import kotlinx.coroutines.*
 import org.cef.browser.*
@@ -316,6 +321,22 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
             }
             mapOf("installed" to toInstall)
         }
+
+        disposables += browser.registerCallback("downloadAsset") { dep: InstallKProjectDependencyRequest ->
+            val depsKProjectYaml = getDepsKProjectYaml()
+            println("downloadAsset called! project.rootFile=${project.rootFile}, buildGradleKfsFile=$buildGradleKfsFile, depsKProjectYaml=$depsKProjectYaml")
+            if (depsKProjectYaml == null) return@registerCallback null
+            val toInstall = dep.askForPermissions(project)
+            if (toInstall) {
+                val baseName = dep.url.pathInfo.baseName
+                val outputName = (dep.output ?: baseName).pathInfo.normalize()
+                runBackgroundableTask("Downloading asset: ${dep.url} to $outputName") {
+                    project.rootFile!!.createFile("src/commonMain/resources/$outputName", downloadUrlCached(dep.url))
+                }
+                //depsKProjectYaml.setText(DepsKProjectYml.addDep(depsKProjectYaml.getText(), it.url, it.removeUrl))
+            }
+            mapOf("installed" to toInstall)
+        }
     }
 
     data class InstallKProjectDependencyRequest(
@@ -325,7 +346,8 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
         val html: String? = null,
         val icon: String? = null,
         val removeUrl: String? = null,
-        val extra: Any? = null
+        val extra: Any? = null,
+        val output: String? = null
     ) {
         suspend fun askForPermissions(project: Project): Boolean {
             val deferred = CompletableDeferred<Boolean>()
