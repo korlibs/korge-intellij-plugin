@@ -15,8 +15,9 @@
     <change-notes><!-- language: HTML --><![CDATA[
         <h3>4.0.1</h3>
         <ul>
-            <li>Support installing assets</li>
+            <li>Supports installing assets</li>
             <li>Added CC0 SFX to the store</li>
+            <li>Supports playing sound files</li>
         </ul>
         <h3>4.0.0</h3>
         <ul>
@@ -375,6 +376,7 @@
         <applicationService
             serviceImplementation="com.soywiz.korge.intellij.image.KorimImageReaderRegister"/>
 
+        <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.AudioFileEditorProvider" />
         <!--
         <fileEditorProvider implementation="com.soywiz.korge.intellij.filetype.Qoi"/>
         -->
