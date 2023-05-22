@@ -108,7 +108,7 @@ data class GutterColorRenderer(val element: PsiElement, val color: Color): Gutte
 
     fun chooseColor() {
         val editor = PsiEditorUtilBase.findEditorByPsiElement(element) ?: return
-        val newColor = ColorChooser.chooseColor(editor.component, "Choose Color", color, true, true)
+        val newColor = editor.chooseColor(color)
         if (newColor != null) {
             val rgba = newColor.toRgba()
             val colorName = COLORS_TO_NAMES[rgba]
