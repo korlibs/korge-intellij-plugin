@@ -5,7 +5,7 @@
     <id>com.soywiz.korge.korge-intellij-plugin</id>
 
     <name>Korge</name>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
     <vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
 
     <description><![CDATA[
@@ -311,8 +311,10 @@
             implementationClass="com.soywiz.korge.intellij.annotator.KorgeBuildGradleAnnotator"/>
         <annotator language="kotlin"
             implementationClass="com.soywiz.korge.intellij.annotator.ColorAnnotator"/>
+        <!--
         <annotator language="kotlin"
             implementationClass="com.soywiz.korge.intellij.annotator.MovieClipAnnotator"/>
+            -->
         <!--
         <annotator language="kotlin" implementationClass="com.soywiz.korge.intellij.annotator.KorgeRunAnnotator" />
         -->
@@ -340,10 +342,10 @@
 
         <fileType name="KORGE_ANI"
             implementationClass="com.soywiz.korge.intellij.filetype.KorgeAniFileType"
-            fieldName="INSTANCE" language="KORGE_ANI" extensions="swf;ani"/>
+            fieldName="INSTANCE" extensions="swf;ani"/>
         <fileType name="KORGE_AUDIO"
             implementationClass="com.soywiz.korge.intellij.filetype.KorgeAudioFileType"
-            fieldName="INSTANCE" language="KORGE_AUDIO" extensions="wav;mp3;s3m;xm;mod"/>
+            fieldName="INSTANCE" extensions="wav;mp3;s3m;xm;mod"/>
         <!-- PROBLEMS WITH STACK OVERFLOW WHEN A TMX WAS LEFT OPENED -->
         <!--
         <fileType name="KORGE_TMX"   implementationClass="com.soywiz.korge.intellij.filetype.TmxFileType"        fieldName="INSTANCE" language="KORGE_TMX"   extensions="tmx"        />
