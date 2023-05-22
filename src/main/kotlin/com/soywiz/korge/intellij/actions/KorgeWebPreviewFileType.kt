@@ -39,8 +39,10 @@ import korlibs.image.color.toRgba
 import korlibs.io.file.baseName
 import korlibs.io.file.normalize
 import korlibs.io.file.pathInfo
+import korlibs.io.file.std.ZipVfs
 import korlibs.io.lang.*
 import korlibs.io.net.URL
+import korlibs.io.stream.openAsync
 import korlibs.io.util.htmlspecialchars
 import kotlinx.coroutines.*
 import org.cef.browser.*
@@ -331,7 +333,18 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                 val baseName = dep.url.pathInfo.baseName
                 val outputName = (dep.output ?: baseName).pathInfo.normalize()
                 runBackgroundableTask("Downloading asset: ${dep.url} to $outputName") {
-                    project.rootFile!!.createFile("src/commonMain/resources/$outputName", downloadUrlCached(dep.url))
+                    if (dep.unzip == true) {
+                        runBlocking {
+                            val zip = ZipVfs(downloadUrlCached(dep.url).openAsync())
+                            val rootFiles = zip.listSimple()
+                            val root = if (rootFiles.size == 1 && rootFiles.first().isDirectory()) rootFiles.first() else zip
+                            root.copyToRecursively(
+                                project.rootFile!!.toVfs()["src/commonMain/resources/${outputName.removeSuffix(".zip")}"]
+                            )
+                        }
+                    } else {
+                        project.rootFile!!.createFile("src/commonMain/resources/$outputName", downloadUrlCached(dep.url))
+                    }
                 }
                 //depsKProjectYaml.setText(DepsKProjectYml.addDep(depsKProjectYaml.getText(), it.url, it.removeUrl))
             }
@@ -347,7 +360,8 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
         val icon: String? = null,
         val removeUrl: String? = null,
         val extra: Any? = null,
-        val output: String? = null
+        val output: String? = null,
+        val unzip: Boolean? = null,
     ) {
         suspend fun askForPermissions(project: Project): Boolean {
             val deferred = CompletableDeferred<Boolean>()
