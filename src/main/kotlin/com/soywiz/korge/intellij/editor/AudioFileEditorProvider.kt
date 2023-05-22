@@ -25,15 +25,11 @@ import korlibs.audio.mod.XM
 import korlibs.audio.sound.PlaybackParameters
 import korlibs.audio.sound.Sound
 import korlibs.audio.sound.SoundChannel
-import korlibs.io.async.launch
-import korlibs.io.async.launchUnscoped
 import korlibs.time.toTimeString
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CompletionHandler
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.jetbrains.kotlin.idea.gradleTooling.get
 import javax.swing.*
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 class AudioFileEditorProvider : FileEditorProvider, DumbAware {
@@ -56,7 +52,7 @@ class AudioFileEditorProvider : FileEditorProvider, DumbAware {
             var sound = CompletableDeferred<Sound>()
 
             init {
-                EmptyCoroutineContext.launchUnscoped {
+                launch2 {
                     project.backgroundTask("Loading sound") {
                         runBlocking {
                             sound.complete(
@@ -85,7 +81,7 @@ class AudioFileEditorProvider : FileEditorProvider, DumbAware {
                     playButton = it
                     it.onClick {
                         job?.cancel()
-                        job = launch(EmptyCoroutineContext) {
+                        job = launch2 {
                             soundChannel = sound.await().play(params = PlaybackParameters.DEFAULT.copy(volume = volume))
                         }
                     }
@@ -99,7 +95,7 @@ class AudioFileEditorProvider : FileEditorProvider, DumbAware {
                 panel.add(JBLabel("-:-").also { label ->
                     sound.invokeOnCompletion { error ->
                         println("COMPLETED!")
-                        EmptyCoroutineContext.launchUnscoped {
+                        launch2 {
                             if (error == null) {
                                 label.text = sound.await().length.toTimeString(2, addMilliseconds = true)
                             } else {
@@ -132,4 +128,10 @@ class AudioFileEditorProvider : FileEditorProvider, DumbAware {
     override fun getEditorTypeId(): String = "KORAU_TYPE_ID"
 
     override fun getPolicy(): FileEditorPolicy = FileEditorPolicy.HIDE_DEFAULT_EDITOR
+}
+
+fun launch2(context: CoroutineContext = EmptyCoroutineContext, block: suspend CoroutineScope.() -> Unit): Job {
+    return CoroutineScope(context).launch(start = CoroutineStart.DEFAULT) {
+        block()
+    }
 }

@@ -1,12 +1,19 @@
 package com.soywiz.korge.intellij.audio
 
+import com.jetbrains.rd.util.string.print
 import korlibs.datastructure.*
 import korlibs.time.*
 import korlibs.audio.error.*
 import korlibs.audio.format.*
 import korlibs.audio.sound.*
+import korlibs.audio.sound.backends.ALSANativeSoundProvider
+import korlibs.audio.sound.backends.ASound2
+import korlibs.datastructure.lock.Lock
+import korlibs.datastructure.thread.NativeThread
 import korlibs.io.async.*
 import korlibs.io.stream.*
+import korlibs.memory.clamp01
+import korlibs.memory.write16LE
 import java.io.*
 import java.nio.*
 import javax.sound.sampled.*
@@ -36,12 +43,13 @@ object AwtNativeSoundProvider : NativeSoundProvider() {
     }
 }
 
-
-val AudioSamples.size: Int get() = totalSamples * channels
-
-data class SampleBuffer(val timestamp: Long, val data: AudioSamples)
-
+/*
 class JvmPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int) : PlatformAudioOutput(coroutineContext, freq) {
+    //val AudioSamples.size: Int get() = totalSamples * channels
+    val AudioSamples.size: Int get() = totalSamples
+
+    data class SampleBuffer(val timestamp: Long, val data: AudioSamples)
+
     companion object {
         var lastId = 0
         val mixer by lazy { AudioSystem.getMixer(null) }
@@ -154,4 +162,77 @@ class JvmPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int) : Pl
     override fun start() {
 
     }
+}
+*/
+
+class JvmPlatformAudioOutput(
+    coroutineContext: CoroutineContext,
+    frequency: Int,
+) : SimplifiedPlatformAudioOutput(coroutineContext, frequency) {
+    companion object {
+        val mixer by lazy { AudioSystem.getMixer(null) }
+        val NSAMPLES = 512
+        val BYTES_PER_VALUE = 2
+        val BITS_PER_VALUE = BYTES_PER_VALUE * 8
+    }
+
+    var line: SourceDataLine? = null
+
+    override fun doPrepare(): Boolean {
+        return try {
+            val format = AudioFormat(frequency.toFloat(), BITS_PER_VALUE, nchannels, true, false)
+            //println("format.frameSize=${format.frameSize}") // 2bytes * 2channels
+            line = mixer.getLine(DataLine.Info(SourceDataLine::class.java, format)) as SourceDataLine
+
+            //line?.open(format, 0x1000)
+            line?.open(format, NSAMPLES * nchannels * BYTES_PER_VALUE)
+            line?.start()
+
+            true
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    override val isAvailable: Boolean
+        get() = true
+
+    override fun doClose() {
+        line?.drain()
+        Thread.sleep(250L)
+
+        //println("CLOSED_LINE($id)!")
+        line?.stop()
+        line?.close()
+    }
+
+    override fun doGetSamplesPerChunk(): Int {
+        //return (line?.bufferSize ?: 4096) / 2 / 2
+        return NSAMPLES
+        //return 2048
+    }
+
+    override fun doWrite(buff: AudioSamples, frames: Int) {
+        val data = convertFromShortToByte(buff, frames)
+        //line?.drain()
+        //while (line!!.available() < data.size) {
+        //    Thread.sleep(1L)
+        //    println("line!!.available()=${line!!.available()}, data.size=${data.size}")
+        //}
+        //println("line!!.available()=${line!!.available()}, data.size=${data.size}")
+        line?.write(data, 0, data.size)
+        line?.drain()
+    }
+
+    private fun convertFromShortToByte(buff: AudioSamples, size: Int): ByteArray {
+        val bb = ByteArray(buff.channels * buff.totalSamples * BYTES_PER_VALUE)
+        for (n in 0 until size) {
+            for (ch in 0 until buff.channels) {
+                bb.write16LE((n * buff.channels + ch) * BYTES_PER_VALUE, buff[ch, n].toInt())
+            }
+        }
+        return bb
+    }
+
 }
