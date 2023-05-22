@@ -1,7 +1,7 @@
 package com.soywiz.korge.intellij.editor.formats
 
 /*
-import com.soywiz.klock.*
+import korlibs.time.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.onClick
@@ -9,11 +9,11 @@ import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.lipsync.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.ui.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korma.geom.*
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.math.geom.*
 import kotlinx.coroutines.*
 
 private suspend fun getLipTexture(char: Char) =

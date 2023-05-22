@@ -6,7 +6,10 @@ import com.intellij.openapi.actionSystem.impl.*
 import com.intellij.ui.components.*
 import com.intellij.util.ui.*
 import com.soywiz.korge.awt.*
-import com.soywiz.korim.color.*
+import com.soywiz.korge.intellij.ui.Styled
+import com.soywiz.korge.intellij.ui.UIDslMarker
+import com.soywiz.korge.intellij.ui.styled
+import korlibs.image.color.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.font.*

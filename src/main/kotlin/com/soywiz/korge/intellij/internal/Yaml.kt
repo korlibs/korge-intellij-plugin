@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.internal
 
-import com.soywiz.korio.lang.invalidOp
+import korlibs.io.lang.invalidOp
 
 internal object Yaml {
     fun decode(str: String) = read(ListReader(tokenize(str)), level = 0)

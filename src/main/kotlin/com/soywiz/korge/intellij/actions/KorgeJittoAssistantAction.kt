@@ -23,6 +23,7 @@ import com.soywiz.korge.intellij.config.globalPrivateSettings
 import com.soywiz.korge.intellij.config.korgeGlobalPrivateSettings
 import com.soywiz.korge.intellij.korge
 import com.soywiz.korge.intellij.passwordSafe
+import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
 import org.jetbrains.kotlin.idea.base.util.onTextChange
 import java.awt.*
@@ -259,11 +260,11 @@ class KorgeJittoAssistantAction : AnAction() {
 
         fun fixResponse(text: String): String {
             var result = (Regex("```kotlin(.*)```", RegexOption.DOT_MATCHES_ALL).find(text)?.groupValues?.get(1)?.trim() ?: error("Culdn't find kotlin code"))
-                .replace("com.soywiz.klock.", "korlibs.time.")
+                .replace("korlibs.time.", "korlibs.time.")
                 .replace("com.soywiz.korge.", "korlibs.korge.")
-                .replace("com.soywiz.korim.", "korlibs.image.")
-                .replace("com.soywiz.korio.", "korlibs.io.")
-                .replace("com.soywiz.korma.", "korlibs.math.")
+                .replace("korlibs.image.", "korlibs.image.")
+                .replace("korlibs.io.", "korlibs.io.")
+                .replace("korlibs.math.", "korlibs.math.")
                 .replace("override suspend fun Container.sceneMain()", "override suspend fun SContainer.sceneMain()")
                 .replace("override suspend fun Container.sceneInit()", "override suspend fun SContainer.sceneMain()")
                 .replace("sceneContainer().changeTo<MyScene>()", "sceneContainer().changeTo({ MyScene() })")
@@ -341,11 +342,11 @@ class KorgeJittoAssistantAction : AnAction() {
                     //val text = response.trim().removePrefix("```kotlin").removeSuffix("```").trim()
                     val text =
                         (Regex("```kotlin(.*)```", RegexOption.DOT_MATCHES_ALL).find(response)?.groupValues?.get(1)?.trim() ?: error("Culdn't find kotlin code"))
-                            .replace("com.soywiz.klock.", "korlibs.time.")
+                            .replace("korlibs.time.", "korlibs.time.")
                             .replace("com.soywiz.korge.", "korlibs.korge.")
-                            .replace("com.soywiz.korim.", "korlibs.image.")
-                            .replace("com.soywiz.korio.", "korlibs.io.")
-                            .replace("com.soywiz.korma.", "korlibs.math.")
+                            .replace("korlibs.image.", "korlibs.image.")
+                            .replace("korlibs.io.", "korlibs.io.")
+                            .replace("korlibs.math.", "korlibs.math.")
                             .replace("override suspend fun Container.sceneMain()", "override suspend fun SContainer.sceneMain()")
                             .replace("override suspend fun Container.sceneInit()", "override suspend fun SContainer.sceneMain()")
                             .replace("sceneContainer().changeTo<MyScene>()", "sceneContainer().changeTo({ MyScene() })")

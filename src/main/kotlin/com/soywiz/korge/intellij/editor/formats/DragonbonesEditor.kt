@@ -6,7 +6,7 @@ import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.util.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korio.file.*
+import korlibs.io.file.*
 
 suspend fun dragonBonesEditor(file: VfsFile) : Module {
     val factory = KorgeDbFactory()

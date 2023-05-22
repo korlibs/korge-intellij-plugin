@@ -1,0 +1,5 @@
+targets: [jvm]
+dependencies:
+- https://github.com/korlibs/korge-audio-formats/tree/0.0.1/korau-mod##05abfd6f151fa578e0c690f7725d741784bdfe53
+versions:
+- "com.soywiz.korlibs.korge2:korge": "4.0.0"

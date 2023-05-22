@@ -18,8 +18,8 @@ import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.kgl.*
-import com.soywiz.klock.hr.*
-import com.soywiz.klock.milliseconds
+import korlibs.time.hr.*
+import korlibs.time.milliseconds
 import com.soywiz.korag.*
 import com.soywiz.korge.*
 import com.soywiz.korge.awt.*
@@ -35,10 +35,10 @@ import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.awt.*
 import com.soywiz.korinject.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Anchor
+import korlibs.io.async.*
+import korlibs.io.serialization.xml.*
+import korlibs.math.geom.*
+import korlibs.math.geom.Anchor
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.Container

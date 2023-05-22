@@ -9,19 +9,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.util.xmlb.*
 import com.jetbrains.rd.util.string.print
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
+import korlibs.time.*
+import korlibs.memory.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.ui.showDialog
 import com.soywiz.korge.intellij.util.*
-import com.soywiz.korim.awt.*
-import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.launch
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.dynamic.KDynamic
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.krypto.encoding.Base64
+import korlibs.image.awt.*
+import korlibs.io.async.delay
+import korlibs.io.async.launch
+import korlibs.io.async.launchImmediately
+import korlibs.io.serialization.json.Json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -35,6 +33,10 @@ import javax.imageio.stream.*
 import javax.swing.*
 import kotlin.coroutines.EmptyCoroutineContext
 import com.intellij.ide.projectView.ProjectView
+import com.soywiz.korge.intellij.internal.dyn
+import com.soywiz.korge.intellij.ui.DialogSettings
+import com.soywiz.korge.intellij.ui.label
+import korlibs.io.dynamic.Dyn
 
 @State(
 	name = "KorgeGlobalPrivateSettings",
@@ -59,9 +61,10 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 			//val img = ImageIO.read(bytes.inputStream()).getScaledInstance(128, 128, Image.SCALE_SMOOTH)
 			//userAvatarBytes = Base64.encode(img.toJpegBytes(.8f))
 			val bytes = userAvatar?.let { URL(it).readBytes() } ?: KorgeIcons.USER_UNKNOWN_BYTES ?: byteArrayOf()
-			userAvatarBytes = Base64.encode(bytes)
+
+			userAvatarBytes = korlibs.crypto.encoding.Base64.encode(bytes)
 		}
-		return Base64.decode(userAvatarBytes!!)
+		return korlibs.crypto.encoding.Base64.decode(userAvatarBytes!!)
 	}
 
 	fun getAvatarBitmap(): BufferedImage {
@@ -96,6 +99,7 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 	}
 
 	private val Any?.boolFixed: Boolean get() = when (this) {
+        is Dyn -> this.value.boolFixed
 		is Boolean -> this
 		is String -> this == "1" || this == "true" || this == "on"
 		is Number -> toInt() != 0
@@ -145,30 +149,31 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 		try {
 			val info =
 				withContext(Dispatchers.IO) { Json.parse(URL("$ID_KORGE_DOMAIN/info?uuid=${korgeGlobalPrivateSettings.userUuid}").readText()) }
-			KDynamic {
-				val logged = info["logged"].boolFixed
-				if (logged) {
-					val sponsor = info["sponsor"].boolFixed
-					val login = info["login"].str
-					val avatar = info["avatar"].str
-					val rank = info["rank"].str
-					val price = info["price"].int
-					val validDate = info["validDate"].long
-					korgeGlobalPrivateSettings.userLogin = login
-					korgeGlobalPrivateSettings.userAvatar = avatar
-					korgeGlobalPrivateSettings.userSponsor = sponsor
-					korgeGlobalPrivateSettings.userRank = rank
-					korgeGlobalPrivateSettings.validDate = validDate
-					korgeGlobalPrivateSettings.userPrice = price
-					korgeGlobalPrivateSettings.getAvatarIcon() // Forces downloading the avatar
-					//println("SUCCESSFUL login : $info")
-					println("SUCCESSFUL login")
-					return true
-				} else {
-					korgeGlobalPrivateSettings.nullifyProps()
-					return false
-				}
-			}
+                    .dyn
+
+            val logged = info["logged"].boolFixed
+            if (logged) {
+                val sponsor = info["sponsor"].boolFixed
+                val login = info["login"].str
+                val avatar = info["avatar"].str
+                val rank = info["rank"].str
+                val price = info["price"].int
+                val validDate = info["validDate"].long
+                korgeGlobalPrivateSettings.userLogin = login
+                korgeGlobalPrivateSettings.userAvatar = avatar
+                korgeGlobalPrivateSettings.userSponsor = sponsor
+                korgeGlobalPrivateSettings.userRank = rank
+                korgeGlobalPrivateSettings.validDate = validDate
+                korgeGlobalPrivateSettings.userPrice = price
+                korgeGlobalPrivateSettings.getAvatarIcon() // Forces downloading the avatar
+                //println("SUCCESSFUL login : $info")
+                println("SUCCESSFUL login")
+                return true
+            } else {
+                korgeGlobalPrivateSettings.nullifyProps()
+                return false
+            }
+
 		} catch (e: Throwable) {
 			e.printStackTrace()
 			return false
@@ -232,7 +237,7 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 
 		launchImmediately(EmptyCoroutineContext) {
 			delay(0.1.seconds)
-			val elapsedTimeSinceLastCheck = DateTime.now() - DateTime.fromUnix(getState().lastChecked)
+			val elapsedTimeSinceLastCheck = DateTime.now() - DateTime.fromUnixMillis(getState().lastChecked)
 			println("KorgeGlobalPrivateSettings: elapsedTimeSinceLastCheck=$elapsedTimeSinceLastCheck, lastChecked=$lastChecked")
 			if (elapsedTimeSinceLastCheck >= 1.days) {
 				lastChecked = DateTime.now().unixMillisLong

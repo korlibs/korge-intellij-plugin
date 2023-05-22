@@ -1,7 +1,7 @@
 package com.soywiz.korge.intellij.util
 
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.lang.Closeable
+import korlibs.io.async.Signal
+import korlibs.io.lang.Closeable
 
 fun <T> Signal<T>.addCallInit2(initial: T, handler: (T) -> Unit): Closeable {
 	handler(initial)

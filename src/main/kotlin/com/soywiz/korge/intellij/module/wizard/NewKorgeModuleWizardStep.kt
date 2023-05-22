@@ -16,7 +16,7 @@ import com.soywiz.korge.intellij.actions.jacksonObjectMapper
 import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.module.ProjectType
 import com.soywiz.korge.intellij.util.*
-import com.soywiz.korim.color.toRgba
+import korlibs.image.color.toRgba
 import java.awt.*
 import javax.swing.*
 

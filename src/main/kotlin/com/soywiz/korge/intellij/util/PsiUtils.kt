@@ -9,8 +9,8 @@ import com.intellij.openapi.util.*
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.*
 import com.soywiz.korge.intellij.completion.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.PathInfo
+import korlibs.io.file.*
+import korlibs.io.file.PathInfo
 import org.jetbrains.kotlin.idea.base.util.*
 import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.psi.psiUtil.*

@@ -2,8 +2,8 @@ package com.soywiz.korge.intellij.util
 
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.progress.runBackgroundableTask
-import com.soywiz.korio.file.std.get
-import com.soywiz.krypto.encoding.hexLower
+import korlibs.io.file.std.get
+import korlibs.crypto.encoding.hexLower
 import java.io.File
 import java.net.URL
 import java.security.MessageDigest

@@ -3,9 +3,9 @@ package com.soywiz.korge.intellij.module
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.module.wizard.KorgeTemplate
 import com.soywiz.korge.intellij.util.*
-import com.soywiz.korio.util.*
-import com.soywiz.korio.util.encoding.*
-import com.soywiz.krypto.encoding.*
+import korlibs.io.util.*
+import korlibs.io.util.encoding.*
+import korlibs.crypto.encoding.*
 import javax.swing.text.html.*
 
 class KorgeModuleConfig {

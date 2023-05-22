@@ -3,11 +3,11 @@ package com.soywiz.korge.intellij.editor.tiled
 /*
 import com.intellij.util.ui.*
 import com.soywiz.korge.intellij.util.*
-import com.soywiz.korim.awt.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
+import korlibs.image.awt.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.math.geom.*
 import com.soywiz.korge.tiled.*
 import java.awt.*
 import java.awt.Point

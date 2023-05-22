@@ -343,7 +343,7 @@
             fieldName="INSTANCE" language="KORGE_ANI" extensions="swf;ani"/>
         <fileType name="KORGE_AUDIO"
             implementationClass="com.soywiz.korge.intellij.filetype.KorgeAudioFileType"
-            fieldName="INSTANCE" language="KORGE_AUDIO" extensions="wav;mp3;ogg"/>
+            fieldName="INSTANCE" language="KORGE_AUDIO" extensions="wav;mp3;s3m;xm;mod"/>
         <!-- PROBLEMS WITH STACK OVERFLOW WHEN A TMX WAS LEFT OPENED -->
         <!--
         <fileType name="KORGE_TMX"   implementationClass="com.soywiz.korge.intellij.filetype.TmxFileType"        fieldName="INSTANCE" language="KORGE_TMX"   extensions="tmx"        />

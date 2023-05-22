@@ -10,8 +10,8 @@ import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.util.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.extensionLC
+import korlibs.io.file.VfsFile
+import korlibs.io.file.extensionLC
 
 suspend fun swfAnimationEditor(file: VfsFile): Module {
     val context = AnLibrary.Context()
@@ -20,7 +20,7 @@ suspend fun swfAnimationEditor(file: VfsFile): Module {
             context, defaultConfig = SWFExportConfig(
             mipmaps = false,
             antialiasing = true,
-            rasterizerMethod = com.soywiz.korim.vector.ShapeRasterizerMethod.X4,
+            rasterizerMethod = korlibs.image.vector.ShapeRasterizerMethod.X4,
             exportScale = 1.0,
             exportPaths = false,
             atlasPacking = false

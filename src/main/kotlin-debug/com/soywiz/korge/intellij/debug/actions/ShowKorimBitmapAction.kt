@@ -8,8 +8,8 @@ import com.intellij.openapi.ui.*
 import com.intellij.xdebugger.impl.ui.tree.actions.*
 import com.intellij.xdebugger.impl.ui.tree.nodes.*
 import com.soywiz.korge.intellij.debug.*
-import com.soywiz.korim.awt.*
-import com.soywiz.korim.bitmap.*
+import korlibs.image.awt.*
+import korlibs.image.bitmap.*
 import com.sun.jdi.*
 import java.awt.*
 import javax.swing.*

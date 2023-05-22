@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.util
 
-import com.soywiz.korio.async.Signal
+import korlibs.io.async.Signal
 import kotlin.reflect.KProperty
 
 class ObservableProperty<T>(val initial: T, var adjust: (T) -> T = { it }) {

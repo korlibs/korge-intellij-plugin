@@ -1,10 +1,10 @@
 package com.soywiz.korge.intellij.image
 
 import com.soywiz.korge.intellij.editor.*
-import com.soywiz.korim.atlas.*
-import com.soywiz.korim.awt.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.stream.*
+import korlibs.image.atlas.*
+import korlibs.image.awt.*
+import korlibs.image.format.*
+import korlibs.io.stream.*
 import java.awt.image.*
 import java.io.ByteArrayOutputStream
 import java.util.*

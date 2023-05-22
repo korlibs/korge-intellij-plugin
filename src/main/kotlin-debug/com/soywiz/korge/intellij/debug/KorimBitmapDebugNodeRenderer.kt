@@ -7,9 +7,9 @@ import com.intellij.debugger.ui.tree.*
 import com.intellij.debugger.ui.tree.render.*
 import com.intellij.util.ui.*
 import com.intellij.xdebugger.frame.*
-import com.soywiz.korim.awt.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.vector.*
+import korlibs.image.awt.*
+import korlibs.image.bitmap.*
+import korlibs.image.vector.*
 import com.sun.jdi.*
 import java.awt.*
 import javax.swing.*

@@ -1,11 +1,7 @@
 package com.soywiz.korge.intellij.editor.util
 
-import com.soywiz.korge.component.onStageResized
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.scale
-import com.soywiz.korma.geom.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 open class RepositionResult(val view: View, val views: Views) {
     //val originalMatrix = view.localMatrix.copy()
@@ -22,7 +18,7 @@ open class RepositionResult(val view: View, val views: Views) {
     fun refreshBounds() {
         val oldMatrix = view.localMatrix.copy()
         view.localMatrix = originalMatrix
-        view.getLocalBoundsInternal(localBounds)
+        localBounds = view.getLocalBoundsInternal()
         view.localMatrix = oldMatrix
         forceBounds(localBounds)
     }

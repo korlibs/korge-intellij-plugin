@@ -1,7 +1,7 @@
 package com.soywiz.korge.intellij.editor
 
-import com.soywiz.korim.format.*
-import com.soywiz.korio.stream.*
+import korlibs.image.format.*
+import korlibs.io.stream.*
 import kotlinx.coroutines.*
 
 object AllImageFormats {

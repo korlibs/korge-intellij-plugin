@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.korui
 
+/*
 import com.intellij.openapi.fileChooser.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.ui.*
@@ -7,11 +8,12 @@ import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
+import korlibs.image.color.*
+import korlibs.io.file.*
+import korlibs.io.file.std.*
 import com.soywiz.korui.*
 import com.soywiz.korui.native.*
+import korlibs.korge.view.Views
 import java.awt.*
 import javax.swing.*
 
@@ -50,4 +52,4 @@ open class IdeaNativeUiFactory(val project: Project) : BaseAwtUiFactory() {
         }), true)?.toRgba()
     }
 }
-
+*/

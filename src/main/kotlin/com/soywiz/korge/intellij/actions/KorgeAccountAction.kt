@@ -4,11 +4,13 @@ import com.intellij.icons.*
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.fileEditor.impl.*
 import com.intellij.openapi.project.*
-import com.soywiz.korge.awt.*
+import korlibs.korge.awt.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.config.*
 import com.soywiz.korge.intellij.image.*
+import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
+import com.soywiz.korge.intellij.util.icon
 import java.awt.*
 import java.awt.AWTEvent
 import java.awt.event.*

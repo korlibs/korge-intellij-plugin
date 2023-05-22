@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.annotator
 
+/*
 import com.intellij.codeInsight.intention.impl.*
 import com.intellij.lang.annotation.*
 import com.intellij.openapi.actionSystem.*
@@ -12,14 +13,18 @@ import com.intellij.util.ui.*
 import com.soywiz.korge.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.config.*
+import com.soywiz.korge.intellij.ui.FillLayout
 import com.soywiz.korge.intellij.util.*
-import com.soywiz.korge.view.*
-import com.soywiz.korgw.awt.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Anchor
+import korlibs.korge.view.*
+import korlibs.korgw.awt.*
+import korlibs.image.color.*
+import korlibs.image.color.Colors
+import korlibs.io.async.*
+import korlibs.korge.Korge
+import korlibs.math.geom.*
+import korlibs.math.geom.Anchor
+import korlibs.render.awt.GLCanvas
+import korlibs.render.awt.GLCanvasGameWindow
 import kotlinx.coroutines.*
 import org.jetbrains.kotlin.asJava.classes.*
 import org.jetbrains.kotlin.idea.refactoring.fqName.*
@@ -191,3 +196,4 @@ class ViewProperty(val expr: KtExpression?, val nameDecl: KtNamedDeclaration?) {
         (props[prop] as? PsiElement?)?.replace(value)
     }
 }
+*/

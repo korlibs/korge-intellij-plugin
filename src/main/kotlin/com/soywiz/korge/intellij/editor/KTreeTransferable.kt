@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
-import com.soywiz.korio.serialization.xml.*
+import korlibs.io.serialization.xml.*
 import java.awt.datatransfer.*
 
 class KTreeTransferable(val xml: Xml) : Transferable {

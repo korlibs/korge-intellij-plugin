@@ -2,7 +2,7 @@ package com.soywiz.korge.intellij
 
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.*
-import com.soywiz.korio.file.*
+import korlibs.io.file.*
 import kotlinx.coroutines.*
 import org.jetbrains.jps.model.java.*
 

@@ -10,11 +10,11 @@ import com.intellij.psi.*
 import com.intellij.psi.util.*
 import com.intellij.ui.*
 import com.intellij.util.ui.*
-import com.soywiz.kds.*
+import korlibs.datastructure.*
 import com.soywiz.korge.intellij.resolver.*
 import com.soywiz.korge.intellij.util.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.color.Colors
+import korlibs.image.color.*
+import korlibs.image.color.Colors
 import org.jetbrains.kotlin.psi.*
 import java.awt.*
 import javax.swing.*

@@ -5,9 +5,9 @@ import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.tiled.dialog.*
 import com.soywiz.korge.intellij.editor.tiled.editor.*
 import com.soywiz.korge.intellij.util.ObservableProperty
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.io.async.*
 import com.soywiz.korge.tiled.*
 
 data class MapContext(

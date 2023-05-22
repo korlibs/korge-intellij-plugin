@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.util
 
-import com.soywiz.korim.color.RGBA
+import korlibs.image.color.RGBA
 import java.awt.Color
 import javax.swing.plaf.ColorUIResource
 

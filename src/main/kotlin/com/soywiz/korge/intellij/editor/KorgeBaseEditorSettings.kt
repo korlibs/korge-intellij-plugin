@@ -6,8 +6,8 @@ import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korge.intellij.util.ObservableProperty
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
+import korlibs.io.async.*
+import korlibs.math.geom.*
 import java.awt.*
 import java.awt.event.*
 import javax.swing.event.*

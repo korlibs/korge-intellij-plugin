@@ -6,5 +6,7 @@
 *.iml
 .DS_Store
 
+/deps
+/modules
 /*.ipr
 /*.iws

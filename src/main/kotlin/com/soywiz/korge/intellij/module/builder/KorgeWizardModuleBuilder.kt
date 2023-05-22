@@ -11,10 +11,10 @@ import com.intellij.openapi.vfs.*
 import com.soywiz.korge.intellij.module.*
 import com.soywiz.korge.intellij.module.wizard.*
 import com.soywiz.korge.intellij.util.*
-import com.soywiz.korio.file.std.ZipVfs
-import com.soywiz.korio.file.std.get
-import com.soywiz.korio.file.std.toVfs
-import com.soywiz.korio.stream.openAsync
+import korlibs.io.file.std.ZipVfs
+import korlibs.io.file.std.get
+import korlibs.io.file.std.toVfs
+import korlibs.io.stream.openAsync
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import org.jetbrains.plugins.gradle.service.project.*
@@ -60,7 +60,7 @@ class KorgeWizardModuleBuilder() : ModuleBuilder() {
                 val firstFolder = zip.list().first { it.isDirectory() }
                 val outputFile = root.toNioPath().toFile().toVfs()
                 println("Unzipping $firstFolder into $outputFile")
-                firstFolder.copyRecursively(outputFile)
+                firstFolder.copyToRecursively(outputFile)
                 println("Unzipping completed")
 
                 println("Updating permissions")

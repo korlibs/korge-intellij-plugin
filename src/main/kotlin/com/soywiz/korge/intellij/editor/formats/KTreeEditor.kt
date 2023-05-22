@@ -1,8 +1,8 @@
 package com.soywiz.korge.intellij.editor.formats
 
 /*
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
+import korlibs.datastructure.*
+import korlibs.memory.*
 import com.soywiz.korev.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.input.*
@@ -11,12 +11,12 @@ import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.serialization.xml.*
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
 import kotlin.math.*
 import com.soywiz.korge.debug.*
 

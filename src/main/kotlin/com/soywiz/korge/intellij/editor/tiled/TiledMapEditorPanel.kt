@@ -4,7 +4,7 @@ package com.soywiz.korge.intellij.editor.tiled
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.HistoryManager
 import com.soywiz.korge.intellij.editor.tiled.dialog.ProjectContext
-import com.soywiz.korio.file.VfsFile
+import korlibs.io.file.VfsFile
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import javax.swing.JPanel

@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.editor
 
-import com.soywiz.korio.async.*
+import korlibs.io.async.*
 
 class HistoryManager {
 	class Entry(val cursor: Int, val name: String, val apply: (redo: Boolean) -> Unit) {

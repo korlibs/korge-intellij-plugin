@@ -5,7 +5,7 @@ import com.soywiz.korge.awt.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
+import korlibs.image.color.*
 import com.soywiz.korinject.*
 
 @Prototype

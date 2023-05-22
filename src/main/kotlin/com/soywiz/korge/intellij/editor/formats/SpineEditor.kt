@@ -9,9 +9,9 @@ import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.util.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korim.atlas.readAtlas
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
+import korlibs.image.atlas.readAtlas
+import korlibs.io.file.VfsFile
+import korlibs.io.file.baseName
 
 suspend fun spineEditor(file: VfsFile): Module {
     val atlas = file.parent.listSimple().firstOrNull { it.baseName.endsWith(".atlas") }

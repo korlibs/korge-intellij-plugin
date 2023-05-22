@@ -1,7 +1,7 @@
 package com.soywiz.korge.intellij.debug
 
 import com.intellij.debugger.impl.*
-import com.soywiz.klock.measureTimeWithResult
+import korlibs.time.measureTimeWithResult
 //import com.sun.jdi.*
 //import com.sun.jdi.event.*
 //import com.sun.jdi.request.*

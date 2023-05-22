@@ -6,9 +6,9 @@ import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.formats.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.vector.format.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
+import korlibs.image.vector.format.*
+import korlibs.io.file.*
+import korlibs.io.file.std.*
 import kotlinx.coroutines.*
 
 open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorProvider, com.intellij.openapi.project.DumbAware {

@@ -1,8 +1,8 @@
 package com.soywiz.korge.intellij.debug
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.image.vector.*
 import com.sun.jdi.*
 
 fun Type.isKorimBitmapOrDrawable() = this.instanceOf<Bitmap>() || this.instanceOf<BmpSlice>() || this.instanceOf<Drawable>() || this.instanceOf<com.soywiz.korge.view.Image>()
@@ -73,7 +73,7 @@ fun ObjectReference.readKorimDrawableInternal(requestedWidth: Int, requestedHeig
 	}
 
 	virtualMachine().process()
-	val clazz = virtualMachine().getRemoteClass("com.soywiz.korim.format.NativeImageFormatProviderJvmKt", thread = thread) ?: error("Can't find NativeImageFormatProviderJvmKt")
+	val clazz = virtualMachine().getRemoteClass("korlibs.image.format.NativeImageFormatProviderJvmKt", thread = thread) ?: error("Can't find NativeImageFormatProviderJvmKt")
 	val nativeImageFormatProvider = clazz.invoke("getNativeImageFormatProvider", listOf(), thread = thread) as? ObjectReference? ?: error("Error calling getNativeImageFormatProvider")
 	val image = nativeImageFormatProvider.invoke("create", listOf(vm.mirrorOf(width), vm.mirrorOf(height)), thread = thread) as? ObjectReference? ?: error("Error calling create")
 	val ctx2d = image.invoke("getContext2d", listOf(vm.mirrorOf(false)), thread = thread) as? ObjectReference? ?: error("Error calling getContext2d")

@@ -4,9 +4,9 @@ import com.intellij.diff.util.*
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.vfs.*
-import com.soywiz.korim.awt.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
+import korlibs.image.awt.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 import kotlinx.coroutines.*
 import java.io.*
 import javax.swing.*

@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij.util
 
 import com.soywiz.korge.awt.*
+import com.soywiz.korge.intellij.ui.*
 import java.awt.*
 import javax.swing.*
 

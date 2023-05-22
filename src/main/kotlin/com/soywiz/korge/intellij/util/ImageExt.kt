@@ -1,6 +1,6 @@
 package com.soywiz.korge.intellij.util
 
-import com.soywiz.korim.awt.*
+import korlibs.image.awt.*
 import java.awt.*
 import java.io.*
 import javax.imageio.*

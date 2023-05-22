@@ -3,11 +3,11 @@ package com.soywiz.korge.intellij
 import com.intellij.openapi.command.undo.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korge.intellij.util.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.file.std.*
+import korlibs.io.stream.*
+import korlibs.io.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*

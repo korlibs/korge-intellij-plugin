@@ -2,7 +2,7 @@ package com.soywiz.korge.intellij.editor.tiled
 
 /*
 import com.intellij.ui.components.*
-import com.soywiz.kmem.*
+import korlibs.memory.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.tiled.dialog.*
@@ -10,10 +10,10 @@ import com.soywiz.korge.intellij.editor.tiled.editor.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korge.intellij.util.ObservableProperty
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
 import com.soywiz.korge.tiled.*
 import kotlinx.coroutines.*
 import java.awt.*

@@ -3,7 +3,7 @@ package com.soywiz.korge.intellij.config
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.*
 import com.intellij.util.xmlb.*
-import com.soywiz.klock.*
+import korlibs.time.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.image.*
 import com.soywiz.korge.intellij.module.*
