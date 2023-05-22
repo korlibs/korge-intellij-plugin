@@ -13,6 +13,11 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
+        <h3>4.0.1</h3>
+        <ul>
+            <li>Support installing assets</li>
+            <li>Added CC0 SFX to the store</li>
+        </ul>
         <h3>4.0.0</h3>
         <ul>
             <li>New project Wizard with templates</li>
