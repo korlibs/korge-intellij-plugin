@@ -6,10 +6,10 @@
 
     <name>Korge</name>
     <version>4.0.1</version>
-    <vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
+    <vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">KorGE</vendor>
 
     <description><![CDATA[
-	Supports the Korge Game Engine, providing a project wizard, and tools.
+	Supports the KorGE Game Engine, providing a project wizard, and tools.
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
