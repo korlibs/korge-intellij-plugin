@@ -341,6 +341,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                             root.copyToRecursively(
                                 project.rootFile!!.toVfs()["src/commonMain/resources/${outputName.removeSuffix(".zip")}"]
                             )
+                            project.rootFile?.get("src/commonMain/resources")?.refresh(true, true)
                         }
                     } else {
                         project.rootFile!!.createFile("src/commonMain/resources/$outputName", downloadUrlCached(dep.url))
