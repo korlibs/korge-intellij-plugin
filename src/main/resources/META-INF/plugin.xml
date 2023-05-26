@@ -336,7 +336,8 @@
             implementation="com.soywiz.korge.intellij.actions.KorgeWebPreviewEditorProvider"/>
 
         <applicationConfigurable
-            groupId="org.korge"
+            groupId="language"
+            groupWeight="1000"
             displayName="KorGE"
             provider="com.soywiz.korge.settings.KorgeSettingsPageConfigurableProvider"
             id="org.korge.KorgeSettingsPageConfigurable"
