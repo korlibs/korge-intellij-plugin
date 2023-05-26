@@ -1,6 +1,8 @@
 package com.soywiz.korge.intellij.ui
 
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.jcef.JBCefClient
 import com.intellij.ui.jcef.JCEFHtmlPanel
 import com.intellij.util.ui.UIUtil
@@ -390,6 +392,33 @@ fun <T> Styled<out Container>.uiSequence(gen: () -> List<T>, signal: Signal<Unit
 fun icon(path: String) = ImageIcon(ImageIO.read(getResourceFile(path)))
 fun toolbarIcon(path: String) = icon("/com/soywiz/korge/intellij/toolbar/$path")
 
+fun showNewDialog(title: String = "Dialog", settings: DialogSettings = DialogSettings(), block: Panel.(DialogWrapper) -> Unit): Boolean {
+    class MyDialogWrapper : DialogWrapper(true) {
+        override fun createCenterPanel(): JComponent? {
+            return panel {
+                block(this, this@MyDialogWrapper)
+            }
+        }
+
+        override fun createActions(): Array<Action> {
+            if (settings.onlyCancelButton) {
+                return arrayOf(cancelAction)
+            } else {
+                return super.createActions()
+            }
+        }
+
+        init {
+            init()
+            this.title = title
+            this.isOK
+        }
+    }
+
+    return MyDialogWrapper().showAndGet()
+}
+
+@Deprecated("Use showNewDialog instead")
 fun showDialog(title: String = "Dialog", settings: DialogSettings = DialogSettings(), preferredSize: Dimension = Dimension(200, 200), block: Styled<JPanel>.(wrapper: DialogWrapper) -> Unit): Boolean {
 	class MyDialogWrapper : DialogWrapper(true) {
 		override fun createCenterPanel(): JComponent? {
