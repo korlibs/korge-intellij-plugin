@@ -1,4 +1,5 @@
 import org.gradle.api.internal.tasks.compile.ApiCompilerResult
+import org.jetbrains.intellij.tasks.PublishPluginTask
 
 buildscript {
     val kotlinVersion: String by project
@@ -132,6 +133,13 @@ intellij {
     downloadSources.set(true)
 
     //sandboxDir.set(layout.projectDirectory.dir(".sandbox").toString())
+}
+
+tasks.withType(PublishPluginTask::class.java) {
+    val publishToken = System.getenv("INTELLIJ_PUBLISH_TOKEN") ?: rootProject.findProperty("intellij.token.publish")
+    if (publishToken != null) {
+        this.token.set(publishToken.toString())
+    }
 }
 
 tasks {
