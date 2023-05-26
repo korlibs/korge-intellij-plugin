@@ -1,9 +1,10 @@
 package com.soywiz.korge.intellij.completion
 
-import com.intellij.codeInsight.completion.*
-import com.intellij.icons.AllIcons
-import com.intellij.patterns.PlatformPatterns
-import com.intellij.util.ProcessingContext
+import com.intellij.codeInsight.completion.CompletionContributor
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.soywiz.korge.intellij.KorgeIcons
 
 
 class ResourceCompletionContributor : CompletionContributor() {
@@ -29,5 +30,10 @@ class ResourceCompletionContributor : CompletionContributor() {
     //}
 
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
+        //println("ResourceCompletionContributor.fillCompletionVariants")
+        //val position = parameters.position
+        //val lookupElement = LookupElementBuilder.create("MyElement").withIcon(KorgeIcons.JITTO)
+        //result.addElement(lookupElement)
     }
+
 }

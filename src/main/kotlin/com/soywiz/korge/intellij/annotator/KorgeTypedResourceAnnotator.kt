@@ -17,6 +17,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.util.ui.UIUtil
 import com.soywiz.korge.intellij.getOrPutUserData
+import com.soywiz.korge.intellij.util.fileEditorManager
 import com.soywiz.korge.intellij.util.get
 import com.soywiz.korge.intellij.util.getScaledInstance
 import com.soywiz.korge.intellij.util.rootFile
@@ -47,16 +48,18 @@ class KorgeTypedResourceAnnotator : Annotator {
 
 fun AnnotationHolder.addOpenImageAnnotation(project: Project, resourcePath: String) {
     val holder = this
-    holder.newAnnotation(HighlightSeverity.INFORMATION, "Image")
+    val virtualFile = project.getResourceVirtualFile(resourcePath)
+    holder.newAnnotation(HighlightSeverity.INFORMATION, "Open image")
         .withFix(object : BaseIntentionAction() {
-            override fun getText(): String = resourcePath
+            override fun getText(): String = "Open $resourcePath"
             override fun getFamilyName(): String = text
             override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean = true
             override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
+                OpenVirtualFileAction(virtualFile!!).openFile(project)
             }
         })
         .gutterIconRenderer(
-            DefaultGutterIconRenderer(OpenVirtualFileAction(project.getResourceVirtualFile(resourcePath)!!),
+            DefaultGutterIconRenderer(OpenVirtualFileAction(virtualFile!!),
                 ImageIcon(project.getCachedResourceIcon(resourcePath))
             ))
         .create()
@@ -69,7 +72,13 @@ data class DefaultGutterIconRenderer(val action: AnAction, val _icon: Icon) : Gu
 }
 
 class OpenVirtualFileAction(val file: VirtualFile) : AnAction(), DumbAware {
+    fun openFile(project: Project?) {
+        file.refresh(false, true)
+        project?.fileEditorManager?.openFile(file, true)
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
+        openFile(e.project)
     }
 }
 
