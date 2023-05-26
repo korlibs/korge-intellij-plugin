@@ -5,7 +5,7 @@
     <id>com.soywiz.korge.korge-intellij-plugin</id>
 
     <name>Korge</name>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
     <vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">KorGE</vendor>
 
     <description><![CDATA[
@@ -13,6 +13,13 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
+        <h3>4.0.2</h3>
+        <ul>
+            <li>Supports previewing of resourcesVfs["path"] for .png files</li>
+            <li>Supports previewing of `.png` and folder-based `.atlas` for the new `KR` (KorgeResources) typed resources accessors from KorGE 4.0.2</li>
+            <li>GutterIcon for resource image previews</li>
+            <li>Documentation for resource image previews</li>
+        </ul>
         <h3>4.0.1</h3>
         <ul>
             <li>Supports installing assets</li>
