@@ -1,0 +1,22 @@
+name: DEPLOY
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CI: true
+  JAVA_VERSION: 11
+  JAVA_DISTRIBUTION: zulu
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - run: ./gradlew check
+      - run: ./gradlew publishPlugin
+        env:
+          INTELLIJ_PUBLISH_TOKEN: ${{ secrets.INTELLIJ_PUBLISH_TOKEN }}
