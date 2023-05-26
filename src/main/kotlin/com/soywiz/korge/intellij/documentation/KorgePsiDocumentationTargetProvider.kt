@@ -9,15 +9,13 @@ import com.intellij.psi.PsiElement
 import com.soywiz.korge.intellij.annotator.KorgeTypedResourceExAnnotator
 import com.soywiz.korge.intellij.annotator.getResourceVirtualFile
 import korlibs.math.geom.ScaleMode
-import korlibs.math.geom.Size
+import korlibs.math.geom.SizeInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.awt.Dimension
 import java.io.File
 import java.io.IOException
 import javax.imageio.ImageIO
 import javax.imageio.ImageReader
-import javax.imageio.metadata.IIOMetadata
 
 
 class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
@@ -44,11 +42,19 @@ class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
 
         override fun computeDocumentation(): DocumentationResult? =
             DocumentationResult.asyncDocumentation {
-                val imageSize = getImageSize(file)
-                val realSize = ScaleMode.SHOW_ALL.invoke(imageSize, Size(140, 140))
+                val imageSizeResult = getImageSize(file)
+                val originalSize = imageSizeResult.size
+                val scaledSize = ScaleMode.SHOW_ALL.invoke(originalSize, SizeInt(140, 140))
 
                 DocumentationResult.documentation(
-                    html = "<div><div>${resourcePath}</div><img src='${file.toURI()}' width=\"${realSize.width.toInt()}\" height=\"${realSize.height.toInt()}\" /></div>"
+                    // language=html
+                    html = """
+                        <div>
+                            <div>${resourcePath}</div>
+                            <img src='${file.toURI()}' width="${scaledSize.width}" height="${scaledSize.height}" />
+                            <div>${imageSizeResult.formatName} : ${originalSize.width}x${originalSize.height}</div>
+                        </div>                        
+                    """.trimIndent()
                 )
             }
 
@@ -56,7 +62,9 @@ class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
     }
 }
 
-suspend fun getImageSize(imageFile: File): Size {
+data class ImageSizeResult(val size: SizeInt, val formatName: String)
+
+suspend fun getImageSize(imageFile: File): ImageSizeResult {
     return withContext(Dispatchers.IO) {
         try {
             ImageIO.createImageInputStream(imageFile).use { inputStream ->
@@ -64,11 +72,11 @@ suspend fun getImageSize(imageFile: File): Size {
                 reader.input = inputStream
                 val width = reader.getWidth(0)
                 val height = reader.getHeight(0)
-                Size(width, height)
+                ImageSizeResult(SizeInt(width, height), reader.formatName)
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            Size(0, 0)
+            ImageSizeResult(SizeInt(0, 0), "unknown")
         }
     }
 }
