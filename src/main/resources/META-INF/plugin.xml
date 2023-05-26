@@ -13,17 +13,16 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
-        <h3>4.0.3</h3>
-        <ul>
-            <li>Provides KorGE icons in the New UI</li>
-            <li>Improved documentation preview with image type and size</li>
-        </ul>
         <h3>4.0.2</h3>
         <ul>
             <li>Supports previewing of resourcesVfs["path"] for .png files</li>
             <li>Supports previewing of `.png` and folder-based `.atlas` for the new `KR` (KorgeResources) typed resources accessors from KorGE 4.0.2</li>
+            <li>Provides KorGE icons in the New UI</li>
+            <li>Improved documentation preview with image type and size</li>
             <li>GutterIcon for resource image previews</li>
             <li>Documentation for resource image previews</li>
+            <li>Fixes Login</li>
+            <li>Adds an initial settings panel</li>
         </ul>
         <h3>4.0.1</h3>
         <ul>
