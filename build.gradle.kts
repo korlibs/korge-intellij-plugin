@@ -151,6 +151,7 @@ tasks {
 
     val runIde by existing(org.jetbrains.intellij.tasks.RunIdeTask::class) {
         maxHeapSize = "4g"
+        systemDir.set(File(System.getProperty("user.home"), ".korge/idea-system-dir"))
         //dependsOn(":korge-next:publishJvmPublicationToMavenLocal")
     }
 //    val runDebugTilemap by creating(JavaExec::class) {
