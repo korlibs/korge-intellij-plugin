@@ -312,7 +312,7 @@
         <annotator language="kotlin"
             implementationClass="com.soywiz.korge.intellij.annotator.ColorAnnotator"/>
         <annotator language="kotlin"
-           implementationClass="com.soywiz.korge.intellij.annotator.KorgeTypedResourceAnnotator"/>
+           implementationClass="com.soywiz.korge.intellij.annotator.KorgeResourceAnnotator"/>
         <annotator language="kotlin"
            implementationClass="com.soywiz.korge.intellij.annotator.KorgeTypedResourceExAnnotator"/>
         <!--
