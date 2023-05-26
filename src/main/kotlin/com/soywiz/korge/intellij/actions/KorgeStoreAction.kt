@@ -4,8 +4,8 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.soywiz.korge.intellij.config.korgeGlobalSettings
 import com.soywiz.korge.intellij.korge
-import com.soywiz.korge.intellij.util.isDevelopmentMode
 
 class KorgeStoreAction : AnAction(), DumbAware {
     override fun actionPerformed(e: AnActionEvent) {
@@ -29,6 +29,6 @@ class KorgeStoreAction : AnAction(), DumbAware {
 }
 
 val STORE_PREFIX get() = when {
-    isDevelopmentMode -> "http://127.0.0.1:4000"
+    korgeGlobalSettings.useLocalStore -> "http://127.0.0.1:4000"
     else -> "https://store.korge.org"
 }

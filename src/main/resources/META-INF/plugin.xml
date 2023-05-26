@@ -335,6 +335,15 @@
         <fileEditorProvider
             implementation="com.soywiz.korge.intellij.actions.KorgeWebPreviewEditorProvider"/>
 
+        <applicationConfigurable
+            groupId="org.korge"
+            displayName="KorGE"
+            provider="com.soywiz.korge.settings.KorgeSettingsPageConfigurableProvider"
+            id="org.korge.KorgeSettingsPageConfigurable"
+            order="first"
+            dynamic="true"
+        />
+
         <annotator language="yaml"
                    implementationClass="com.soywiz.korge.intellij.annotator.DepsKProjectYmlAnnotator"/>
         <annotator language="kotlin"
