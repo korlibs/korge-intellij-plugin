@@ -1,37 +1,27 @@
 package com.soywiz.korge.intellij.actions
 
-import com.intellij.codeInsight.actions.ReformatCodeAction
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiManager
-import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.testFramework.utils.editor.getVirtualFile
-import com.intellij.testFramework.utils.editor.saveToDisk
-import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.KorgeIcons
 import com.soywiz.korge.intellij.ai.OpenAI
-import com.soywiz.korge.intellij.config.globalPrivateSettings
 import com.soywiz.korge.intellij.config.korgeGlobalPrivateSettings
 import com.soywiz.korge.intellij.korge
 import com.soywiz.korge.intellij.passwordSafe
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
-import org.jetbrains.kotlin.idea.base.util.onTextChange
 import java.awt.*
-import java.awt.event.AWTEventListener
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
-import java.awt.event.MouseEvent
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.JDialog
+import javax.swing.JLabel
+import javax.swing.JOptionPane
 
 class KorgeJittoAssistantAction : AnAction() {
     override fun update(e: AnActionEvent) {
@@ -48,7 +38,7 @@ class KorgeJittoAssistantAction : AnAction() {
         val buttonRect = Rectangle(c.locationOnScreen, c.size )
         val dialogSize = Dimension(220, 120)
 
-        val privateSettings = project!!.korge.globalPrivateSettings
+        //val privateSettings = korgeGlobalPrivateSettings
 
         //val frame = JFrame()
         val frame = JDialog(c.parentFrame())
@@ -64,7 +54,7 @@ class KorgeJittoAssistantAction : AnAction() {
         frame.contentPane.preferredSize = dialogSize
         frame.rootPane.border = BorderFactory.createMatteBorder(2, 2, 2, 2, Color(0x5C1A95));
 
-        val chat = KorgeAI(project)
+        val chat = KorgeAI(project!!)
 
         val initialCode = project!!.fileEditorManager.selectedTextEditor!!.document.text
         // SContainer.sceneMain

@@ -97,11 +97,11 @@ open class KorgeProjectTemplate {
 		fun fromEmbeddedResource(): KorgeProjectTemplate =
 			fromXml(getResourceText("/com/soywiz/korge/intellij/korge-templates.xml"))
 
-		fun fromUpToDateTemplate(project: Project?): KorgeProjectTemplate = fromXml(korgeGlobalSettings(project).getCachedTemplate())
+		fun fromUpToDateTemplate(project: Project?): KorgeProjectTemplate = fromXml(korgeGlobalSettings.getCachedTemplate())
 
 		fun provider() = object : Provider {
 			override fun invalidate(project: Project?) {
-                korgeGlobalSettings(project).invalidateCache()
+                korgeGlobalSettings.invalidateCache()
 				_template = null
 			}
 			private var _template: KorgeProjectTemplate? = null

@@ -26,7 +26,7 @@ class KorgeAccountAction : AnAction(), DumbAware {
         val buttonRect = Rectangle(c.locationOnScreen, c.size )
         val dialogSize = Dimension(220, 234)
 
-        val privateSettings = project!!.korge.globalPrivateSettings
+        val privateSettings = korgeGlobalPrivateSettings
 
         //val frame = JFrame()
         val frame = JDialog(c.parentFrame())
@@ -119,7 +119,7 @@ class KorgeAccountAction : AnAction(), DumbAware {
                         click {
                             //launchBrowserWithKorgeDocumention()
                             //HTMLEditorProvider.openEditor(project, "KorGE Docs", url = "https://docs.korge.org/")
-                            KorgeWebPreviewUtils.open(project, "KorGE Docs", "https://docs.korge.org/")
+                            KorgeWebPreviewUtils.open(project!!, "KorGE Docs", "https://docs.korge.org/")
 
                         }
                     }

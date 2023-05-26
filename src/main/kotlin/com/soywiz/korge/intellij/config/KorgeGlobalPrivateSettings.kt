@@ -4,38 +4,28 @@ import com.intellij.codeInsight.daemon.*
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.*
-import com.intellij.openapi.editor.markup.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.util.xmlb.*
-import com.jetbrains.rd.util.string.print
 import korlibs.time.*
-import korlibs.memory.*
-import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
-import com.soywiz.korge.intellij.ui.showDialog
 import com.soywiz.korge.intellij.util.*
-import korlibs.image.awt.*
 import korlibs.io.async.delay
-import korlibs.io.async.launch
 import korlibs.io.async.launchImmediately
 import korlibs.io.serialization.json.Json
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.awt.*
 import java.awt.image.*
-import java.io.*
 import java.net.*
 import java.util.*
 import javax.imageio.*
-import javax.imageio.stream.*
 import javax.swing.*
 import kotlin.coroutines.EmptyCoroutineContext
 import com.intellij.ide.projectView.ProjectView
 import com.soywiz.korge.intellij.internal.dyn
 import com.soywiz.korge.intellij.ui.DialogSettings
-import com.soywiz.korge.intellij.ui.label
+import com.soywiz.korge.intellij.ui.showNewDialog
 import korlibs.io.dynamic.Dyn
 
 @State(
@@ -54,6 +44,15 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 	var userPrice: Int? = null
 	var validDate: Long? = null
 	var lastChecked: Long = 0L
+
+    fun getSureUserUUID(): String {
+        if (userUuid == null) userUuid = UUID.randomUUID().toString()
+        return userUuid!!
+    }
+
+    fun clearUserUUID() {
+        userUuid = null
+    }
 
 	private fun getAvatarBytes(): ByteArray {
 		if (userAvatarBytes == null) {
@@ -98,13 +97,18 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 		//return donatesAtLeast(0)
 	}
 
-	private val Any?.boolFixed: Boolean get() = when (this) {
-        is Dyn -> this.value.boolFixed
-		is Boolean -> this
-		is String -> this == "1" || this == "true" || this == "on"
-		is Number -> toInt() != 0
-		else -> false
-	}
+    fun boolFixed(value: Any?): Boolean {
+        return when (value) {
+            is com.soywiz.korge.intellij.internal.Dyn -> boolFixed(value.value)
+            is Dyn -> boolFixed(value.value)
+            is Boolean -> value
+            is String -> value == "1" || value == "true" || value == "on"
+            is Number -> value.toInt() != 0
+            else -> false
+        }
+    }
+
+	private val Any?.boolFixed: Boolean get() = boolFixed(this)
 
 	fun nullifyProps() {
 		userLogin = null
@@ -130,7 +134,7 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 			}
 		}
 
-		userUuid = null
+		clearUserUUID()
 		nullifyProps()
 
         notifyMessage(project, NotificationType.INFORMATION, "KorGE Successful logout", "Goodbye $oldUserLogin")
@@ -145,11 +149,13 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 
 	suspend fun updateUserInformation(project: Project?): Boolean {
 		if (korgeGlobalPrivateSettings.userUuid == null) return false
-		println("KorgeGlobalPrivateSettings.updateUserInformation")
+		//println("KorgeGlobalPrivateSettings.updateUserInformation IID=${korgeGlobalPrivateSettings.userUuid}")
 		try {
 			val info =
 				withContext(Dispatchers.IO) { Json.parse(URL("$ID_KORGE_DOMAIN/info?uuid=${korgeGlobalPrivateSettings.userUuid}").readText()) }
                     .dyn
+
+            //println(" -> ${info.value.toString()}")
 
             val logged = info["logged"].boolFixed
             if (logged) {
@@ -170,6 +176,7 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
                 println("SUCCESSFUL login")
                 return true
             } else {
+                println("UN-SUCCESSFUL login")
                 korgeGlobalPrivateSettings.nullifyProps()
                 return false
             }
@@ -191,8 +198,8 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 		//val project = e.project
 
 		// @TODO: This causes a 500 error in the webpage
-		korgeGlobalPrivateSettings.userUuid = korgeGlobalPrivateSettings.userUuid ?: UUID.randomUUID().toString()
-		Desktop.getDesktop().browse(URI.create("$ID_KORGE_DOMAIN/?uuid=${korgeGlobalPrivateSettings.userUuid}"))
+        val uuid = korgeGlobalPrivateSettings.getSureUserUUID()
+		Desktop.getDesktop().browse(URI.create("$ID_KORGE_DOMAIN/?uuid=${uuid}"))
 		//println("korgeGlobalPrivateSettings.userUuid: ${korgeGlobalPrivateSettings.userUuid}")
 		var dialog: DialogWrapper? = null
 		val job = launchImmediately(EmptyCoroutineContext) {
@@ -210,8 +217,12 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 			}
 		}
 		try {
-			showDialog("Waiting for login", settings = DialogSettings(onlyCancelButton = true), preferredSize = Dimension(200, 60)) {
-				label("Use the web browser \nto login into the service \nyou used as sponsor")
+            //showNewDialog("Waiting for login", settings = DialogSettings(onlyCancelButton = true), preferredSize = Dimension(200, 60)) {
+            showNewDialog("Waiting for login", settings = DialogSettings(onlyCancelButton = true)) {
+                row { label("Use the web browser") }
+                row { label("to login into the service") }
+                row { label("you used as sponsor") }
+                //row { label("UUID=$uuid") }
 				dialog = it
 			}
 		} finally {
@@ -255,6 +266,7 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 }
 
 val korgeGlobalPrivateSettings: KorgeGlobalPrivateSettings by lazy { getService<KorgeGlobalPrivateSettings>() }
-val KorgeProjectExt.globalPrivateSettings get() = korgeGlobalPrivateSettings
-fun Project.hasAccessToEarlyPreviewFeatures(): Boolean = korge.globalPrivateSettings.hasAccessToEarlyPreviewFeatures()
+//val KorgeProjectExt.globalPrivateSettings get() = korgeGlobalPrivateSettings
+//fun Project.hasAccessToEarlyPreviewFeatures(): Boolean = korge.globalPrivateSettings.hasAccessToEarlyPreviewFeatures()
+fun Project.hasAccessToEarlyPreviewFeatures(): Boolean = korgeGlobalPrivateSettings.hasAccessToEarlyPreviewFeatures()
 
