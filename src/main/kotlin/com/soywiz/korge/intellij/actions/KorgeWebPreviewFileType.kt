@@ -93,7 +93,8 @@ data class KorgeWebPreviewVirtualFile(private val myFile: VirtualFile, val previ
         putUserData(FileEditorManagerImpl.FORBID_PREVIEW_TAB, true)
     }
     override fun getOriginalFile(): VirtualFile = myFile
-    override fun getName(): String = "Korge Preview of ${myFile.name}"
+    override fun getName(): String = myFile.name
+    override fun getPath(): String = previewUrl.toString().substringBefore('?')
 }
 
 class KorgeWebPreviewEditorProvider : FileEditorProvider, DumbAware {
