@@ -1,14 +1,17 @@
 package com.soywiz.korge.intellij.config
 
-import com.intellij.openapi.components.*
-import com.intellij.openapi.project.*
-import com.intellij.util.xmlb.*
-import korlibs.time.*
-import com.soywiz.korge.intellij.*
-import com.soywiz.korge.intellij.image.*
-import com.soywiz.korge.intellij.module.*
-import com.soywiz.korge.intellij.util.*
-import java.net.*
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.Project
+import com.intellij.util.xmlb.XmlSerializerUtil
+import com.soywiz.korge.intellij.getService
+import com.soywiz.korge.intellij.image.KorimImageReaderRegister
+import com.soywiz.korge.intellij.util.getResourceText
+import korlibs.time.days
+import korlibs.time.milliseconds
+import java.net.URL
 
 @State(
 	name = "KorgeGlobalSettings",
@@ -17,9 +20,10 @@ import java.net.*
 open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings>, DumbAware {
 	var cachedTemplateLastRefreshTime: Long = 0L
 	var cachedTemplateString: String? = null
+    var useLocalStore: Boolean = false
 
 	init {
-		println("KorgeGlobalSettings.init")
+		//println("KorgeGlobalSettings.init")
         KorimImageReaderRegister.initialize
 	}
 
@@ -73,10 +77,20 @@ open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings>, 
 	override fun getState() = this
 
 	override fun loadState(state: KorgeGlobalSettings) {
+        //println("KorgeGlobalSettings.loadState: $state")
 		XmlSerializerUtil.copyBean(state, this)
 	}
+
+    override fun noStateLoaded() {
+        //println("KorgeGlobalSettings.noStateLoaded")
+    }
+
+    override fun initializeComponent() {
+        //println("KorgeGlobalSettings.initializeComponent")
+    }
 }
 
-fun korgeGlobalSettings(project: Project?): KorgeGlobalSettings {
+val korgeGlobalSettings: KorgeGlobalSettings by lazy { getService() }
+fun korgeGlobalSettings(project: Project? = null): KorgeGlobalSettings {
     return project?.getService() ?: getService()
 }
