@@ -5,7 +5,8 @@ import korlibs.io.stream.*
 import kotlinx.coroutines.*
 
 object AllImageFormats {
-    val FORMATS: ImageFormats = ImageFormats(PSD, TGA, KRA, DDS, DXT1, DXT2, DXT3, DXT4, DXT5, SVG, ICO, QOI, ASE, GIF)
+    //val FORMATS: ImageFormats = ImageFormats(PSD, TGA, KRA, DDS, DXT1, DXT2, DXT3, DXT4, DXT5, SVG, ICO, QOI, ASE, GIF)
+    val FORMATS: ImageFormats = ImageFormats(PSD, TGA, KRA, DDS, DXT1, DXT2, DXT3, DXT4, DXT5, SVG, ICO, QOI, ASE)
 
     fun detectFormat(s: SyncStream, props: ImageDecodingProps): ImageFormat? {
         for (format in FORMATS.formats) {

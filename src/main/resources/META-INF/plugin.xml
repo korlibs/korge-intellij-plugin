@@ -1,7 +1,7 @@
 <idea-plugin require-restart="false">
     <!-- https://plugins.jetbrains.com/plugin/9676-korge-intellij-plugin -->
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="231"/>
+    <idea-version since-build="231.8770.17"/>
     <id>com.soywiz.korge.korge-intellij-plugin</id>
 
     <name>Korge</name>
@@ -311,6 +311,10 @@
             implementationClass="com.soywiz.korge.intellij.annotator.KorgeBuildGradleAnnotator"/>
         <annotator language="kotlin"
             implementationClass="com.soywiz.korge.intellij.annotator.ColorAnnotator"/>
+        <annotator language="kotlin"
+           implementationClass="com.soywiz.korge.intellij.annotator.KorgeTypedResourceAnnotator"/>
+        <annotator language="kotlin"
+           implementationClass="com.soywiz.korge.intellij.annotator.KorgeTypedResourceExAnnotator"/>
         <!--
         <annotator language="kotlin"
             implementationClass="com.soywiz.korge.intellij.annotator.MovieClipAnnotator"/>
@@ -405,6 +409,13 @@
         <!-- Completions -->
         <completion.contributor language="XML"
             implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
+
+        <completion.contributor language="kotlin"
+                                implementationClass="com.soywiz.korge.intellij.completion.ResourceCompletionContributor"/>
+
+        <documentationProvider implementation="com.soywiz.korge.intellij.documentation.KorgeDocumentationProvider"/>
+
+        <platform.backend.documentation.psiTargetProvider implementation="com.soywiz.korge.intellij.documentation.KorgePsiDocumentationTargetProvider" />
 
         <!--
         <framework.type implementation="com.soywiz.korge.intellij.KorgeFramework" />

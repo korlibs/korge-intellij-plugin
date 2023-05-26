@@ -82,15 +82,15 @@ open class KorimImageReaderSpi : ImageReaderSpi(
     false, null, null, null, null, true, "javax_imageio_korim_1.0", null, null, null
 ) {
     init {
-        println("KorimImageReaderSpi!!")
+        //println("KorimImageReaderSpi!!")
     }
     override fun getDescription(locale: Locale?): String {
-        println("KorimImageReaderSpi.getDescription")
+        //println("KorimImageReaderSpi.getDescription")
         return "Korim"
     }
 
     override fun canDecodeInput(source: Any?): Boolean {
-        println("KorimImageReaderSpi.canDecodeInput: $source")
+        //println("KorimImageReaderSpi.canDecodeInput: $source")
         if (source !is ImageInputStream) {
             return false
         }
@@ -101,7 +101,7 @@ open class KorimImageReaderSpi : ImageReaderSpi(
     }
 
     override fun createReaderInstance(extension: Any?): ImageReader {
-        println("KorimImageReaderSpi.createReaderInstance: $extension")
+        //println("KorimImageReaderSpi.createReaderInstance: $extension")
         return KorimImageReader(this)
     }
 }
