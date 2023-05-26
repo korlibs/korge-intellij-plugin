@@ -13,6 +13,10 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
+        <h3>4.0.3</h3>
+        <ul>
+            <li>Provides KorGE icons in the New UI</li>
+        </ul>
         <h3>4.0.2</h3>
         <ul>
             <li>Supports previewing of resourcesVfs["path"] for .png files</li>
@@ -214,6 +218,24 @@
         <action id="KorgeCreateGradleRunConfiguration"
                 class="com.soywiz.korge.intellij.actions.KorgeCreateGradleRunConfiguration" text="_KorgeCreateGradleRunConfiguration"
                 />
+
+        <group id="NewKorgeActions">
+            <add-to-group group-id="MainToolbarCenter" anchor="last"/>
+            <action id="NewKorgeAccountAction"
+                    class="com.soywiz.korge.intellij.actions.KorgeAccountAction" text="_Account"
+                    icon="AllIcons.General.User"/>
+            <action
+                id="NewJittoAssistantAction"
+                class="com.soywiz.korge.intellij.actions.KorgeJittoAssistantAction"
+                text="KorGE _Jitto"
+                icon="com.soywiz.korge.intellij.KorgeIcons.PARTICLE"/>
+            <action
+                id="NewKorgeStoreAction"
+                class="com.soywiz.korge.intellij.actions.KorgeStoreAction"
+                text="KorGE _Store"
+                icon="com.soywiz.korge.intellij.KorgeIcons.JITTO"/>
+
+        </group>
 
         <group id="KorgeActions">
             <!--<add-to-group group-id="NavBarToolBar" anchor="last"/>-->
