@@ -8,6 +8,7 @@ import com.intellij.ide.*
 import com.intellij.ide.browsers.*
 import com.intellij.ide.browsers.actions.*
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.*
 import com.intellij.openapi.diagnostic.*
 import com.intellij.openapi.externalSystem.importing.*
@@ -135,6 +136,8 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
     }
     private var disposables = arrayListOf<Disposable>()
 
+    val dataContext: DataContext = project.getDataContext() ?: myPanel.component.getDataContext()
+
     private fun registerInsideKorgeIntellij(browser: CefBrowser = myPanel.cefBrowser) {
         //println("project.projectFilePath: ${project.projectFilePath}")
         //println("project.projectFile: ${project.projectFile}")
@@ -238,7 +241,10 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                         //.update(KotlinDslGradleBuildSync(ExternalSystemTaskId.getProjectId(project)))
 
                         project.runReadActionInSmartModeExt {
-                            refreshGradleProject(project)
+                            refreshGradleProject(
+                                project.getDataContext()
+                                    ?: this@KorgeWebPreviewFileEditor.myPanel.component.getDataContext()
+                            )
                         }
                     }
                 }
@@ -318,7 +324,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
             val depsKProjectYaml = getDepsKProjectYaml()
             println("installKProjectDependency called! project.rootFile=${project.rootFile}, buildGradleKfsFile=$buildGradleKfsFile, depsKProjectYaml=$depsKProjectYaml")
             if (depsKProjectYaml == null) return@registerCallback null
-            val toInstall = it.askForPermissions(project)
+            val toInstall = it.askForPermissions(project, dataContext)
             if (toInstall) {
                 depsKProjectYaml.setText(DepsKProjectYml.addDep(depsKProjectYaml.getText(), it.url, it.removeUrl))
             }
@@ -329,7 +335,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
             val depsKProjectYaml = getDepsKProjectYaml()
             println("downloadAsset called! project.rootFile=${project.rootFile}, buildGradleKfsFile=$buildGradleKfsFile, depsKProjectYaml=$depsKProjectYaml")
             if (depsKProjectYaml == null) return@registerCallback null
-            val toInstall = dep.askForPermissions(project)
+            val toInstall = dep.askForPermissions(project, dataContext)
             if (toInstall) {
                 val baseName = dep.url.pathInfo.baseName
                 val outputName = (dep.output ?: baseName).pathInfo.normalize()
@@ -365,7 +371,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
         val output: String? = null,
         val unzip: Boolean? = null,
     ) {
-        suspend fun askForPermissions(project: Project): Boolean {
+        suspend fun askForPermissions(project: Project, dataContext: DataContext): Boolean {
             val deferred = CompletableDeferred<Boolean>()
 
             ApplicationManager.getApplication().invokeLater {
@@ -401,7 +407,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
                 deferred.complete(result)
                 if (result) {
                     try {
-                        refreshGradleProject(project)
+                        refreshGradleProject(dataContext)
                     } catch (e: Throwable) {
                         e.printStackTrace()
                     }
