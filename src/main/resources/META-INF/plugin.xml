@@ -24,6 +24,7 @@
             <li>Documentation for resource image previews</li>
             <li>Fixes Login</li>
             <li>Adds an initial settings panel</li>
+            <li>Adds Colors & MaterialColors coloring documentation and gutter icons</li>
         </ul>
         <h3>4.0.1</h3>
         <ul>
