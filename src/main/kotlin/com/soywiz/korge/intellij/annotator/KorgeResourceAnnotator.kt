@@ -47,7 +47,7 @@ class KorgeResourceAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val resourcePath = KorgeResourceAnnotator.extractResourcesVfsPath(element) ?: return
-        if (resourcePath.endsWith(".png")) {
+        if (com.soywiz.korge.intellij.documentation.isPathForImage(resourcePath)) {
             holder.addOpenImageAnnotation(element.project, resourcePath)
         }
 

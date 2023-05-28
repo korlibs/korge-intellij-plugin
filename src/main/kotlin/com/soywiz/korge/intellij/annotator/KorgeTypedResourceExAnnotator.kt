@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.readBytes
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.util.ui.UIUtil
+import com.soywiz.korge.intellij.documentation.isPathForImage
 import com.soywiz.korge.intellij.getOrPutUserData
 import com.soywiz.korge.intellij.resolver.KorgeTypeResolver
 import com.soywiz.korge.intellij.util.get
@@ -51,7 +52,7 @@ class KorgeTypedResourceExAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val resourcePath = KorgeTypedResourceExAnnotator.getElementResourcesVfsPath(element) ?: return
-        if (resourcePath.endsWith(".png")) {
+        if (com.soywiz.korge.intellij.documentation.isPathForImage(".png")) {
             holder.addOpenImageAnnotation(element.project, resourcePath)
         }
     }

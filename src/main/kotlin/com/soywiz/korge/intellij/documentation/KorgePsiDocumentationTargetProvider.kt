@@ -17,13 +17,19 @@ import java.io.IOException
 import javax.imageio.ImageIO
 import javax.imageio.ImageReader
 
+fun isPathForImage(path: String): Boolean {
+    return path.endsWith(".png")
+        || path.endsWith(".jpg")
+        || path.endsWith(".qoi")
+        || path.endsWith(".ase")
+}
 
 class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
     override fun documentationTarget(element: PsiElement, originalElement: PsiElement?): DocumentationTarget? {
         //println("KorgePsiDocumentationTargetProvider.documentationTarget: $element, ${element.text}")
         val resourcePath = KorgeTypedResourceExAnnotator.getElementResourcesVfsPath(element) ?: return null
         //println(" -> $resourcePath")
-        if (!resourcePath.endsWith(".png")) return null
+        if (!isPathForImage(resourcePath)) return null
         val virtualFile = element.project.getResourceVirtualFile(resourcePath) ?: return null
         //println(" -> $virtualFile")
         val file = virtualFile.toNioPath().toFile()
