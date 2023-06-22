@@ -27,9 +27,7 @@ import korlibs.image.awt.toBufferedImage
 import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.plugins.notebooks.visualization.use
-import java.awt.Component
-import java.awt.Dimension
-import java.awt.Font
+import java.awt.*
 import java.awt.image.BufferedImage
 import java.util.Optional
 import javax.imageio.ImageIO
@@ -153,10 +151,13 @@ fun Project.getCachedResourceIcon(path: String): BufferedImage? {
 }
 
 fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, str: String = "A"): BufferedImage {
+    val font = Font.createFont(Font.TRUETYPE_FONT, ttfBytes.inputStream()).deriveFont(size.height.toFloat())
     val img = UIUtil.createImage(component, size.width, size.height, BufferedImage.TYPE_INT_ARGB_PRE)
-    img.createGraphics().use {  g2d ->
+    img.createGraphics().use { g2d ->
         try {
-            val font = Font.createFont(Font.TRUETYPE_FONT, ttfBytes.inputStream()).deriveFont(size.height.toFloat())
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+            //g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+
             g2d.font = font
             val fontMetrics = g2d.fontMetrics
 
@@ -169,6 +170,32 @@ fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, s
         }
     }
     return img
+}
+
+fun Font.getFontMetrics(): FontMetrics =
+    UIUtil.createImage(null, 1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics().use {
+        it.font = this
+        it.fontMetrics
+    }
+
+fun getFontPreview(component: Component?, height: Int, ttfBytes: ByteArray, str: String? = null): Pair<Font, BufferedImage> {
+    val font = Font.createFont(Font.TRUETYPE_FONT, ttfBytes.inputStream()).deriveFont(height.toFloat())
+    val fontMetrics = font.getFontMetrics()
+    val text = str ?: font.name
+    val width = fontMetrics.stringWidth(text)
+    val img = UIUtil.createImage(component, width, fontMetrics.height, BufferedImage.TYPE_INT_ARGB)
+    img.createGraphics().use { g2d ->
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        //g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+
+        try {
+            g2d.font = font
+            g2d.drawString(text, 0, fontMetrics.ascent)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
+    return font to img
 }
 
 fun BufferedImage.resized(newWidth: Int, newHeight: Int): BufferedImage {

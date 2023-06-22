@@ -9,7 +9,9 @@ import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.psi.PsiElement
 import com.soywiz.korge.intellij.annotator.ColorAnnotator
 import com.soywiz.korge.intellij.annotator.KorgeTypedResourceExAnnotator
+import com.soywiz.korge.intellij.annotator.getFontPreview
 import com.soywiz.korge.intellij.annotator.getResourceVirtualFile
+import com.soywiz.korge.intellij.util.getScaledInstance
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.image.color.RGBA
 import korlibs.image.color.toAwt
@@ -20,6 +22,7 @@ import kotlinx.coroutines.withContext
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import javax.imageio.ImageIO
 import javax.imageio.ImageReader
 
@@ -43,24 +46,17 @@ enum class ResourceType(val extensions: Set<String>) {
     }
 }
 
-fun isPathForImage(path: String): Boolean {
-    return ResourceType.IMAGE.pathHashExtension(path)
-}
+//fun isPathForImage(path: String): Boolean = ResourceType.IMAGE.pathHashExtension(path)
+//fun isPathForFont(path: String): Boolean = ResourceType.FONT.pathHashExtension(path)
 
-fun isPathForFont(path: String): Boolean {
-    return ResourceType.FONT.pathHashExtension(path)
-}
-
-fun isPathForPreviewResource(path: String): Boolean {
-    return ResourceType.getResourceTypeFromPath(path) != null
-}
+fun isPathForPreviewResource(path: String): Boolean = ResourceType.getResourceTypeFromPath(path) != null
 
 class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
     override fun documentationTarget(element: PsiElement, originalElement: PsiElement?): DocumentationTarget? {
         //println("KorgePsiDocumentationTargetProvider.documentationTarget: $element, ${element.text}")
         KorgeTypedResourceExAnnotator.getElementResourcesVfsPath(element)?.let { resourcePath ->
             //println(" -> $resourcePath")
-            if (!isPathForImage(resourcePath)) return null
+            if (!isPathForPreviewResource(resourcePath)) return null
             val virtualFile = element.project.getResourceVirtualFile(resourcePath) ?: return null
             //println(" -> $virtualFile")
             val file = virtualFile.toNioPath().toFile()
@@ -112,27 +108,55 @@ class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
 
         override fun computeDocumentation(): DocumentationResult? =
             DocumentationResult.asyncDocumentation {
-                val imageSizeResult = getImageSize(file)
-                val originalSize = imageSizeResult.size
-                val scaledSize = ScaleMode.SHOW_ALL.invoke(originalSize, SizeInt(140, 140))
+                val resourceType = ResourceType.getResourceTypeFromPath(file.absolutePath) ?: return@asyncDocumentation null
+                when (resourceType) {
+                    ResourceType.IMAGE -> {
+                        val imageSizeResult = getImageSize(file)
+                        val originalSize = imageSizeResult.size
+                        val scaledSize = ScaleMode.SHOW_ALL.invoke(originalSize, SizeInt(240, 140))
 
-                DocumentationResult.documentation(
-                    // language=html
-                    html = """
+                        DocumentationResult.documentation(
+                            // language=html
+                            html = """
                         <div>
                             <div>${resourcePath}</div>
                             <img src='${file.toURI()}' width="${scaledSize.width}" height="${scaledSize.height}" />
                             <div>${imageSizeResult.formatName} : ${originalSize.width}x${originalSize.height}</div>
                         </div>                        
                     """.trimIndent()
-                )
+                        )
+                    }
+                    ResourceType.FONT -> {
+                        val (font, preview) = getFontPreview(null, 64, file.readBytes())
+                        val originalSize = SizeInt(preview.width, preview.height)
+                        val scaledSize = ScaleMode.SHOW_ALL.invoke(originalSize, SizeInt(240, 140))
+                        val previewScaled = preview.getScaledInstance(scaledSize.width, scaledSize.height, smooth = true)
+
+                        DocumentationResult.documentation(DocumentationContent.content(
+                            """
+                                <div>
+                                    <div>${resourcePath}</div>
+                                    <img src='https://127.0.0.1/image.png' width="${scaledSize.width}" height="${scaledSize.height}" />
+                                    <div>${font.fontName} : ${font.psName}</div>
+                                </div>
+                            """.trimIndent(),
+                            mutableMapOf(
+                                "https://127.0.0.1/image.png" to previewScaled
+                            )
+                        ))
+                    }
+                }
             }
     }
 }
 
 data class ImageSizeResult(val size: SizeInt, val formatName: String)
 
-suspend fun getImageSize(imageFile: File): ImageSizeResult {
+suspend fun getImageSize(bytes: ByteArray): ImageSizeResult = _getImageSize(bytes.inputStream())
+suspend fun getImageSize(inputStream: InputStream): ImageSizeResult = _getImageSize(inputStream)
+suspend fun getImageSize(imageFile: File): ImageSizeResult = _getImageSize(imageFile)
+
+private suspend fun _getImageSize(imageFile: Any?): ImageSizeResult {
     return withContext(Dispatchers.IO) {
         try {
             ImageIO.createImageInputStream(imageFile).use { inputStream ->
