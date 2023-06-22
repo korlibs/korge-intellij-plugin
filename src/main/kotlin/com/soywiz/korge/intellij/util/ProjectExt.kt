@@ -1,7 +1,10 @@
 package com.soywiz.korge.intellij.util
 
+import com.intellij.ide.customize.transferSettings.models.EditorColorScheme
 import com.intellij.openapi.application.*
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.intellij.openapi.editor.colors.EditorColorsScheme
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.*
@@ -88,3 +91,4 @@ fun Document.saveDocument() {
 fun Document.psiFile(project: Project): PsiFile = project.psiManager.findFile(this.virtualFile!!)!!
 
 val Project.ideFrame: JFrame? get() = WindowManager.getInstance().getFrame(project)
+val Project.colorsScheme: EditorColorsScheme get() = EditorColorsManager.getInstance().globalScheme

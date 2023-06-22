@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij.documentation
 
 import com.intellij.model.Pointer
+import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.documentation.DocumentationContent
 import com.intellij.platform.backend.documentation.DocumentationResult
 import com.intellij.platform.backend.documentation.DocumentationTarget
@@ -11,6 +12,7 @@ import com.soywiz.korge.intellij.annotator.ColorAnnotator
 import com.soywiz.korge.intellij.annotator.KorgeTypedResourceExAnnotator
 import com.soywiz.korge.intellij.annotator.getFontPreview
 import com.soywiz.korge.intellij.annotator.getResourceVirtualFile
+import com.soywiz.korge.intellij.util.colorsScheme
 import com.soywiz.korge.intellij.util.getScaledInstance
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.image.color.RGBA
@@ -61,7 +63,7 @@ class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
             //println(" -> $virtualFile")
             val file = virtualFile.toNioPath().toFile()
             //println(" -> $file")
-            return HTMLDocumentationTarget(file, resourcePath)
+            return HTMLDocumentationTarget(element.project, file, resourcePath)
         }
 
         //println("$element : ${element::class.java}")
@@ -100,6 +102,7 @@ class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
     }
 
     class HTMLDocumentationTarget(
+        val project: Project,
         val file: File,
         val resourcePath: String
     ) : BaseDocumentationTarget() {
@@ -127,7 +130,7 @@ class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {
                         )
                     }
                     ResourceType.FONT -> {
-                        val (font, preview) = getFontPreview(null, 64, file.readBytes())
+                        val (font, preview) = getFontPreview(null, 64, file.readBytes(), project.colorsScheme.defaultForeground)
                         val originalSize = SizeInt(preview.width, preview.height)
                         val scaledSize = ScaleMode.SHOW_ALL.invoke(originalSize, SizeInt(240, 140))
                         val previewScaled = preview.getScaledInstance(scaledSize.width, scaledSize.height, smooth = true)

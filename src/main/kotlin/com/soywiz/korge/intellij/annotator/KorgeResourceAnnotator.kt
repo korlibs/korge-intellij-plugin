@@ -16,19 +16,19 @@ import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.readBytes
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBImageIcon
 import com.intellij.util.ui.UIUtil
 import com.soywiz.korge.intellij.documentation.ResourceType
 import com.soywiz.korge.intellij.getOrPutUserData
 import com.soywiz.korge.intellij.util.*
+import korlibs.datastructure.linkedHashMapOf
 import korlibs.image.awt.toBufferedImage
 import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.plugins.notebooks.visualization.use
 import java.awt.*
 import java.awt.image.BufferedImage
-import java.util.Optional
+import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.Icon
 import kotlin.jvm.optionals.getOrNull
@@ -114,7 +114,8 @@ class ResourceIconCache(val project: Project) {
     companion object {
         val KEY = Key.create<ResourceIconCache>("korge.resourceicon.cache.ext")
     }
-    val cache = LinkedHashMap<String, Optional<BufferedImage>>()
+    // @TODO: TTL
+    val cache = LinkedHashMap<String, LinkedHashMap<String, Optional<BufferedImage>>>()
 }
 
 val Project.resourceIconCache: ResourceIconCache get() = this.getOrPutUserData(ResourceIconCache.KEY) { ResourceIconCache(this) }
@@ -124,8 +125,9 @@ fun Project.getCachedResourceIcon(path: String): BufferedImage? {
         val resourceIconCache = this.resourceIconCache
         val resourceType = ResourceType.getResourceTypeFromPath(path) ?: return null
         this.getResourceVirtualFile(path) ?: return null
+
         return synchronized(resourceIconCache) {
-            resourceIconCache.cache.getOrPut(path) {
+            resourceIconCache.cache.getOrPut(project.colorsScheme.name) { linkedHashMapOf() }.getOrPut(path) {
                 try {
                     val project = this
                     val file = project.getResourceVirtualFile(path) ?: return@getOrPut Optional.empty()
@@ -133,7 +135,7 @@ fun Project.getCachedResourceIcon(path: String): BufferedImage? {
                     val bytes = file.readBytes()
                     val image = when (resourceType) {
                         ResourceType.IMAGE -> ImageIO.read(bytes.inputStream())
-                        ResourceType.FONT -> getGlyphImage(project.ideFrame, Dimension(16, 16), bytes)
+                        ResourceType.FONT -> getGlyphImage(project.ideFrame, Dimension(16, 16), bytes, project.colorsScheme.defaultForeground)
                     }.resizedHidpiAware(16, 16)
                     return@getOrPut Optional.of(image)
                 } catch (e: Throwable) {
@@ -149,7 +151,7 @@ fun Project.getCachedResourceIcon(path: String): BufferedImage? {
 }
 
 //fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, str: String? = null): BufferedImage {
-fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, str: String? = "a"): BufferedImage {
+fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, color: Color, str: String? = "a"): BufferedImage {
     val size = Dimension(size.width * 2, size.height * 2)
     val font = Font.createFont(Font.TRUETYPE_FONT, ttfBytes.inputStream()).deriveFont(size.height.toFloat())
     val str = str ?: "${font.name.first()}"
@@ -161,6 +163,7 @@ fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, s
             //g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
             g2d.font = font
+            g2d.color = color
             val fontMetrics = g2d.fontMetrics
 
             val x = (size.width - fontMetrics.stringWidth(str)) / 2
@@ -185,7 +188,7 @@ fun Font.getFontMetrics(component: Component?): FontMetrics =
         it.fontMetrics
     }
 
-fun getFontPreview(component: Component?, height: Int, ttfBytes: ByteArray, str: String? = null): Pair<Font, BufferedImage> {
+fun getFontPreview(component: Component?, height: Int, ttfBytes: ByteArray, color: Color, str: String? = null): Pair<Font, BufferedImage> {
     val font = Font.createFont(Font.TRUETYPE_FONT, ttfBytes.inputStream()).deriveFont(height.toFloat())
     val fontMetrics = font.getFontMetrics(component)
     val text = str ?: font.name
@@ -196,6 +199,7 @@ fun getFontPreview(component: Component?, height: Int, ttfBytes: ByteArray, str:
         //g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         try {
+            g2d.color = color
             g2d.font = font
             g2d.drawString(text, 0, fontMetrics.ascent)
         } catch (e: Throwable) {
