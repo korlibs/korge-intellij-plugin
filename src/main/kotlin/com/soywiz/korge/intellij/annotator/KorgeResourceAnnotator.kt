@@ -12,21 +12,27 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.readBytes
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.jetbrains.rd.util.string.print
 import com.soywiz.korge.intellij.getOrPutUserData
 import com.soywiz.korge.intellij.util.fileEditorManager
 import com.soywiz.korge.intellij.util.get
 import com.soywiz.korge.intellij.util.getScaledInstance
 import com.soywiz.korge.intellij.util.rootFile
+import io.ktor.utils.io.*
 import korlibs.image.awt.toBufferedImage
 import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import java.awt.image.BufferedImage
+import java.io.IOException
+import java.util.Optional
 import javax.imageio.ImageIO
 import javax.swing.Icon
 import javax.swing.ImageIcon
+import kotlin.jvm.optionals.getOrNull
 
 
 class KorgeResourceAnnotator : Annotator {
@@ -68,6 +74,7 @@ fun AnnotationHolder.addOpenImageAnnotation(project: Project, resourcePath: Stri
     val holder = this
     val virtualFile = project.getResourceVirtualFile(resourcePath) ?: return
     if (!virtualFile.exists()) return
+    val image = project.getCachedResourceIcon(resourcePath) ?: return
 
     holder.newAnnotation(HighlightSeverity.INFORMATION, "Open image")
         .withFix(object : BaseIntentionAction() {
@@ -78,10 +85,7 @@ fun AnnotationHolder.addOpenImageAnnotation(project: Project, resourcePath: Stri
                 OpenVirtualFileAction(virtualFile).openFile(project)
             }
         })
-        .gutterIconRenderer(
-            DefaultGutterIconRenderer(OpenVirtualFileAction(virtualFile),
-                ImageIcon(project.getCachedResourceIcon(resourcePath))
-            ))
+        .gutterIconRenderer(DefaultGutterIconRenderer(OpenVirtualFileAction(virtualFile), ImageIcon(image)))
         .create()
 }
 
@@ -110,19 +114,32 @@ class ResourceIconCache(val project: Project) {
     companion object {
         val KEY = Key.create<ResourceIconCache>("korge.resourceicon.cache.ext")
     }
-    val cache = LinkedHashMap<String, BufferedImage?>()
+    val cache = LinkedHashMap<String, Optional<BufferedImage>>()
 }
 
-val Project.resourceIconCache get() = this.getOrPutUserData(ResourceIconCache.KEY) { ResourceIconCache(this) }
+val Project.resourceIconCache: ResourceIconCache get() = this.getOrPutUserData(ResourceIconCache.KEY) { ResourceIconCache(this) }
 
 fun Project.getCachedResourceIcon(path: String): BufferedImage? {
-    val resourceIconCache = this.resourceIconCache
-    return synchronized(resourceIconCache) {
-        resourceIconCache.cache.getOrPut(path) {
-            val project = this
-            val bytes = project.getResourceVirtualFile(path)?.readBytes()
-            return bytes?.inputStream()?.let { ImageIO.read(it).resized(16, 16) }
+    try {
+        val resourceIconCache = this.resourceIconCache
+        this.getResourceVirtualFile(path) ?: return null
+        return synchronized(resourceIconCache) {
+            resourceIconCache.cache.getOrPut(path) {
+                try {
+                    val project = this
+                    val file = project.getResourceVirtualFile(path) ?: return@getOrPut Optional.empty()
+                    if (!file.isFile) return@getOrPut Optional.empty()
+                    val bytes = file.readBytes()
+                    return@getOrPut Optional.of(ImageIO.read(bytes.inputStream()).resized(16, 16))
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                    return@getOrPut Optional.empty()
+                }
+            }.getOrNull()
         }
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        return null
     }
 }
 
