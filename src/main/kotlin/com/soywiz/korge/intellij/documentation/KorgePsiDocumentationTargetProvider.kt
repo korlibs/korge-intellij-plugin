@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement
 import com.soywiz.korge.intellij.annotator.ColorAnnotator
 import com.soywiz.korge.intellij.annotator.KorgeTypedResourceExAnnotator
 import com.soywiz.korge.intellij.annotator.getResourceVirtualFile
+import korlibs.datastructure.iterators.fastForEach
 import korlibs.image.color.RGBA
 import korlibs.image.color.toAwt
 import korlibs.math.geom.ScaleMode
@@ -22,11 +23,36 @@ import java.io.IOException
 import javax.imageio.ImageIO
 import javax.imageio.ImageReader
 
+enum class ResourceType(val extensions: Set<String>) {
+    IMAGE("png", "jpg", "qoi", "ase"),
+    FONT("ttf", "otf");
+
+    constructor(vararg extensions: String) : this(extensions.toSet())
+
+    fun pathHashExtension(path: String): Boolean = path.substringAfterLast('.') in extensions
+
+    companion object {
+        val TYPES = ResourceType.values()
+
+        fun getResourceTypeFromPath(path: String): ResourceType? {
+            TYPES.fastForEach {
+                if (it.pathHashExtension(path)) return it
+            }
+            return null
+        }
+    }
+}
+
 fun isPathForImage(path: String): Boolean {
-    return path.endsWith(".png")
-        || path.endsWith(".jpg")
-        || path.endsWith(".qoi")
-        || path.endsWith(".ase")
+    return ResourceType.IMAGE.pathHashExtension(path)
+}
+
+fun isPathForFont(path: String): Boolean {
+    return ResourceType.FONT.pathHashExtension(path)
+}
+
+fun isPathForPreviewResource(path: String): Boolean {
+    return ResourceType.getResourceTypeFromPath(path) != null
 }
 
 class KorgePsiDocumentationTargetProvider : PsiDocumentationTargetProvider {

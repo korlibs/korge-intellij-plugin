@@ -16,18 +16,21 @@ import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.readBytes
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.jetbrains.rd.util.string.print
+import com.intellij.util.ui.UIUtil
+import com.soywiz.korge.intellij.documentation.ResourceType
 import com.soywiz.korge.intellij.getOrPutUserData
 import com.soywiz.korge.intellij.util.fileEditorManager
 import com.soywiz.korge.intellij.util.get
 import com.soywiz.korge.intellij.util.getScaledInstance
 import com.soywiz.korge.intellij.util.rootFile
-import io.ktor.utils.io.*
 import korlibs.image.awt.toBufferedImage
 import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
+import org.jetbrains.plugins.notebooks.visualization.use
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.Font
 import java.awt.image.BufferedImage
-import java.io.IOException
 import java.util.Optional
 import javax.imageio.ImageIO
 import javax.swing.Icon
@@ -53,8 +56,8 @@ class KorgeResourceAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val resourcePath = KorgeResourceAnnotator.extractResourcesVfsPath(element) ?: return
-        if (com.soywiz.korge.intellij.documentation.isPathForImage(resourcePath)) {
-            holder.addOpenImageAnnotation(element.project, resourcePath)
+        if (com.soywiz.korge.intellij.documentation.isPathForPreviewResource(resourcePath)) {
+            holder.addOpenResourceAnnotation(element.project, resourcePath)
         }
 
         return // @TODO: This shouldn't be necessary anymore, as KorgeTypedResourceExAnnotator is providing already the icons in both cases
@@ -70,13 +73,14 @@ class KorgeResourceAnnotator : Annotator {
     }
 }
 
-fun AnnotationHolder.addOpenImageAnnotation(project: Project, resourcePath: String) {
+fun AnnotationHolder.addOpenResourceAnnotation(project: Project, resourcePath: String) {
     val holder = this
+    val resourceType = ResourceType.getResourceTypeFromPath(resourcePath) ?: return
     val virtualFile = project.getResourceVirtualFile(resourcePath) ?: return
     if (!virtualFile.exists()) return
     val image = project.getCachedResourceIcon(resourcePath) ?: return
 
-    holder.newAnnotation(HighlightSeverity.INFORMATION, "Open image")
+    holder.newAnnotation(HighlightSeverity.INFORMATION, "Open ${resourceType.name.lowercase()}")
         .withFix(object : BaseIntentionAction() {
             override fun getText(): String = "Open $resourcePath"
             override fun getFamilyName(): String = text
@@ -122,6 +126,7 @@ val Project.resourceIconCache: ResourceIconCache get() = this.getOrPutUserData(R
 fun Project.getCachedResourceIcon(path: String): BufferedImage? {
     try {
         val resourceIconCache = this.resourceIconCache
+        val resourceType = ResourceType.getResourceTypeFromPath(path) ?: return null
         this.getResourceVirtualFile(path) ?: return null
         return synchronized(resourceIconCache) {
             resourceIconCache.cache.getOrPut(path) {
@@ -130,7 +135,11 @@ fun Project.getCachedResourceIcon(path: String): BufferedImage? {
                     val file = project.getResourceVirtualFile(path) ?: return@getOrPut Optional.empty()
                     if (!file.isFile) return@getOrPut Optional.empty()
                     val bytes = file.readBytes()
-                    return@getOrPut Optional.of(ImageIO.read(bytes.inputStream()).resized(16, 16))
+                    val image = when (resourceType) {
+                        ResourceType.IMAGE -> ImageIO.read(bytes.inputStream()).resized(16, 16)
+                        ResourceType.FONT -> getGlyphImage(null, Dimension(16, 16), bytes)
+                    }
+                    return@getOrPut Optional.of(image)
                 } catch (e: Throwable) {
                     e.printStackTrace()
                     return@getOrPut Optional.empty()
@@ -141,6 +150,25 @@ fun Project.getCachedResourceIcon(path: String): BufferedImage? {
         e.printStackTrace()
         return null
     }
+}
+
+fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, str: String = "A"): BufferedImage {
+    val img = UIUtil.createImage(component, size.width, size.height, BufferedImage.TYPE_INT_ARGB_PRE)
+    img.createGraphics().use {  g2d ->
+        try {
+            val font = Font.createFont(Font.TRUETYPE_FONT, ttfBytes.inputStream()).deriveFont(size.height.toFloat())
+            g2d.font = font
+            val fontMetrics = g2d.fontMetrics
+
+            val x = (img.width - fontMetrics.stringWidth(str)) / 2
+            val y = fontMetrics.ascent
+            //println("DRAW TEXT AT: $x, $y ascent=${fontMetrics.ascent}, height=${fontMetrics.height}")
+            g2d.drawString(str, x, y)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
+    return img
 }
 
 fun BufferedImage.resized(newWidth: Int, newHeight: Int): BufferedImage {
