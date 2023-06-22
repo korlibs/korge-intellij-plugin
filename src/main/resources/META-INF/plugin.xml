@@ -5,7 +5,7 @@
     <id>com.soywiz.korge.korge-intellij-plugin</id>
 
     <name>Korge</name>
-    <version>4.0.2</version>
+    <version>4.0.3</version>
     <vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">KorGE</vendor>
 
     <description><![CDATA[
@@ -13,6 +13,11 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
+        <h3>4.0.3</h3>
+        <ul>
+            <li>Fixes error when using KR resources in sub-folders</li>
+            <li>Supports previewing .ttf and .otf font files</li>
+        </ul>
         <h3>4.0.2</h3>
         <ul>
             <li>Supports previewing of resourcesVfs["path"] for .png files</li>
