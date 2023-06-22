@@ -13,6 +13,11 @@
 	]]></description>
 
     <change-notes><!-- language: HTML --><![CDATA[
+        <h3>4.0.4</h3>
+        <ul>
+            <li>Fixes font icons not displaying properly on HiDpi screens</li>
+            <li>Make font preview/icon theme-aware</li>
+        </ul>
         <h3>4.0.3</h3>
         <ul>
             <li>Fixes error when using KR resources in sub-folders</li>
