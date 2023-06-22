@@ -389,7 +389,7 @@ fun <T> Styled<out Container>.uiSequence(gen: () -> List<T>, signal: Signal<Unit
     }
 }
 
-fun icon(path: String) = ImageIcon(ImageIO.read(getResourceFile(path)))
+fun icon(path: String) = ImageIO.read(getResourceFile(path))
 fun toolbarIcon(path: String) = icon("/com/soywiz/korge/intellij/toolbar/$path")
 
 fun showNewDialog(title: String = "Dialog", settings: DialogSettings = DialogSettings(), block: Panel.(DialogWrapper) -> Unit): Boolean {

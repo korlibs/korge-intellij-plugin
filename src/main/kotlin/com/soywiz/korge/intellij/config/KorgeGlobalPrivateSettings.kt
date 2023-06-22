@@ -23,6 +23,7 @@ import javax.imageio.*
 import javax.swing.*
 import kotlin.coroutines.EmptyCoroutineContext
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.util.ui.JBImageIcon
 import com.soywiz.korge.intellij.internal.dyn
 import com.soywiz.korge.intellij.ui.DialogSettings
 import com.soywiz.korge.intellij.ui.showNewDialog
@@ -75,7 +76,7 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 
 	fun getAvatarIcon(): Icon {
 		if (userAvatarIcon == null) {
-			userAvatarIcon = ImageIcon(getAvatarBitmap().getScaledInstance(16, 16, Image.SCALE_SMOOTH))
+			userAvatarIcon = JBImageIcon(getAvatarBitmap().getScaledInstance(16, 16, Image.SCALE_SMOOTH))
 		}
 		return userAvatarIcon!!
 	}

@@ -4,6 +4,7 @@ import com.intellij.icons.*
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.fileEditor.impl.*
 import com.intellij.openapi.project.*
+import com.intellij.util.ui.JBImageIcon
 import korlibs.korge.awt.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.config.*
@@ -49,7 +50,7 @@ class KorgeAccountAction : AnAction(), DumbAware {
                 height = MUnit.Auto
                 width = 100.percentage
                 icon(
-                    ImageIcon(
+                    JBImageIcon(
                         privateSettings.getAvatarBitmap().getScaledInstance(128, 128)
                     )
                 ) {

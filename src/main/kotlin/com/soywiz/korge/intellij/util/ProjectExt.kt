@@ -7,6 +7,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.*
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -17,6 +18,7 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.caches.resolve.*
 import org.jetbrains.kotlin.idea.references.*
 import org.jetbrains.kotlin.psi.*
+import javax.swing.JFrame
 
 //val Project.rootFile: VirtualFile? get() = if (projectFile?.canonicalPath?.contains(".idea") == true) projectFile?.parent?.parent else projectFile?.parent
 val Project.rootFile: VirtualFile? get() {
@@ -84,3 +86,5 @@ fun Document.saveDocument() {
     FileDocumentManager.getInstance().saveDocument(this)
 }
 fun Document.psiFile(project: Project): PsiFile = project.psiManager.findFile(this.virtualFile!!)!!
+
+val Project.ideFrame: JFrame? get() = WindowManager.getInstance().getFrame(project)

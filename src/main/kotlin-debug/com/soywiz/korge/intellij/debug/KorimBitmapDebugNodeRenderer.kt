@@ -48,7 +48,7 @@ abstract class BaseKorimBitmapDebugNodeRenderer(val applicableClass: KClass<*>) 
 			if (value is ObjectReference) {
 				if (type.isKorimBitmapOrDrawable()) {
 					val bmp32 = value.readKorimBitmap32(16, 16, thread)
-					return ImageIcon(bmp32.toAwt().getScaledInstance(16, 16, Image.SCALE_SMOOTH))
+					return JBImageIcon(bmp32.toAwt().getScaledInstance(16, 16, Image.SCALE_SMOOTH))
 				}
 			}
 		} catch (e: Throwable) {
@@ -66,7 +66,7 @@ abstract class BaseKorimBitmapDebugNodeRenderer(val applicableClass: KClass<*>) 
 				val thread = evaluationContext.suspendContext.thread?.threadReference
 				if (value is ObjectReference && type.isKorimBitmapOrDrawable()) {
 					val bmp32 = value.readKorimBitmap32(512, 512, thread)
-					return ImageIcon(bmp32.toAwt())
+					return JBImageIcon(bmp32.toAwt())
 				}
 				return EmptyIcon.create(16, 16)
 			}

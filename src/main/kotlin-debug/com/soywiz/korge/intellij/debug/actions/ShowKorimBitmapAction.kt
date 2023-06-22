@@ -23,7 +23,7 @@ class ShowKorimBitmapAction : XDebuggerTreeActionBase(), DumbAware {
 
 		override fun createCenterPanel(): JComponent {
 			val dialogPanel = JPanel(BorderLayout())
-			val label = JLabel(ImageIcon(bitmap.clone().toAwt()))
+			val label = JLabel(JBImageIcon(bitmap.clone().toAwt()))
 			label.preferredSize = Dimension(bitmap.width, bitmap.height)
 			dialogPanel.add(label, BorderLayout.CENTER)
 			return dialogPanel

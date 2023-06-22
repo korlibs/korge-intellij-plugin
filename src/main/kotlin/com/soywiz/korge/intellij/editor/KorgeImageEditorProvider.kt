@@ -4,6 +4,7 @@ import com.intellij.diff.util.*
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.vfs.*
+import com.intellij.util.ui.JBImageIcon
 import korlibs.image.awt.*
 import korlibs.image.format.*
 import korlibs.io.file.std.*
@@ -48,7 +49,7 @@ class KorgeImageEditorProvider : FileEditorProvider, DumbAware {
 				val image = JLabel()
 				runBlocking {
 					val bmp = File(file.canonicalPath!!).toVfs().readImageData(FORMATS.toProps()).mainBitmap
-					image.icon = ImageIcon(bmp.toAwt())
+					image.icon = JBImageIcon(bmp.toAwt())
 				}
 				return image
 			}

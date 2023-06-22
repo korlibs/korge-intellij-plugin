@@ -16,13 +16,12 @@ import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.vfs.readBytes
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.ui.JBColor
+import com.intellij.util.ui.JBImageIcon
 import com.intellij.util.ui.UIUtil
 import com.soywiz.korge.intellij.documentation.ResourceType
 import com.soywiz.korge.intellij.getOrPutUserData
-import com.soywiz.korge.intellij.util.fileEditorManager
-import com.soywiz.korge.intellij.util.get
-import com.soywiz.korge.intellij.util.getScaledInstance
-import com.soywiz.korge.intellij.util.rootFile
+import com.soywiz.korge.intellij.util.*
 import korlibs.image.awt.toBufferedImage
 import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
@@ -32,7 +31,6 @@ import java.awt.image.BufferedImage
 import java.util.Optional
 import javax.imageio.ImageIO
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -53,7 +51,7 @@ class KorgeResourceAnnotator : Annotator {
     }
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        val resourcePath = KorgeResourceAnnotator.extractResourcesVfsPath(element) ?: return
+        val resourcePath = extractResourcesVfsPath(element) ?: return
         if (com.soywiz.korge.intellij.documentation.isPathForPreviewResource(resourcePath)) {
             holder.addOpenResourceAnnotation(element.project, resourcePath)
         }
@@ -87,7 +85,7 @@ fun AnnotationHolder.addOpenResourceAnnotation(project: Project, resourcePath: S
                 OpenVirtualFileAction(virtualFile).openFile(project)
             }
         })
-        .gutterIconRenderer(DefaultGutterIconRenderer(OpenVirtualFileAction(virtualFile), ImageIcon(image)))
+        .gutterIconRenderer(DefaultGutterIconRenderer(OpenVirtualFileAction(virtualFile), JBImageIcon(image)))
         .create()
 }
 
@@ -134,9 +132,9 @@ fun Project.getCachedResourceIcon(path: String): BufferedImage? {
                     if (!file.isFile) return@getOrPut Optional.empty()
                     val bytes = file.readBytes()
                     val image = when (resourceType) {
-                        ResourceType.IMAGE -> ImageIO.read(bytes.inputStream()).resized(16, 16)
-                        ResourceType.FONT -> getGlyphImage(null, Dimension(16, 16), bytes)
-                    }
+                        ResourceType.IMAGE -> ImageIO.read(bytes.inputStream())
+                        ResourceType.FONT -> getGlyphImage(project.ideFrame, Dimension(16, 16), bytes)
+                    }.resizedHidpiAware(16, 16)
                     return@getOrPut Optional.of(image)
                 } catch (e: Throwable) {
                     e.printStackTrace()
@@ -150,9 +148,13 @@ fun Project.getCachedResourceIcon(path: String): BufferedImage? {
     }
 }
 
-fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, str: String = "A"): BufferedImage {
+//fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, str: String? = null): BufferedImage {
+fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, str: String? = "a"): BufferedImage {
+    val size = Dimension(size.width * 2, size.height * 2)
     val font = Font.createFont(Font.TRUETYPE_FONT, ttfBytes.inputStream()).deriveFont(size.height.toFloat())
-    val img = UIUtil.createImage(component, size.width, size.height, BufferedImage.TYPE_INT_ARGB_PRE)
+    val str = str ?: "${font.name.first()}"
+    @Suppress("UndesirableClassUsage")
+    val img = BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB_PRE)
     img.createGraphics().use { g2d ->
         try {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -161,7 +163,7 @@ fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, s
             g2d.font = font
             val fontMetrics = g2d.fontMetrics
 
-            val x = (img.width - fontMetrics.stringWidth(str)) / 2
+            val x = (size.width - fontMetrics.stringWidth(str)) / 2
             val y = fontMetrics.ascent
             //println("DRAW TEXT AT: $x, $y ascent=${fontMetrics.ascent}, height=${fontMetrics.height}")
             g2d.drawString(str, x, y)
@@ -169,18 +171,23 @@ fun getGlyphImage(component: Component?, size: Dimension, ttfBytes: ByteArray, s
             e.printStackTrace()
         }
     }
+    //val img2 = UIUtil.createImage(component, size.width, size.height, BufferedImage.TYPE_INT_ARGB_PRE)
+    //img2.createGraphics().use {
+    //    it.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    //    it.drawImage(img, 0, 0, size.width, size.height, null, null)
+    //}
     return img
 }
 
-fun Font.getFontMetrics(): FontMetrics =
-    UIUtil.createImage(null, 1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics().use {
+fun Font.getFontMetrics(component: Component?): FontMetrics =
+    UIUtil.createImage(component, 1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics().use {
         it.font = this
         it.fontMetrics
     }
 
 fun getFontPreview(component: Component?, height: Int, ttfBytes: ByteArray, str: String? = null): Pair<Font, BufferedImage> {
     val font = Font.createFont(Font.TRUETYPE_FONT, ttfBytes.inputStream()).deriveFont(height.toFloat())
-    val fontMetrics = font.getFontMetrics()
+    val fontMetrics = font.getFontMetrics(component)
     val text = str ?: font.name
     val width = fontMetrics.stringWidth(text)
     val img = UIUtil.createImage(component, width, fontMetrics.height, BufferedImage.TYPE_INT_ARGB)
@@ -207,4 +214,8 @@ fun BufferedImage.resized(newWidth: Int, newHeight: Int): BufferedImage {
     //    g.drawImage(originalImage, 0, 0, newWidth, newHeight, null)
     //}
     //return resizedImage
+}
+// @TODO: Implement HDPI-Aware functionality
+fun BufferedImage.resizedHidpiAware(newWidth: Int, newHeight: Int): BufferedImage {
+    return resized(newWidth, newHeight)
 }
