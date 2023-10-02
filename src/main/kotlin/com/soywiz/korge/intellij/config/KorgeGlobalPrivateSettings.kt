@@ -1,40 +1,42 @@
 package com.soywiz.korge.intellij.config
 
-import com.intellij.codeInsight.daemon.*
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
+import com.intellij.ide.projectView.ProjectView
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.components.*
-import com.intellij.openapi.editor.markup.*
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.util.xmlb.*
-import com.jetbrains.rd.util.string.print
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.awt.*
+import com.intellij.util.ui.ImageUtil
+import com.intellij.util.xmlb.XmlSerializerUtil
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.days
+import com.soywiz.klock.seconds
+import com.soywiz.korge.awt.DialogSettings
+import com.soywiz.korge.awt.label
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.ui.showDialog
-import com.soywiz.korge.intellij.util.*
-import com.soywiz.korim.awt.*
+import com.soywiz.korge.intellij.util.launchBrowserWithUrl
 import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.dynamic.KDynamic
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.krypto.encoding.Base64
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.awt.*
-import java.awt.image.*
-import java.io.*
-import java.net.*
+import java.awt.Desktop
+import java.awt.Dimension
+import java.awt.Image
+import java.awt.image.BufferedImage
+import java.net.URI
+import java.net.URL
 import java.util.*
-import javax.imageio.*
-import javax.imageio.stream.*
-import javax.swing.*
+import javax.imageio.ImageIO
+import javax.swing.Icon
+import javax.swing.ImageIcon
 import kotlin.coroutines.EmptyCoroutineContext
-import com.intellij.ide.projectView.ProjectView
 
 @State(
 	name = "KorgeGlobalPrivateSettings",
@@ -53,9 +55,12 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 	var validDate: Long? = null
 	var lastChecked: Long = 0L
 
+    companion object {
+        val EMPTY_IMAGE = ImageUtil.createImage(176, 176, BufferedImage.TYPE_INT_ARGB_PRE)
+    }
+
 	private fun getAvatarBytes(): ByteArray {
 		if (userAvatarBytes == null) {
-
 			//val img = ImageIO.read(bytes.inputStream()).getScaledInstance(128, 128, Image.SCALE_SMOOTH)
 			//userAvatarBytes = Base64.encode(img.toJpegBytes(.8f))
 			val bytes = userAvatar?.let { URL(it).readBytes() } ?: KorgeIcons.USER_UNKNOWN_BYTES ?: byteArrayOf()
@@ -66,16 +71,21 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 
 	fun getAvatarBitmap(): BufferedImage {
 		if (userAvatarBitmap == null) {
-			userAvatarBitmap = ImageIO.read(getAvatarBytes().inputStream())
+            userAvatarBitmap = try {
+                ImageIO.read(getAvatarBytes().inputStream()) ?: EMPTY_IMAGE
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                KorgeIcons.USER_UNKNOWN_BYTES?.inputStream()?.let { ImageIO.read(it) } ?: EMPTY_IMAGE
+            }
 		}
-		return userAvatarBitmap!!
+		return userAvatarBitmap ?: EMPTY_IMAGE
 	}
 
 	fun getAvatarIcon(): Icon {
 		if (userAvatarIcon == null) {
 			userAvatarIcon = ImageIcon(getAvatarBitmap().getScaledInstance(16, 16, Image.SCALE_SMOOTH))
 		}
-		return userAvatarIcon!!
+		return userAvatarIcon ?: ImageIcon(EMPTY_IMAGE)
 	}
 
 	fun isUserLoggedIn(): Boolean {
