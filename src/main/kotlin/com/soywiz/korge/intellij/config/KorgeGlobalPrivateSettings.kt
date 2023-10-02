@@ -23,6 +23,7 @@ import javax.imageio.*
 import javax.swing.*
 import kotlin.coroutines.EmptyCoroutineContext
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.util.ui.ImageUtil
 import com.intellij.util.ui.JBImageIcon
 import com.soywiz.korge.intellij.internal.dyn
 import com.soywiz.korge.intellij.ui.DialogSettings
@@ -45,6 +46,10 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 	var userPrice: Int? = null
 	var validDate: Long? = null
 	var lastChecked: Long = 0L
+
+    companion object {
+        val EMPTY_IMAGE by lazy { ImageUtil.createImage(176, 176, BufferedImage.TYPE_INT_ARGB_PRE) }
+    }
 
     fun getSureUserUUID(): String {
         if (userUuid == null) userUuid = UUID.randomUUID().toString()
@@ -69,20 +74,23 @@ open class KorgeGlobalPrivateSettings : PersistentStateComponent<KorgeGlobalPriv
 
 	fun getAvatarBitmap(): BufferedImage {
 		if (userAvatarBitmap == null) {
-			userAvatarBitmap = ImageIO.read(getAvatarBytes().inputStream())
+            userAvatarBitmap = runCatching { ImageIO.read(getAvatarBytes().inputStream()) }.getOrNull()
+                ?: runCatching { KorgeIcons.USER_UNKNOWN_BYTES?.inputStream()?.let { ImageIO.read(it) } }.getOrNull()
+                ?: EMPTY_IMAGE
 		}
-		return userAvatarBitmap!!
+		return userAvatarBitmap ?: EMPTY_IMAGE
 	}
 
 	fun getAvatarIcon(): Icon {
 		if (userAvatarIcon == null) {
 			userAvatarIcon = JBImageIcon(getAvatarBitmap().getScaledInstance(16, 16, Image.SCALE_SMOOTH))
 		}
-		return userAvatarIcon!!
+		return userAvatarIcon ?: ImageIcon(EMPTY_IMAGE)
 	}
 
 	fun isUserLoggedIn(): Boolean {
-		return userLogin != null && validDate != null && validDate!! > System.currentTimeMillis()
+        val validDate = this.validDate
+        return userLogin != null && validDate != null && validDate > System.currentTimeMillis()
 	}
 
 	fun getUserDonationPrice(): Int {
