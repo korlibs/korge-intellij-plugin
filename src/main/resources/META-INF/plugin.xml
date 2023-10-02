@@ -5,7 +5,7 @@
     <id>com.soywiz.korge.korge-intellij-plugin</id>
 
     <name>Korge</name>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
     <vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">KorGE</vendor>
 
     <description><![CDATA[
@@ -17,6 +17,7 @@
         <ul>
             <li>Fixes font icons not displaying properly on HiDpi screens</li>
             <li>Make font preview/icon theme-aware</li>
+            <li>Avoid null pointer exception in some cases in the login popup</li>
         </ul>
         <h3>4.0.3</h3>
         <ul>
