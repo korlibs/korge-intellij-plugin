@@ -20,6 +20,6 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew --no-daemon check buildPlugin
-    - { name: Archive Plugin, uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/distributions", if-no-files-found: ignore } }
+    - { name: Archive Plugin, uses: actions/upload-artifact@v3, with: { name: plugin, retention-days: 21, path: "**/build/distributions", if-no-files-found: ignore } }
     - name: Stop gradle
       run: ./gradlew --stop
