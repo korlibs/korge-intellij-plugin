@@ -8,3 +8,6 @@
 
 /*.ipr
 /*.iws
+/deps
+/modules
+/kproject.lock
