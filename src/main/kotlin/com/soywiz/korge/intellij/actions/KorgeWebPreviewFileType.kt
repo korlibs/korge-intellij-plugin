@@ -454,7 +454,7 @@ class KorgeWebPreviewFileEditor(val project: Project, file: KorgeWebPreviewVirtu
 
     private fun reloadPage() {
         FileDocumentManager.getInstance().saveAllDocuments()
-        ApplicationManager.getApplication().saveAll()
+        ApplicationManager.getApplication().saveSettings()
         myPanel.loadURL(myUrl)
     }
 

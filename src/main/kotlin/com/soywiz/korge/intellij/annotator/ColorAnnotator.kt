@@ -156,7 +156,7 @@ data class GutterColorRenderer(val element: PsiElement, val color: Color): Gutte
     override fun getIcon(): Icon = ColorIcon(12, color, true)
 
     fun chooseColor() {
-        val editor = PsiEditorUtilBase.findEditorByPsiElement(element) ?: return
+        val editor = PsiEditorUtil.getInstance().findEditorByPsiElement(element) ?: return
         val newColor = editor.chooseColor(color)
         if (newColor != null) {
             val rgba = newColor.toRgba()
