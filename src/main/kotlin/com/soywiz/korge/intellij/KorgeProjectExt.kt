@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij
 
 import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
+import com.soywiz.korge.intellij.util.get
 
 class KorgeProjectExt(val project: Project) {
 	companion object {
@@ -16,7 +17,13 @@ class KorgeProjectExt(val project: Project) {
 			if (checkRootManagerVersion == null || checkRootManagerVersion != project.rootManager.modificationCount) {
 				checkRootManagerVersion = project.rootManager.modificationCount
 				containsKorgeCached =
-					project.rootManager.orderEntries().librariesOnly().toLibrarySequence().any { it.name?.contains("com.soywiz.korlibs.korge") == true }
+					project.rootManager.orderEntries().librariesOnly().toLibrarySequence().any {
+                        it.name?.contains("korlibs.korge") == true ||
+                            it.name?.contains("soywiz.korge") == true
+                    } || project.rootManager.contentRoots.any { it["deps.kproject.yml"] != null }
+
+
+
 				//println("Computed $containsKorgeCached")
 			}
 			return containsKorgeCached
